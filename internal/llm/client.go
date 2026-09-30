@@ -1,0 +1,134 @@
+// Package llm is a minimal OpenAI-compatible chat-completions client. It works
+// with OpenAI, Gemini's OpenAI-compatible endpoint, Anthropic's compatibility
+// layer, and local Ollama / vLLM servers.
+package llm
+
+import (
+	"bytes"
+	"context"
+	"encoding/json"
+	"errors"
+	"fmt"
+	"io"
+	"net/http"
+	"strings"
+)
+
+type Client struct {
+	BaseURL  string // e.g. https://api.openai.com/v1 or http://ollama:11434/v1
+	APIKey   string
+	JSONMode bool // send response_format=json_object (disable for servers that reject it)
+	HTTP     *http.Client
+}
+
+type Usage struct {
+	PromptTokens     int `json:"prompt_tokens"`
+	CompletionTokens int `json:"completion_tokens"`
+}
+
+func (u Usage) Total() int { return u.PromptTokens + u.CompletionTokens }
+
+type message struct {
+	Role    string `json:"role"`
+	Content string `json:"content"`
+}
+
+type chatRequest struct {
+	Model          string            `json:"model"`
+	Messages       []any             `json:"messages"` // message, or partsMessage for images
+	Temperature    float64           `json:"temperature"`
+	MaxTokens      int               `json:"max_tokens,omitempty"`
+	ResponseFormat map[string]string `json:"response_format,omitempty"`
+}
+
+type chatResponse struct {
+	Choices []struct {
+		Message message `json:"message"`
+	} `json:"choices"`
+	Usage Usage `json:"usage"`
+	Error *struct {
+		Message string `json:"message"`
+	} `json:"error"`
+}
+
+// Complete sends a system+user prompt and returns the assistant text and usage.
+func (c *Client) Complete(ctx context.Context, model, system, user string) (string, Usage, error) {
+	if strings.TrimSpace(c.BaseURL) == "" || strings.TrimSpace(model) == "" {
+		return "", Usage{}, errors.New("LLM base URL and model must be configured")
+	}
+	return c.send(ctx, chatRequest{
+		Model:       model,
+		Messages:    []any{message{"system", system}, message{"user", user}},
+		Temperature: 0,
+		MaxTokens:   MaxTokens(model),
+	})
+}
+
+// send posts a chat request and returns the assistant text and usage.
+func (c *Client) send(ctx context.Context, body chatRequest) (string, Usage, error) {
+	if c.JSONMode {
+		body.ResponseFormat = map[string]string{"type": "json_object"}
+	}
+	buf, _ := json.Marshal(body)
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost,
+		strings.TrimRight(c.BaseURL, "/")+"/chat/completions", bytes.NewReader(buf))
+	if err != nil {
+		return "", Usage{}, err
+	}
+	req.Header.Set("Content-Type", "application/json")
+	if c.APIKey != "" {
+		req.Header.Set("Authorization", "Bearer "+c.APIKey)
+	}
+	hc := c.HTTP
+	if hc == nil {
+		hc = &http.Client{} // callers set the deadline on ctx (see Timeout)
+	}
+	resp, err := hc.Do(req)
+	if err != nil {
+		return "", Usage{}, err
+	}
+	defer resp.Body.Close()
+	raw, err := io.ReadAll(io.LimitReader(resp.Body, 1<<20))
+	if err != nil {
+		return "", Usage{}, err
+	}
+	var cr chatResponse
+	if err := json.Unmarshal(raw, &cr); err != nil {
+		return "", Usage{}, fmt.Errorf("LLM %s: %s", resp.Status, truncate(string(raw), 200))
+	}
+	if cr.Error != nil {
+		return "", cr.Usage, fmt.Errorf("LLM error: %s", cr.Error.Message)
+	}
+	if resp.StatusCode != http.StatusOK {
+		return "", cr.Usage, fmt.Errorf("LLM %s", resp.Status)
+	}
+	if len(cr.Choices) == 0 {
+		return "", cr.Usage, errors.New("LLM returned no choices")
+	}
+	out, err := stripThinking(cr.Choices[0].Message.Content)
+	return out, cr.Usage, err
+}
+
+// ErrOnlyThinking means a reasoning model ran out of room before answering.
+var ErrOnlyThinking = errors.New("the AI model used its whole answer thinking (a reasoning model such as DeepSeek-R1); choose a model without a thinking step")
+
+// stripThinking drops the <think>…</think> notes reasoning models (DeepSeek-R1,
+// QwQ) write before their answer: they can contain "{", which would confuse
+// the JSON readers. Some templates open the notes in the prompt, so the
+// answer is whatever follows the last closing tag.
+func stripThinking(s string) (string, error) {
+	if i := strings.LastIndex(s, "</think>"); i >= 0 {
+		return strings.TrimSpace(s[i+len("</think>"):]), nil
+	}
+	if strings.Contains(s, "<think>") {
+		return "", ErrOnlyThinking
+	}
+	return s, nil
+}
+
+func truncate(s string, n int) string {
+	if len(s) <= n {
+		return s
+	}
+	return s[:n] + "…"
+}

@@ -1,0 +1,107 @@
+# Builds the RecipeBank container image and publishes it to GitHub Packages
+# (ghcr.io/zachcurry13/recipebank) so TrueNAS can install it without building.
+#   push to any branch -> go vet + go test only
+#   push to main   -> :main (not :latest, so a release's own build is the
+#                     only one that moves :latest)
+#   tag v1.2.3     -> :1.2.3, :1.2, :latest  + a GitHub Release
+#   manual run     -> Actions > Docker image > Run workflow, enter a version
+#                     (e.g. 1.0.0) to publish :1.0.0 + :latest and create
+#                     the v1.0.0 tag and GitHub Release in one step.
+name: Docker image
+
+on:
+  push:
+    branches: ["**"]
+    tags: ["v*"]
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Release version without the v (e.g. 1.0.0). Leave blank to just rebuild."
+        required: false
+        default: ""
+
+permissions:
+  contents: write
+  packages: write
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+      - run: go vet ./...
+      - run: go test ./...
+
+  image:
+    needs: test
+    # Other branches only run the tests; pull requests build without publishing.
+    if: github.event_name != 'push' || github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # tags, for git describe
+      - name: Work out the version baked into the app
+        id: ver
+        run: |
+          if [ -n "${{ inputs.version }}" ]; then v="${{ inputs.version }}"
+          elif [[ "$GITHUB_REF" == refs/tags/v* ]]; then v="${GITHUB_REF_NAME#v}"
+          else v="$(git describe --tags --always 2>/dev/null | sed 's/^v//')"; fi
+          echo "version=${v:-dev}" >> "$GITHUB_OUTPUT"
+      - uses: docker/setup-qemu-action@v3
+      - uses: docker/setup-buildx-action@v3
+      - name: Log in to GitHub Container Registry
+        if: github.event_name != 'pull_request'
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Image tags
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ghcr.io/zachcurry13/recipebank
+          tags: |
+            type=raw,value=latest,enable=${{ startsWith(github.ref, 'refs/tags/v') || github.event_name == 'workflow_dispatch' }}
+            type=raw,value=main,enable=${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+            type=raw,value=${{ inputs.version }},enable=${{ inputs.version != '' }}
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=sha,format=short
+      - name: Build and push
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          platforms: linux/amd64,linux/arm64
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          build-args: VERSION=${{ steps.ver.outputs.version }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  release:
+    needs: image
+    if: startsWith(github.ref, 'refs/tags/v') || inputs.version != ''
+    runs-on: ubuntu-latest
+    env:
+      TAG: ${{ inputs.version != '' && format('v{0}', inputs.version) || github.ref_name }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Release notes from CHANGELOG.md
+        run: |
+          v="${TAG#v}"
+          awk -v v="$v" '$0 ~ "^## \\[" v "\\]" {on=1; next} /^## \[/ {on=0} on' CHANGELOG.md > notes.md
+          [ -s notes.md ] || echo "See CHANGELOG.md for details." > notes.md
+          printf '\n---\n**Update on TrueNAS:** Apps → recipebank → Update when TrueNAS offers it (or follow Updating RecipeBank in docs/TRUENAS.md).\nImage: `ghcr.io/zachcurry13/recipebank:%s` (also `:latest`).\n' "$v" >> notes.md
+      - uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ env.TAG }}
+          name: RecipeBank ${{ env.TAG }}
+          target_commitish: ${{ github.sha }}
+          body_path: notes.md

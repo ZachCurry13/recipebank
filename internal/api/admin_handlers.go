@@ -1,0 +1,215 @@
+package api
+
+import (
+	"context"
+	"encoding/json"
+	"errors"
+	"net/http"
+	"strings"
+	"time"
+
+	"github.com/zachcurry13/recipebank/internal/auth"
+	"github.com/zachcurry13/recipebank/internal/llm"
+	"github.com/zachcurry13/recipebank/internal/store"
+)
+
+// editableKeys are the settings the admin page may change.
+var editableKeys = map[string]bool{
+	store.KeyLLMProvider: true, store.KeyLLMBaseURL: true, store.KeyLLMAPIKey: true, store.KeyLLMModel: true,
+	store.KeyLLMFallbackModel: true, store.KeyLLMVisionModel: true, store.KeyLLMJSONMode: true,
+	store.KeyLLMTimeoutSeconds: true, store.KeySessionDays: true, store.KeyAllergenList: true, store.KeyDefaultUnits: true,
+}
+
+func (s *Server) handleGetSettings(w http.ResponseWriter, r *http.Request) {
+	all, err := s.Store.AllSettings()
+	if err != nil {
+		writeStoreErr(w, err)
+		return
+	}
+	out := map[string]any{}
+	for k, v := range all {
+		if store.SecretKeys[k] {
+			out[k+"_set"] = v != "" // never send the secret itself
+			continue
+		}
+		out[k] = v
+	}
+	out["tokens_this_month"] = s.Store.TokensThisMonth()
+	writeJSON(w, http.StatusOK, out)
+}
+
+func (s *Server) handlePutSettings(w http.ResponseWriter, r *http.Request) {
+	var body map[string]string
+	if !readJSON(w, r, &body, 16<<10) {
+		return
+	}
+	for k, v := range body {
+		if !editableKeys[k] {
+			writeErr(w, http.StatusBadRequest, "unknown setting "+k)
+			return
+		}
+		v = strings.TrimSpace(v)
+		if store.SecretKeys[k] && v == "" {
+			continue // blank keeps the saved secret
+		}
+		if k == store.KeyLLMBaseURL {
+			v = llm.NormalizeBaseURL(v)
+		}
+		if err := s.Store.SetSetting(k, v); err != nil {
+			writeStoreErr(w, err)
+			return
+		}
+	}
+	s.handleGetSettings(w, r)
+}
+
+// handleTestAI asks the AI a tiny question to prove the settings work.
+func (s *Server) handleTestAI(w http.ResponseWriter, r *http.Request) {
+	ctx, cancel := context.WithTimeout(r.Context(), 3*time.Minute)
+	defer cancel()
+	start := time.Now()
+	err := llm.Ask(ctx, s.Store, "You are a test. Reply with JSON only.", `Reply exactly {"ok": true}`, func(out string) error {
+		var v struct {
+			OK bool `json:"ok"`
+		}
+		if json.Unmarshal([]byte(jsonObject(out)), &v) != nil || !v.OK {
+			return errors.New("unexpected answer: " + truncate(out, 120))
+		}
+		return nil
+	})
+	if err != nil {
+		writeErr(w, http.StatusBadGateway, err.Error())
+		return
+	}
+	writeJSON(w, http.StatusOK, map[string]any{"ok": true, "seconds": time.Since(start).Seconds()})
+}
+
+func (s *Server) handleListUsers(w http.ResponseWriter, r *http.Request) {
+	us, err := s.Store.ListUsers()
+	if err != nil {
+		writeStoreErr(w, err)
+		return
+	}
+	writeJSON(w, http.StatusOK, us)
+}
+
+func (s *Server) handleCreateUser(w http.ResponseWriter, r *http.Request) {
+	var body struct {
+		Username string `json:"username"`
+		Password string `json:"password"`
+		Role     string `json:"role"`
+		PersonID *int64 `json:"person_id"`
+	}
+	if !readJSON(w, r, &body, 4<<10) {
+		return
+	}
+	body.Username = strings.TrimSpace(body.Username)
+	if !usernameRE.MatchString(body.Username) || !store.ValidRole(body.Role) {
+		writeErr(w, http.StatusBadRequest, "username must be 2-40 letters or digits; role admin, editor or kid")
+		return
+	}
+	hash, err := auth.HashPassword(body.Password)
+	if err != nil {
+		writeErr(w, http.StatusBadRequest, err.Error())
+		return
+	}
+	u, err := s.Store.CreateUser(body.Username, hash, body.Role)
+	if err != nil {
+		writeErr(w, http.StatusConflict, "that username is taken")
+		return
+	}
+	if body.PersonID != nil {
+		_ = s.Store.UpdateUser(u.ID, u.Role, body.PersonID)
+	}
+	writeJSON(w, http.StatusCreated, u)
+}
+
+func (s *Server) handleUpdateUser(w http.ResponseWriter, r *http.Request) {
+	id, ok := pathID(r, "id")
+	var body struct {
+		Role     string `json:"role"`
+		PersonID *int64 `json:"person_id"`
+	}
+	if !ok || !readJSON(w, r, &body, 4<<10) {
+		return
+	}
+	u, err := s.Store.UserByID(id)
+	if err != nil {
+		writeStoreErr(w, err)
+		return
+	}
+	if u.IsAdmin() && body.Role != store.RoleAdmin && s.lastAdmin() {
+		writeErr(w, http.StatusBadRequest, "keep at least one admin")
+		return
+	}
+	if body.PersonID != nil && *body.PersonID == 0 {
+		body.PersonID = nil
+	}
+	if err := s.Store.UpdateUser(id, body.Role, body.PersonID); err != nil {
+		writeErr(w, http.StatusBadRequest, err.Error())
+		return
+	}
+	writeJSON(w, http.StatusOK, map[string]bool{"ok": true})
+}
+
+func (s *Server) handleResetPassword(w http.ResponseWriter, r *http.Request) {
+	id, ok := pathID(r, "id")
+	var body struct {
+		Password string `json:"password"`
+	}
+	if !ok || !readJSON(w, r, &body, 4<<10) {
+		return
+	}
+	hash, err := auth.HashPassword(body.Password)
+	if err != nil {
+		writeErr(w, http.StatusBadRequest, err.Error())
+		return
+	}
+	if err := s.Store.SetPassword(id, hash); err != nil {
+		writeStoreErr(w, err)
+		return
+	}
+	_ = s.Store.DeleteUserSessions(id)
+	writeJSON(w, http.StatusOK, map[string]bool{"ok": true})
+}
+
+func (s *Server) handleDeleteUser(w http.ResponseWriter, r *http.Request) {
+	id, ok := pathID(r, "id")
+	if !ok {
+		writeErr(w, http.StatusBadRequest, "bad id")
+		return
+	}
+	if id == auth.UserFrom(r).ID {
+		writeErr(w, http.StatusBadRequest, "you can't delete your own account")
+		return
+	}
+	if u, err := s.Store.UserByID(id); err == nil && u.IsAdmin() && s.lastAdmin() {
+		writeErr(w, http.StatusBadRequest, "keep at least one admin")
+		return
+	}
+	if err := s.Store.DeleteUser(id); err != nil {
+		writeStoreErr(w, err)
+		return
+	}
+	writeJSON(w, http.StatusOK, map[string]bool{"ok": true})
+}
+
+func (s *Server) lastAdmin() bool {
+	n, err := s.Store.CountAdmins()
+	return err == nil && n <= 1
+}
+
+func jsonObject(s string) string {
+	i, j := strings.Index(s, "{"), strings.LastIndex(s, "}")
+	if i < 0 || j < i {
+		return s
+	}
+	return s[i : j+1]
+}
+
+func truncate(s string, n int) string {
+	if len(s) <= n {
+		return s
+	}
+	return s[:n] + "…"
+}

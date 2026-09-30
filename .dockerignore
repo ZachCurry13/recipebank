@@ -1,0 +1,7 @@
+.git
+concepts
+data
+bin
+node_modules
+*.db
+*.exe
