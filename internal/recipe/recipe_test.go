@@ -65,3 +65,13 @@ func TestFromHTML(t *testing.T) {
 		t.Error("found a recipe on a page without one")
 	}
 }
+
+func TestFromText(t *testing.T) {
+	r, ok := FromText("Grandma's Pancakes\nFluffy and quick.\n\nIngredients\n- 1 cup flour\n- 1 egg\n\nDirections\n1. Mix.\n2. Fry 2 minutes a side.\n")
+	if !ok || r.Title != "Grandma's Pancakes" || len(r.Ingredients) != 2 || len(r.Steps) != 2 || r.Steps[0].Text != "Mix." {
+		t.Fatalf("%v %+v", ok, r)
+	}
+	if _, ok := FromText("just some words"); ok {
+		t.Error("read a recipe from plain words")
+	}
+}

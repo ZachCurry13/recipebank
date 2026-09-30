@@ -1,0 +1,113 @@
+// The Library: Kitchen or Home & Care recipes, filtered, with each diner's verdict.
+import { get, qs } from "./api.js";
+import { $, $$, esc, fmtMin, peppers, stars, canManage, cap, HOME_CATS } from "./ui.js";
+import { verdictChips } from "./verdicts.js";
+
+// Filters are kept per area while the app is open.
+const filters = { kitchen: { who: null, ok: "" }, home: { who: null, ok: "" } };
+
+export async function renderLibrary(view, area, params, state) {
+  const f = filters[area];
+  const people = await get("/api/people");
+  if (f.who === null) f.who = people.filter((p) => !p.is_guest).map((p) => p.id);
+  const home = area === "home";
+  const title = home ? "Home & Care" : "Kitchen";
+  const blurb = home
+    ? "Home-made cleaners, toothpaste, mouthwash and more, with safety checks for kids, pets and surfaces."
+    : "The family's recipes, checked against everyone's allergies, diets and dislikes.";
+  view.innerHTML = `
+    <div class="mb-4 flex flex-wrap items-end gap-3">
+      <div class="min-w-0 basis-full sm:basis-auto sm:flex-1">
+        <h1 class="text-2xl font-bold">${home ? "🧴" : "🍲"} ${title}</h1>
+        <p class="text-sm text-slate-400">${blurb}</p>
+      </div>
+      ${canManage(state.user) ? `<a href="#/add?area=${area}" class="btn-primary">➕ Add a recipe</a>` : ""}
+    </div>
+    <div class="card mb-4 space-y-3">
+      <input id="q" type="search" class="input" placeholder="Search titles and ingredients" value="${esc(f.q || "")}">
+      ${people.length ? `<div>
+        <span class="label">Who's ${home ? "using it" : "eating"}?</span>
+        <div id="who" class="flex flex-wrap gap-2">${people.map((p) =>
+          `<button class="pick ${f.who.includes(p.id) ? "on" : ""}" data-id="${p.id}">${esc(p.name)}${p.is_guest ? " (guest)" : ""}</button>`).join("")}</div>
+      </div>` : `<p class="text-sm text-slate-400">Add the family on the <a class="underline" href="#/family">Family</a> page to see who can eat what.</p>`}
+      <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        <label><span class="label">Show</span><select id="ok" class="input">
+          <option value="">Everything</option>
+          <option value="1" ${f.ok === "1" ? "selected" : ""}>Only OK for all of them</option>
+          <option value="unsure" ${f.ok === "unsure" ? "selected" : ""}>OK or not sure</option></select></label>
+        ${home ? `<label><span class="label">Kind</span><select id="course" class="input"><option value="">Any</option>${HOME_CATS.map((c) =>
+          `<option ${f.course === c ? "selected" : ""} value="${c}">${cap(c)}</option>`).join("")}</select></label>`
+        : `<label><span class="label">Ready in</span><select id="max_min" class="input"><option value="">Any time</option>${[15, 30, 45, 60, 90].map((m) =>
+          `<option value="${m}" ${f.max_min == m ? "selected" : ""}>${m} min or less</option>`).join("")}</select></label>
+        <label><span class="label">Diet</span><select id="diet" class="input"><option value="">Any</option>${(state.info?.diets || []).map((d) =>
+          `<option value="${d.key}" ${f.diet === d.key ? "selected" : ""}>${esc(d.label)}</option>`).join("")}</select></label>
+        <label><span class="label">Heat</span><select id="heat" class="input"><option value="">Any</option>${[0, 1, 2, 3, 4].map((h) =>
+          `<option value="${h}" ${f.heat === String(h) ? "selected" : ""}>${h ? "Up to " + "🌶️".repeat(h) : "No heat"}</option>`).join("")}</select></label>`}
+      </div>
+      <div id="facets" class="grid gap-3 sm:grid-cols-3"></div>
+    </div>
+    <div id="results"></div>`;
+
+  let timer;
+  const load = async () => {
+    const data = await get("/api/recipes" + qs({ area, who: f.who.join(",") || "0", q: f.q, ok: f.ok, max_min: f.max_min,
+      diet: f.diet, heat: f.heat, course: f.course, cuisine: f.cuisine, protein: f.protein }));
+    if (!home) renderFacets(data.facets, f, load);
+    renderCards(data.recipes, area, f);
+  };
+  $("#q").oninput = (e) => {
+    f.q = e.target.value;
+    clearTimeout(timer);
+    timer = setTimeout(load, 250);
+  };
+  $$("#who .pick").forEach((b) => (b.onclick = () => {
+    const id = Number(b.dataset.id);
+    f.who = f.who.includes(id) ? f.who.filter((x) => x !== id) : [...f.who, id];
+    b.classList.toggle("on");
+    load();
+  }));
+  for (const key of ["ok", "course", "max_min", "diet", "heat"]) {
+    const el = $("#" + key);
+    if (el) el.onchange = () => { f[key] = el.value; load(); };
+  }
+  await load();
+}
+
+function renderFacets(facets, f, load) {
+  const box = $("#facets");
+  if (!box) return;
+  box.innerHTML = ["course", "cuisine", "protein"].map((k) => {
+    const opts = Object.keys(facets[k] || {}).sort();
+    if (!opts.length && !f[k]) return "";
+    return `<label><span class="label">${cap(k)}</span><select data-facet="${k}" class="input"><option value="">Any</option>${opts.map((o) =>
+      `<option value="${esc(o)}" ${f[k] === o ? "selected" : ""}>${esc(cap(o))} (${facets[k][o]})</option>`).join("")}</select></label>`;
+  }).join("");
+  $$("[data-facet]", box).forEach((s) => (s.onchange = () => { f[s.dataset.facet] = s.value; load(); }));
+}
+
+function renderCards(list, area, f) {
+  const box = $("#results");
+  if (!list.length) {
+    const filtered = f.q || f.ok || f.max_min || f.diet || f.heat || f.course || f.cuisine || f.protein;
+    box.innerHTML = `<div class="card text-center text-slate-400">${filtered ? "No recipes match these filters." :
+      `No ${area === "home" ? "Home & Care" : ""} recipes yet. Add one from a link, a photo of a card, or by typing it in.`}</div>`;
+    return;
+  }
+  box.innerHTML = `<p class="mb-2 text-sm text-slate-400">${list.length} recipe${list.length === 1 ? "" : "s"}</p>
+    <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">${list.map((r) => `
+      <a href="#/recipe/${r.id}" class="card block min-w-0 p-0 hover:ring-emerald-700">
+        ${r.photo ? `<img src="/api/photos/${esc(r.photo)}" alt="" loading="lazy" class="h-40 w-full rounded-t-xl object-cover">`
+          : `<div class="flex h-24 items-center justify-center rounded-t-xl bg-slate-800 text-4xl">${area === "home" ? "🧴" : "🍲"}</div>`}
+        <div class="space-y-2 p-3">
+          <h2 class="break-words font-semibold leading-snug">${esc(r.title)}</h2>
+          <div class="flex flex-wrap items-center gap-1 text-xs text-slate-400">
+            ${r.total_min ? `<span class="chip-info">⏱ ${fmtMin(r.total_min)}</span>` : ""}
+            ${area === "kitchen" ? peppers(r.heat) : ""}
+            ${r.course ? `<span class="chip-cat">${esc(cap(r.course))}</span>` : ""}
+            ${r.needs_review ? `<span class="chip-unsure" title="The AI wasn't sure about some lines">? Check lines</span>` : ""}
+            ${stars(r.rating)}
+          </div>
+          <div class="flex flex-wrap gap-1">${verdictChips(r.verdicts)}</div>
+        </div>
+      </a>`).join("")}</div>`;
+}

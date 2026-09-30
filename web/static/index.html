@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>RecipeBank</title>
+  <meta name="description" content="The family's recipes, checked against everyone's allergies and diets">
+  <meta name="theme-color" content="#0f172a">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="RecipeBank">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="icon" href="/icons/icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="/icons/icon-192.png">
+  <link rel="stylesheet" href="/css/app.css">
+  <script src="/js/app.js" type="module"></script>
+</head>
+<body class="min-h-screen bg-slate-950 text-slate-100 antialiased">
+  <!-- Sign in -->
+  <section id="login-view" class="hidden min-h-screen flex items-center justify-center p-6">
+    <form id="login-form" class="w-full max-w-sm space-y-4 rounded-2xl bg-slate-900 p-8 shadow-xl ring-1 ring-slate-800">
+      <div class="flex items-center gap-3">
+        <img src="/icons/icon.svg" alt="" class="h-10 w-10">
+        <h1 class="text-2xl font-bold">RecipeBank</h1>
+      </div>
+      <input name="username" autocomplete="username" required placeholder="Username" class="input">
+      <input name="password" type="password" autocomplete="current-password" required placeholder="Password" class="input">
+      <label class="toggle"><input type="checkbox" name="remember" checked> Keep me signed in on this device</label>
+      <p id="login-error" class="hidden text-sm text-rose-400"></p>
+      <button class="btn-primary w-full">Sign in</button>
+    </form>
+  </section>
+
+  <!-- First-run setup (only while no accounts exist) -->
+  <section id="setup-view" class="hidden min-h-screen flex items-center justify-center p-6">
+    <form id="setup-form" class="w-full max-w-md space-y-4 rounded-2xl bg-slate-900 p-8 shadow-xl ring-1 ring-slate-800">
+      <div class="flex items-center gap-3">
+        <img src="/icons/icon.svg" alt="" class="h-10 w-10">
+        <h1 class="text-2xl font-bold">Welcome to RecipeBank</h1>
+      </div>
+      <p class="text-sm text-slate-300">Let's create your <b>admin account</b>. This is the main account that controls RecipeBank.
+        You'll add everyone else later.</p>
+      <label class="block"><span class="label">Admin username</span>
+        <input name="username" autocomplete="username" required minlength="2" maxlength="40" value="admin" class="input"></label>
+      <label class="block"><span class="label">Password (at least 8 characters)</span>
+        <input name="password" type="password" autocomplete="new-password" required minlength="8" class="input"></label>
+      <label class="block"><span class="label">Type the password again</span>
+        <input name="confirm" type="password" autocomplete="new-password" required minlength="8" class="input"></label>
+      <p id="setup-error" class="hidden text-sm text-rose-400"></p>
+      <button class="btn-primary w-full">Create admin account</button>
+      <p class="text-xs text-slate-500">Write the password down somewhere safe. RecipeBank can't show it to you again.</p>
+    </form>
+  </section>
+
+  <!-- App shell -->
+  <div id="app-view" class="hidden">
+    <header class="sticky top-0 z-20 border-b border-slate-800 bg-slate-950/90 backdrop-blur pt-safe">
+      <div class="mx-auto flex max-w-6xl items-center gap-2 px-4 py-3 sm:gap-4">
+        <a href="#/kitchen" class="mr-auto flex items-center gap-2 text-lg font-bold md:mr-0">
+          <img src="/icons/icon.svg" alt="" class="h-7 w-7"> RecipeBank
+        </a>
+        <nav id="nav" class="flex flex-1 gap-1 overflow-x-auto text-sm"></nav>
+        <span id="header-version" class="hidden text-xs text-slate-500 md:inline"></span>
+      </div>
+    </header>
+    <main id="view" class="mx-auto max-w-6xl px-4 py-6"></main>
+    <footer class="mx-auto max-w-6xl border-t border-slate-800 px-4 pt-4 pb-safe text-xs text-slate-500">
+      <p>RecipeBank helps, but it doesn't replace reading labels. When in doubt, ask a doctor, dentist or vet.</p>
+      <p class="mt-1"><a href="https://github.com/ZachCurry13/recipebank" target="_blank" rel="noopener noreferrer" class="underline">RecipeBank on GitHub</a>
+        · <span id="version-label"></span></p>
+    </footer>
+    <nav id="mobile-nav" class="mobile-nav" aria-label="Main"></nav>
+  </div>
+
+  <!-- Cook mode (full screen) -->
+  <div id="cook-view" class="hidden fixed inset-0 z-40 overflow-y-auto bg-slate-950"></div>
+
+  <dialog id="sheet" class="dialog"></dialog>
+  <div id="toast" class="toast hidden"></div>
+</body>
+</html>

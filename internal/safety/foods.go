@@ -9,6 +9,25 @@ var knownFoods = map[string]bool{}
 
 func init() {
 	for _, f := range []string{
+		// Single foods whose allergens the word lists already name (flour is
+		// wheat, butter is milk): known, so they don't trip strict mode for
+		// other allergies.
+		"flour", "plain flour", "all purpose flour", "bread flour", "cake flour", "pastry flour", "whole wheat flour",
+		"self rising flour", "self raising flour", "egg", "egg white", "egg yolk", "milk", "whole milk", "skim milk",
+		"buttermilk", "butter", "unsalted butter", "salted butter", "cream", "heavy cream", "double cream",
+		"single cream", "whipping cream", "sour cream", "yogurt", "greek yogurt", "cream cheese", "cheddar",
+		"parmesan", "mozzarella", "feta", "ricotta", "peanut", "almond", "walnut", "pecan", "cashew", "hazelnut",
+		"pistachio", "tofu", "sesame seed", "tahini", "shrimp", "salmon", "tuna", "cod", "oat", "rolled oat",
+		"sunflower", "sunflower seed",
+		// Home & Care: plain chemicals and single-plant oils (nut oils are
+		// allergen words already).
+		"baking soda", "washing soda", "borax", "hydrogen peroxide", "rubbing alcohol", "isopropyl alcohol",
+		"citric acid", "xylitol", "glycerin", "vegetable glycerin", "distilled water", "witch hazel", "epsom salt",
+		"bentonite clay", "calcium carbonate", "activated charcoal", "stevia", "bleach", "ammonia", "oxygen bleach",
+		"sodium percarbonate", "cornstarch", "arrowroot powder", "aloe vera", "aloe vera gel", "beeswax", "shea butter",
+		"cocoa butter", "jojoba oil", "essential oil", "peppermint oil", "spearmint oil", "tea tree oil", "lavender oil",
+		"lemon oil", "orange oil", "eucalyptus oil", "clove oil", "cinnamon oil", "rosemary oil", "grapefruit oil",
+		"lime oil", "wintergreen oil", "pine oil", "lemongrass oil", "thyme oil", "oregano oil", "vodka",
 		// Basics
 		"salt", "pepper", "black pepper", "white pepper", "peppercorn", "sugar", "brown sugar", "powdered sugar",
 		"confectioners sugar", "icing sugar", "cane sugar", "granulated sugar", "honey", "maple syrup", "agave",
@@ -71,7 +90,10 @@ func init() {
 		fine flaky iodized smoked mild crushed pure natural unsweetened wild long short grain rinsed drained
 		halved quartered cubed julienned trimmed torn divided juiced zested stemmed pitted squeezed heaping level
 		leaves leaf sprig bunch head stalk clove can canned jar low sodium salt reduced unsalted salted new
-		split cut into piece inch strip wedge round mashed toasted roasted steamed boiled`) {
+		split cut into piece inch strip wedge round mashed toasted roasted steamed boiled serve served little
+		frying greasing brushing dusting sprinkling topping caster superfine icing confectioners granulated
+		self rising raising all purpose plain double single heavy whipping skim essential therapeutic grade food
+		distilled filtered`) {
 		descriptors[singular(d)] = true
 	}
 }
@@ -113,18 +135,19 @@ func splitParts(food string) [][]string {
 	return parts
 }
 
-// knownPart: the whole phrase is a known food, or its last one or two words
-// are and everything before them only describes it ("finely chopped fresh parsley").
+// knownPart: the whole phrase is a known food, or it is once the describing
+// words are left out ("finely chopped fresh parsley" → parsley,
+// "peppermint essential oil" → peppermint oil).
 func knownPart(ws []string) bool {
-	var core []string
+	var core, plain []string
 	for _, w := range ws {
-		if !isNumber(w) {
-			core = append(core, w)
+		if isNumber(w) {
+			continue
 		}
-	}
-	// "… to taste", "… for serving", "…, divided" describe it too.
-	for len(core) > 1 && descriptors[core[len(core)-1]] && !knownFoods[strings.Join(core, " ")] {
-		core = core[:len(core)-1]
+		core = append(core, w)
+		if !descriptors[w] {
+			plain = append(plain, w)
+		}
 	}
 	if len(core) == 0 {
 		return false
@@ -132,23 +155,10 @@ func knownPart(ws []string) bool {
 	if knownFoods[strings.Join(core, " ")] {
 		return true
 	}
-	for n := min(3, len(core)); n >= 1; n-- {
-		head := strings.Join(core[len(core)-n:], " ")
-		if !knownFoods[head] {
-			continue
-		}
-		ok := true
-		for _, w := range core[:len(core)-n] {
-			if !descriptors[w] {
-				ok = false
-				break
-			}
-		}
-		if ok {
-			return true
-		}
+	if len(plain) == 0 {
+		return true // only describing words ("a little extra for frying")
 	}
-	return false
+	return knownFoods[strings.Join(plain, " ")]
 }
 
 func isNumber(w string) bool {

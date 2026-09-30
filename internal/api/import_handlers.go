@@ -14,7 +14,10 @@ import (
 	"github.com/zachcurry13/recipebank/internal/recipe"
 )
 
-const userAgent = "Mozilla/5.0 (compatible; RecipeBank; +https://github.com/ZachCurry13/recipebank)"
+// userAgent says honestly who is asking. Some publishers block apps on
+// purpose (403, or 402 "pay per crawl"); RecipeBank respects that and
+// suggests pasting the text instead.
+const userAgent = "RecipeBank/0.1 (+https://github.com/ZachCurry13/recipebank)"
 
 func newFetchClient() *http.Client {
 	return &http.Client{
@@ -43,14 +46,16 @@ func (s *Server) fetch(ctx context.Context, raw string, limit int64) ([]byte, st
 	}
 	req.Header.Set("User-Agent", userAgent)
 	req.Header.Set("Accept", "text/html,application/xhtml+xml,image/*;q=0.9,*/*;q=0.8")
+	req.Header.Set("Accept-Language", "en-US,en;q=0.9")
 	resp, err := s.Fetch.Do(req)
 	if err != nil {
 		return nil, "", fmt.Errorf("couldn't open that page: %w", err)
 	}
 	defer resp.Body.Close()
 	if resp.StatusCode != http.StatusOK {
-		if resp.StatusCode == http.StatusForbidden || resp.StatusCode == http.StatusTooManyRequests {
-			return nil, "", fmt.Errorf("that site won't let RecipeBank read it (%s): copy the recipe's text and use Paste text instead", resp.Status)
+		switch resp.StatusCode {
+		case http.StatusForbidden, http.StatusPaymentRequired, http.StatusUnauthorized, http.StatusTooManyRequests:
+			return nil, "", errors.New("that site blocks apps from reading it. Open the recipe in your browser, select and copy it, then use Paste text")
 		}
 		return nil, "", fmt.Errorf("that page answered %s", resp.Status)
 	}
@@ -99,9 +104,20 @@ func (s *Server) handleImportText(w http.ResponseWriter, r *http.Request) {
 		writeErr(w, http.StatusBadRequest, "paste the recipe's text first")
 		return
 	}
-	rc, err := s.askText(r.Context(), body.Text)
-	if err != nil {
-		writeErr(w, http.StatusBadGateway, importErr(err))
+	// With the AI set up it reads the text; without it, a simple reader
+	// handles recipes with "Ingredients" and "Directions" headings.
+	rc, ok := recipe.FromText(body.Text)
+	if s.Store.AIConfig().Ready() {
+		ai, err := s.askText(r.Context(), body.Text)
+		if err == nil {
+			rc, ok = ai, true
+		} else if !ok {
+			writeErr(w, http.StatusBadGateway, importErr(err))
+			return
+		}
+	}
+	if !ok {
+		writeErr(w, http.StatusBadRequest, "Couldn't find the ingredients and steps. Put the title on the first line, then a line saying Ingredients, then a line saying Directions (or set up the AI under Admin → AI).")
 		return
 	}
 	rc.SourceKind = "text"

@@ -172,3 +172,16 @@ func TestHomeHazards(t *testing.T) {
 		}
 	}
 }
+
+func TestStrictKnowsPlainFoods(t *testing.T) {
+	plain := dish("2 cups plain flour", "2 large eggs", "1 red bell pepper, seeded and diced", "caster sugar to serve",
+		"1 tbsp sunflower or vegetable oil plus a little extra for frying", "10 drops peppermint essential oil", "1 tsp xylitol")
+	if v := Check(plain, allergic("milk", Severe)); v.Status != OK {
+		t.Errorf("plain foods, severe milk: %s %+v", v.Status, v.Reasons)
+	}
+	for _, line := range []string{"1 packet ranch seasoning mix", "2 cups white bread cubes", "1 cup mystery topping blend"} {
+		if v := Check(dish(line), allergic("egg", Severe)); v.Status == OK {
+			t.Errorf("%q, severe egg: got OK", line)
+		}
+	}
+}

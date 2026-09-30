@@ -25,8 +25,8 @@ const (
 
 var Defaults = map[string]string{
 	KeyLLMProvider:       "openai",
-	KeyLLMBaseURL:        "https://api.openai.com/v1",
-	KeyLLMModel:          "gpt-4o-mini",
+	KeyLLMBaseURL:        "",
+	KeyLLMModel:          "",
 	KeyLLMFallbackModel:  "",
 	KeyLLMVisionModel:    "",
 	KeyLLMJSONMode:       "true",
