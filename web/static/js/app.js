@@ -23,8 +23,8 @@ const NAV = [
 ];
 
 const routes = {
-  kitchen: (v, p) => renderLibrary(v, "kitchen", p),
-  home: (v, p) => renderLibrary(v, "home", p),
+  kitchen: (v, p, s) => renderLibrary(v, "kitchen", p, s),
+  home: (v, p, s) => renderLibrary(v, "home", p, s),
   recipe: renderRecipe,
   add: renderAdd,
   edit: renderEdit,

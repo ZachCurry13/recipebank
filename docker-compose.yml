@@ -1,0 +1,20 @@
+# RecipeBank: a single container. For TrueNAS SCALE see docs/TRUENAS.md
+# (Install Custom App form, or Install via YAML with the block there).
+#   * /data -> a dataset for recipebank.db and the photos folder (SSD if you have one)
+# On first visit the web page asks you to create the admin account.
+services:
+  recipebank:
+    image: ghcr.io/zachcurry13/recipebank:latest   # the newest release, prebuilt by GitHub Actions
+    pull_policy: missing                           # start from the local copy; update with `docker compose pull && docker compose up -d`
+    # build: .                                     # uncomment to build from source instead
+    container_name: recipebank
+    restart: unless-stopped
+    user: "568:568"            # TrueNAS "apps" user; must be able to write /data
+    ports:
+      - "8080:8080"
+    environment:
+      RECIPEBANK_TRUST_PROXY: "true"               # honor CF-Connecting-IP / X-Forwarded-For behind a proxy
+      RECIPEBANK_SESSION_DAYS: "30"
+      TZ: Etc/UTC                                  # change to your time zone, e.g. Europe/Berlin
+    volumes:
+      - ./data:/data                               # change to your dataset, e.g. /mnt/ssd/recipebank

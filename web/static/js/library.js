@@ -30,7 +30,9 @@ export async function renderLibrary(view, area, params, state) {
         <div id="who" class="flex flex-wrap gap-2">${people.map((p) =>
           `<button class="pick ${f.who.includes(p.id) ? "on" : ""}" data-id="${p.id}">${esc(p.name)}${p.is_guest ? " (guest)" : ""}</button>`).join("")}</div>
       </div>` : `<p class="text-sm text-slate-400">Add the family on the <a class="underline" href="#/family">Family</a> page to see who can eat what.</p>`}
-      <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+      <details id="more" class="group" ${innerWidth >= 768 || filtered(f) ? "open" : ""}>
+      <summary class="cursor-pointer text-sm font-semibold text-slate-300">Filters${filtered(f) ? " (on)" : ""}</summary>
+      <div class="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <label><span class="label">Show</span><select id="ok" class="input">
           <option value="">Everything</option>
           <option value="1" ${f.ok === "1" ? "selected" : ""}>Only OK for all of them</option>
@@ -44,7 +46,8 @@ export async function renderLibrary(view, area, params, state) {
         <label><span class="label">Heat</span><select id="heat" class="input"><option value="">Any</option>${[0, 1, 2, 3, 4].map((h) =>
           `<option value="${h}" ${f.heat === String(h) ? "selected" : ""}>${h ? "Up to " + "🌶️".repeat(h) : "No heat"}</option>`).join("")}</select></label>`}
       </div>
-      <div id="facets" class="grid gap-3 sm:grid-cols-3"></div>
+      <div id="facets" class="mt-3 grid gap-3 sm:grid-cols-3"></div>
+      </details>
     </div>
     <div id="results"></div>`;
 
@@ -88,8 +91,7 @@ function renderFacets(facets, f, load) {
 function renderCards(list, area, f) {
   const box = $("#results");
   if (!list.length) {
-    const filtered = f.q || f.ok || f.max_min || f.diet || f.heat || f.course || f.cuisine || f.protein;
-    box.innerHTML = `<div class="card text-center text-slate-400">${filtered ? "No recipes match these filters." :
+    box.innerHTML = `<div class="card text-center text-slate-400">${f.q || filtered(f) ? "No recipes match these filters." :
       `No ${area === "home" ? "Home & Care" : ""} recipes yet. Add one from a link, a photo of a card, or by typing it in.`}</div>`;
     return;
   }
@@ -110,4 +112,9 @@ function renderCards(list, area, f) {
           <div class="flex flex-wrap gap-1">${verdictChips(r.verdicts)}</div>
         </div>
       </a>`).join("")}</div>`;
+}
+
+// filtered: any filter beyond search and who's eating is on.
+function filtered(f) {
+  return Boolean(f.ok || f.max_min || f.diet || f.heat || f.course || f.cuisine || f.protein);
 }
