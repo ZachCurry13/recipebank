@@ -1,6 +1,6 @@
 # Status
 
-**Where it stands (2026-09-29):** 0.1 MVP built on `feature/v0.1`, not released yet.
+**Where it stands (2026-10-05):** 0.1.0 released (image `ghcr.io/zachcurry13/recipebank:0.1.0` / `:latest`); waiting for TrueNAS testing.
 - Backend: accounts and first-run setup, people with allergies/diets/dislikes/sensitivities/heat,
   recipes (Kitchen and Home & Care), imports from links (JSON-LD, else AI), photos (AI) and pasted
   text (AI, or headings without it), per-person verdicts with strict mode, swaps, label checks,
@@ -13,5 +13,5 @@
   CHANGELOG 0.1.0, HANDOFF. CI tests pass on `feature/v0.1`.
 
 ## Next
-- First release 0.1.0 for testing on TrueNAS (with the user's OK): merge to `main`, run the release workflow.
+- The user tests 0.1.0 on TrueNAS; fixes go out as 0.1.x. Card-photo reading still needs a real AI test.
 - 0.2: pantry, supply closet, shopping list, meal plan; kitchen tablet only if wanted.

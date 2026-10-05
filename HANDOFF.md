@@ -2,7 +2,8 @@
 
 ## 1. Where things stand
 
-- Branch `feature/v0.1` holds the 0.1 MVP; `main` has only the first commit. Nothing released yet.
+- **0.1.0 released 2026-10-05** (https://github.com/ZachCurry13/recipebank/releases/tag/v0.1.0): image
+  `ghcr.io/zachcurry13/recipebank:0.1.0` and `:latest` (amd64 + arm64, public). Work continues on `feature/v0.2`.
 - Repo: https://github.com/ZachCurry13/recipebank (public, MIT). Image: `ghcr.io/zachcurry13/recipebank`.
 - Decisions made with the user are in Claude's project memory (`recipebank-decisions`): name, public repo,
   Home & Care area, strict allergy mode in 0.1, links and photos only for imports, US + metric, separate
@@ -41,6 +42,6 @@ Mealie/Tandoor/Paprika imports (to review with the user); Google Cast; remote ac
 
 ## 7. Next immediate steps
 
-1. Push the docs; make sure CI passes on `feature/v0.1`.
-2. With the user's OK: merge to `main` and release 0.1.0 (`gh workflow run docker.yml --ref main -f version=0.1.0`).
-3. The user installs on TrueNAS and tests; fix what they find.
+1. The user installs 0.1.0 on TrueNAS (docs/TRUENAS.md) and tests; fix what they find as 0.1.x.
+2. Not yet tested for real: reading card photos with an AI (no AI was set up locally).
+3. Then plan 0.2 with the user (pantry, supply closet, shopping list, meal plan).
