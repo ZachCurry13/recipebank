@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.1.2] - 2026-10-05
+
+### 📷 Reading photos with a home AI
+- Photos of recipe cards now fit AI models with little working memory (a home AI server often has room for about 4,000 tokens): RecipeBank sends the AI a smaller copy of each photo, and an even smaller one if the AI says it doesn't fit. The full photo is still kept with the recipe.
+- If a photo still doesn't fit, the message says what to do (one photo at a time, or more room for the model on the AI server).
+
+### 🗂️ A config folder, like your other apps
+- The database can now live in a `/config` folder, the way many TrueNAS apps keep their settings, with `/cache` and `/photos` beside it. The install guide shows the layout (form and YAML).
+- Installs from 0.1.0 or 0.1.1 that use `/data` keep working as they are.
+
 ## [0.1.1] - 2026-10-05
 
 ### 🗂️ Separate folders for data, photos and cache

@@ -1,6 +1,7 @@
 package files
 
 import (
+	"bytes"
 	"fmt"
 	"image"
 	_ "image/gif" // photos may be GIFs
@@ -107,4 +108,24 @@ func shrink(img image.Image, w int) image.Image {
 		}
 	}
 	return dst
+}
+
+// Fit returns the photo as a JPEG no longer than maxSide pixels on its long
+// side (the AI's copy: smaller photos fit small AI models). A photo already
+// small enough is returned unchanged.
+func Fit(data []byte, maxSide int) ([]byte, error) {
+	img, _, err := image.Decode(bytes.NewReader(data))
+	if err != nil {
+		return nil, fmt.Errorf("read photo: %w", err)
+	}
+	b := img.Bounds()
+	long := max(b.Dx(), b.Dy())
+	if long <= maxSide {
+		return data, nil
+	}
+	var out bytes.Buffer
+	if err := jpeg.Encode(&out, shrink(img, max(1, b.Dx()*maxSide/long)), &jpeg.Options{Quality: 85}); err != nil {
+		return nil, err
+	}
+	return out.Bytes(), nil
 }

@@ -10,6 +10,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/zachcurry13/recipebank/internal/files"
 	"github.com/zachcurry13/recipebank/internal/llm"
 	"github.com/zachcurry13/recipebank/internal/recipe"
 )
@@ -138,7 +139,7 @@ func (s *Server) handleImportPhoto(w http.ResponseWriter, r *http.Request) {
 		writeErr(w, http.StatusBadRequest, "add 1 to 4 photos")
 		return
 	}
-	var images []llm.Image
+	var originals []llm.Image
 	var names []string
 	for _, d := range body.Images {
 		data, mt, err := decodeDataURL(d)
@@ -146,19 +147,15 @@ func (s *Server) handleImportPhoto(w http.ResponseWriter, r *http.Request) {
 			writeErr(w, http.StatusBadRequest, err.Error())
 			return
 		}
-		name, err := s.savePhoto(data)
+		name, err := s.savePhoto(data) // the full photo stays with the recipe
 		if err != nil {
 			writeErr(w, http.StatusBadRequest, err.Error())
 			return
 		}
-		images = append(images, llm.Image{Data: data, MediaType: mt})
+		originals = append(originals, llm.Image{Data: data, MediaType: mt})
 		names = append(names, name)
 	}
-	var rc recipe.Recipe
-	err := llm.AskImages(r.Context(), s.Store, llm.PhotoPrompt, images, func(out string) (err error) {
-		rc, err = llm.ParseRecipe(out)
-		return err
-	})
+	rc, err := s.readPhotos(r.Context(), originals)
 	if err != nil {
 		writeErr(w, http.StatusBadGateway, importErr(err))
 		return
@@ -166,6 +163,35 @@ func (s *Server) handleImportPhoto(w http.ResponseWriter, r *http.Request) {
 	rc.SourceKind, rc.SourcePhotos = "photo", names
 	s.finishDraft(w, r, &rc, body.Area)
 }
+
+// aiPhotoSides: the AI gets a copy of each photo this long on its long side,
+// smaller again each time the AI answers that it doesn't fit (a home AI
+// server often has room for only about 4,000 tokens, photos included).
+var aiPhotoSides = []int{1280, 896, 640}
+
+func (s *Server) readPhotos(ctx context.Context, originals []llm.Image) (recipe.Recipe, error) {
+	var rc recipe.Recipe
+	var err error
+	for _, side := range aiPhotoSides {
+		images := make([]llm.Image, len(originals))
+		for i, im := range originals {
+			images[i] = im
+			if small, ferr := files.Fit(im.Data, side); ferr == nil && len(small) != len(im.Data) {
+				images[i] = llm.Image{Data: small, MediaType: "image/jpeg"}
+			}
+		}
+		err = llm.AskImages(ctx, s.Store, llm.PhotoPrompt, images, func(out string) (perr error) {
+			rc, perr = llm.ParseRecipe(out)
+			return perr
+		})
+		if err == nil || !llm.TooLong(err) {
+			return rc, err
+		}
+	}
+	return rc, errPhotoTooBig
+}
+
+var errPhotoTooBig = errors.New("photo too big for the AI")
 
 func (s *Server) askText(ctx context.Context, text string) (recipe.Recipe, error) {
 	var rc recipe.Recipe
@@ -190,6 +216,11 @@ func importErr(err error) string {
 	switch {
 	case errors.Is(err, llm.ErrNoAI):
 		return "This page has no recipe in the standard format, so the AI is needed to read it, and no AI is set up yet (Admin → AI)."
+	case errors.Is(err, errPhotoTooBig):
+		return "The photo doesn't fit in this AI model's working memory, even made smaller. Try one photo at a time, " +
+			"or give the model more room on the AI server (for Ollama, a context length of 8192 or more), or use a cloud AI."
+	case llm.TooLong(err):
+		return "The text is too long for this AI model's working memory. Paste just the recipe, or give the model more room on the AI server."
 	case errors.Is(err, llm.ErrNoRecipe) || strings.Contains(err.Error(), llm.ErrNoRecipe.Error()):
 		return "No recipe was found there. Try a clearer photo, or paste the recipe's text."
 	}

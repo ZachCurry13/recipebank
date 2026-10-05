@@ -86,3 +86,36 @@ func TestThumbOfSmallPhotoIsTheOriginal(t *testing.T) {
 		t.Fatalf("got %s, %v; want the original", out, err)
 	}
 }
+
+func TestFit(t *testing.T) {
+	var buf bytes.Buffer
+	jpeg.Encode(&buf, image.NewRGBA(image.Rect(0, 0, 1000, 2000)), nil)
+	out, err := Fit(buf.Bytes(), 640)
+	if err != nil {
+		t.Fatal(err)
+	}
+	cfg, _, _ := image.DecodeConfig(bytes.NewReader(out))
+	if cfg.Height != 640 || cfg.Width != 320 {
+		t.Fatalf("fitted to %dx%d, want 320x640", cfg.Width, cfg.Height)
+	}
+	if same, _ := Fit(out, 1280); !bytes.Equal(same, out) {
+		t.Error("a small photo was re-encoded")
+	}
+}
+
+func TestDataDir(t *testing.T) {
+	legacy, mount := t.TempDir(), t.TempDir()
+	if got := DataDir("", legacy, filepath.Join(mount, "missing")); got != legacy {
+		t.Errorf("nothing mounted: %s", got)
+	}
+	if got := DataDir("", legacy, mount); got != mount {
+		t.Errorf("/config mounted: %s", got)
+	}
+	os.WriteFile(filepath.Join(legacy, "recipebank.db"), []byte("db"), 0o640)
+	if got := DataDir("", legacy, mount); got != legacy {
+		t.Errorf("an existing /data database must win: %s", got)
+	}
+	if got := DataDir("/x", legacy, mount); got != "/x" {
+		t.Errorf("env: %s", got)
+	}
+}

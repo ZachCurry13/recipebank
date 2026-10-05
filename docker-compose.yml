@@ -1,8 +1,9 @@
 # RecipeBank: a single container. For TrueNAS SCALE see docs/TRUENAS.md
 # (Install Custom App form, or Install via YAML with the block there).
-#   * /data   -> recipebank.db (small, changes often: SSD with snapshots)
-#   * /photos -> dish photos and card scans (grows; back it up). Optional: else inside /data
-#   * /cache  -> smaller copies of photos (safe to delete). Optional: else inside /data
+#   * /config -> recipebank.db (small, changes often: SSD with snapshots)
+#   * /cache  -> smaller copies of photos (safe to delete). Optional: else inside /config
+#   * /photos -> dish photos and card scans (grows; back it up). Optional: else inside /config
+# (Installs from 0.1.0/0.1.1 that mount /data keep working.)
 # On first visit the web page asks you to create the admin account.
 services:
   recipebank:
@@ -11,7 +12,7 @@ services:
     # build: .                                     # uncomment to build from source instead
     container_name: recipebank
     restart: unless-stopped
-    user: "568:568"            # TrueNAS "apps" user; must be able to write /data
+    user: "568:568"            # TrueNAS "apps" user; must be able to write these folders
     ports:
       - "8080:8080"
     environment:
@@ -19,6 +20,6 @@ services:
       RECIPEBANK_SESSION_DAYS: "30"
       TZ: Etc/UTC                                  # change to your time zone, e.g. Europe/Berlin
     volumes:
-      - ./data:/data                               # change to your datasets, e.g. /mnt/ssd/recipebank-data
-      - ./photos:/photos                           #   e.g. /mnt/tank/recipebank-photos
-      - ./cache:/cache                             #   e.g. /mnt/ssd/recipebank-cache
+      - ./config:/config                           # change to your datasets, e.g. /mnt/ssd/config/recipebank/config
+      - ./cache:/cache                             #   e.g. /mnt/ssd/config/recipebank/cache
+      - ./photos:/photos                           #   e.g. /mnt/tank/media/recipebank-photos

@@ -24,8 +24,9 @@ RUN apk add --no-cache ca-certificates tzdata \
  && mkdir -p /data && chown recipebank:recipebank /data
 COPY --from=build /out/recipebank /usr/local/bin/recipebank
 USER 568:568
-ENV RECIPEBANK_ADDR=:8080 \
-    RECIPEBANK_DATA_DIR=/data
+# The database goes in /config when that's mounted (else /data); photos in
+# /photos and previews in /cache when mounted (else inside the database folder).
+ENV RECIPEBANK_ADDR=:8080
 VOLUME ["/data"]
 EXPOSE 8080
 HEALTHCHECK --interval=30s --timeout=5s CMD wget -qO- http://127.0.0.1:8080/healthz || exit 1

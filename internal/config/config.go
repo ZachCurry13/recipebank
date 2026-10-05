@@ -13,7 +13,7 @@ import (
 
 type Config struct {
 	Addr          string   // HTTP listen address
-	DataDir       string   // recipebank.db (SSD dataset)
+	DataDir       string   // recipebank.db: /config when mounted (like other apps), else /data
 	PhotosDir     string   // recipe photos and card scans: /photos when mounted, else <data>/photos
 	CacheDir      string   // previews that can be made again: /cache when mounted, else <data>/cache
 	AdminUser     string   // bootstrap admin username
@@ -26,7 +26,7 @@ type Config struct {
 func Load() Config {
 	c := Config{
 		Addr:          env("RECIPEBANK_ADDR", ":8080"),
-		DataDir:       env("RECIPEBANK_DATA_DIR", "/data"),
+		DataDir:       files.DataDir(os.Getenv("RECIPEBANK_DATA_DIR"), "/data", "/config"),
 		AdminUser:     env("RECIPEBANK_ADMIN_USER", "admin"),
 		AdminPassword: os.Getenv("RECIPEBANK_ADMIN_PASSWORD"),
 		TrustProxy:    envBool("RECIPEBANK_TRUST_PROXY", true),

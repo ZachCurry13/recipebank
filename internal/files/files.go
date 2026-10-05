@@ -12,6 +12,22 @@ import (
 	"strings"
 )
 
+// DataDir picks the database folder: envValue when set; else legacy when it
+// already holds a database (installs from before /config); else mount (the
+// /config dataset, like other apps) when it exists; else legacy.
+func DataDir(envValue, legacy, mount string) string {
+	if v := strings.TrimSpace(envValue); v != "" {
+		return v
+	}
+	if st, err := os.Stat(filepath.Join(legacy, "recipebank.db")); err == nil && st.Mode().IsRegular() {
+		return legacy
+	}
+	if st, err := os.Stat(mount); err == nil && st.IsDir() {
+		return mount
+	}
+	return legacy
+}
+
 // Dir picks a folder: the environment variable when set, else mount when
 // that folder exists (a dataset mounted into the container), else sub
 // inside the data folder.

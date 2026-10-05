@@ -10,7 +10,7 @@ dislikes and heat; Home & Care recipes (cleaners, toothpaste, mouthwash) get saf
 - `internal/recipe/` recipe type, ingredient parser, web page (JSON-LD) and pasted-text readers
 - `internal/safety/` allergens, diets, strict mode, swaps, Home & Care hazards (no AI)
 - `internal/llm/` AI client (OpenAI-compatible, Anthropic), photo reading, recipe prompt
-- `internal/files/` where files live (`/data` database, `/photos`, `/cache` previews), moving photos, previews
+- `internal/files/` where files live (`/config` or legacy `/data` database, `/photos`, `/cache`), moving photos, previews, AI-size copies
 - `web/static/` embedded web app (ES modules in `js/`, compiled `css/app.css`) · `web/tailwind.input.css`
 - `docs/` TrueNAS guide, STATUS · `concepts/` local-only notes (git-excluded, never commit)
 

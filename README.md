@@ -24,7 +24,7 @@ RecipeBank helps, but it doesn't replace reading labels. When in doubt, ask a do
 ## Install
 
 - **TrueNAS SCALE:** follow [docs/TRUENAS.md](docs/TRUENAS.md). Both **Install Custom App** (a form) and **Install via YAML** are covered.
-  The database, the photos and a cache of smaller copies each get their own dataset, so the database can sit on a fast pool and the photos next to your other photos.
+  The database (`/config`), a cache of smaller copies (`/cache`) and the photos (`/photos`) each get their own dataset, so the first two can sit with your other apps' settings on a fast pool and the photos next to your other photos.
 - **Docker Compose:** `docker compose up -d` with [docker-compose.yml](docker-compose.yml) (change the data folder first), then open `http://your-server:8080`.
 
 The image is `ghcr.io/zachcurry13/recipebank` (`:latest` is the newest release).
@@ -34,9 +34,9 @@ The image is `ghcr.io/zachcurry13/recipebank` (`:latest` is the newest release).
 | Variable | Default | What it does |
 |---|---|---|
 | `RECIPEBANK_ADDR` | `:8080` | Where it listens |
-| `RECIPEBANK_DATA_DIR` | `/data` | The database |
-| `RECIPEBANK_PHOTOS_DIR` | `/photos` if mounted, else `<data>/photos` | Dish photos and card scans |
-| `RECIPEBANK_CACHE_DIR` | `/cache` if mounted, else `<data>/cache` | Smaller copies of photos (safe to delete) |
+| `RECIPEBANK_DATA_DIR` | `/config` if mounted, else `/data` (an existing `/data` database always wins) | The database |
+| `RECIPEBANK_PHOTOS_DIR` | `/photos` if mounted, else inside the database folder | Dish photos and card scans |
+| `RECIPEBANK_CACHE_DIR` | `/cache` if mounted, else inside the database folder | Smaller copies of photos (safe to delete) |
 | `RECIPEBANK_TRUST_PROXY` | `true` | Use the visitor's address from a proxy or Cloudflare |
 | `RECIPEBANK_SESSION_DAYS` | `30` | How long "Keep me signed in" lasts |
 | `RECIPEBANK_ADMIN_USER` / `RECIPEBANK_ADMIN_PASSWORD` | | Optional: create the first admin at start instead of in the browser |
