@@ -110,3 +110,20 @@ CREATE TABLE IF NOT EXISTS stock (
     updated_at       DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 CREATE INDEX IF NOT EXISTS stock_area ON stock(area, name);
+
+-- The family's shopping list, shared by everyone.
+CREATE TABLE IF NOT EXISTS shopping (
+    id         INTEGER PRIMARY KEY AUTOINCREMENT,
+    key        TEXT NOT NULL DEFAULT '',          -- the food's identifying words, for combining amounts
+    name       TEXT NOT NULL,
+    qty        REAL NOT NULL DEFAULT 0,           -- 0 = no amount
+    unit       TEXT NOT NULL DEFAULT '',
+    section    TEXT NOT NULL DEFAULT 'Other',
+    area       TEXT NOT NULL DEFAULT 'kitchen' CHECK (area IN ('kitchen', 'home')),
+    note       TEXT NOT NULL DEFAULT '',          -- "for Soup, Pancakes"
+    stock_id   INTEGER REFERENCES stock(id) ON DELETE SET NULL, -- a running-low item to restock when bought
+    checked    INTEGER NOT NULL DEFAULT 0,
+    added_by   TEXT NOT NULL DEFAULT '',
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+);

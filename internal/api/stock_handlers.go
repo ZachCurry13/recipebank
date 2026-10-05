@@ -8,6 +8,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/zachcurry13/recipebank/internal/auth"
 	"github.com/zachcurry13/recipebank/internal/foodfacts"
 	"github.com/zachcurry13/recipebank/internal/recipe"
 	"github.com/zachcurry13/recipebank/internal/safety"
@@ -84,10 +85,19 @@ func (s *Server) handleAdjustStock(w http.ResponseWriter, r *http.Request) {
 	if !ok || !readJSON(w, r, &body, 1<<10) {
 		return
 	}
+	before, err := s.Store.StockItem(id)
+	if err != nil {
+		writeStoreErr(w, err)
+		return
+	}
 	it, err := s.Store.AdjustStock(id, body.Delta)
 	if err != nil {
 		writeStoreErr(w, err)
 		return
+	}
+	// Just ran low: it goes on the shopping list by itself.
+	if it.Low() && !before.Low() {
+		_, _ = s.addLow(it, auth.UserFrom(r).Username)
 	}
 	writeJSON(w, http.StatusOK, it)
 }

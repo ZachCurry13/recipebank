@@ -10,6 +10,7 @@ export const NAV = [
   ["home", "Home & Care", "🧴", all, true],
   ["pantry", "Pantry", "🥫", all, true],
   ["supplies", "Supplies", "🧽", all, false],
+  ["shopping", "Shopping", "🛒", all, true],
   ["add", "Add a recipe", "➕", canManage, false],
   ["family", "Family", "👪", all, false],
   ["admin", "Admin", "⚙️", (u) => u.role === "admin", false],

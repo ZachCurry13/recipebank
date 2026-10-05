@@ -100,3 +100,11 @@ export function timersIn(text) {
   }
   return out;
 }
+
+// amountText writes an amount alone ("4 ¼ cups"), in the unit system; "" for none.
+export function amountText(qty, unit, system) {
+  if (!qty) return "";
+  const convert = (system === "metric" && US.has(unit)) || (system === "us" && METRIC.has(unit));
+  const [q, u] = convert ? (system === "metric" ? toMetric(qty, unit) : toUS(qty, unit)) : [qty, unit];
+  return `${METRIC.has(u) ? metricNumber(q) : usNumber(q)} ${unitLabel(u, q)}`.trim();
+}

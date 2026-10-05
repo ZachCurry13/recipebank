@@ -73,3 +73,7 @@ var modifierFoods = map[string]bool{"peanut": true, "almond": true, "apple": tru
 	"coconut": true, "soy": true, "oat": true, "rice": true, "cashew": true, "sunflower": true, "corn": true,
 	"maple": true, "garlic": true, "onion": true, "chili": true, "sesame": true, "olive": true, "nut": true,
 	"chicken": true, "beef": true, "vegetable": true, "fish": true, "tomato": true, "cream": true, "milk": true}
+
+// FoodKey is a food's identifying words, so "2 large eggs" and "1 egg" end
+// up on one shopping line.
+func FoodKey(food string) string { return strings.Join(core(food), " ") }

@@ -1,8 +1,9 @@
 // RecipeBank bootstrap: session check, hash router, navigation.
-import { get, post, setUnauthorizedHandler } from "./api.js";
+import { api, get, post, setUnauthorizedHandler, setOffline } from "./api.js";
 import { $, esc } from "./ui.js";
 import { buildNav, markNav } from "./nav.js";
 import { renderStock } from "./stock.js";
+import { renderShopping, flush } from "./shopping.js";
 import { applyAppearance } from "./appearance.js";
 import { renderLibrary } from "./library.js";
 import { renderRecipe } from "./recipe.js";
@@ -19,6 +20,7 @@ const routes = {
   home: (v, p, s) => renderLibrary(v, "home", p, s),
   pantry: (v, p, s) => renderStock(v, "kitchen", p, s),
   supplies: (v, p, s) => renderStock(v, "home", p, s),
+  shopping: renderShopping,
   recipe: renderRecipe,
   add: renderAdd,
   edit: renderEdit,
@@ -81,8 +83,17 @@ export function go(hash) {
 
 export async function signOut() {
   await post("/api/auth/logout").catch(() => {});
+  try { localStorage.removeItem(ME); localStorage.removeItem("rb:shopping"); } catch { /* private mode */ }
   location.hash = "";
   location.reload();
+}
+
+const ME = "rb:me";
+function remember(user) {
+  try { localStorage.setItem(ME, JSON.stringify(user)); } catch { /* private mode */ }
+}
+function recall() {
+  try { return JSON.parse(localStorage.getItem(ME)); } catch { return null; }
 }
 
 async function boot() {
@@ -97,6 +108,7 @@ async function boot() {
     err.classList.add("hidden");
     try {
       state.user = await post("/api/auth/login", { username: f.username.value, password: f.password.value, remember: f.remember.checked });
+      remember(state.user);
       await showApp();
     } catch (ex) {
       err.textContent = ex.message;
@@ -124,11 +136,23 @@ async function boot() {
   };
   window.addEventListener("hashchange", route);
   try {
-    state.user = await get("/api/me");
+    state.user = await api("/api/me", { retries: 1 });
+    remember(state.user);
+    flush().catch(() => {}); // shopping-list ticks made without signal
     await showApp();
-  } catch {
-    const setup = await get("/api/setup").catch(() => ({ needed: false }));
-    showOnly(setup.needed ? "#setup-view" : "#login-view");
+  } catch (e) {
+    // No signal (in the store): open as the last person signed in on this
+    // phone; the shopping list works from its saved copy.
+    const cached = e.status === 0 && recall();
+    if (cached) {
+      setOffline(true);
+      state.user = cached;
+      if (!location.hash) location.hash = "#/shopping";
+      await showApp();
+    } else {
+      const setup = await get("/api/setup").catch(() => ({ needed: false }));
+      showOnly(setup.needed ? "#setup-view" : "#login-view");
+    }
   }
   if ("serviceWorker" in navigator) navigator.serviceWorker.register("/sw.js").catch(() => {});
 }

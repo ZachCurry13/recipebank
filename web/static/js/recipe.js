@@ -1,7 +1,7 @@
 // A recipe's page: who can eat it and why, swaps, Home & Care warnings,
 // servings and units, steps, and the parents' tools.
 import { get, post, put, del, qs } from "./api.js";
-import { $, $$, esc, attempt, fmtMin, peppers, canManage, cap, toast } from "./ui.js";
+import { $, $$, esc, attempt, fmtMin, peppers, canManage, cap, toast, sheet } from "./ui.js";
 import { verdictList, flagsFor } from "./verdicts.js";
 import { amountLine, temps, timersIn } from "./units.js";
 import { startCooking } from "./cook.js";
@@ -58,6 +58,7 @@ export async function renderRecipe(view, params, state) {
             `<div class="${HAZARD_BOX[h.level]}">${HAZARD_ICON[h.level]} ${esc(h.text)}</div>`).join("")}</div>` : ""}
           <div class="flex flex-wrap gap-2">
             ${r.steps.length ? `<button id="cook" class="btn-primary">▶ ${home ? "Step by step" : "Start cooking"}</button>` : ""}
+            ${r.ingredients.length ? `<button id="shop" class="btn-secondary">🛒 Add to shopping list</button>` : ""}
             ${manage ? `<a href="#/edit/${r.id}" class="btn-secondary">✎ Edit</a>
               <button id="version" class="btn-secondary" title="A copy to change, keeping this one">⎘ Make our version</button>
               <button id="delete" class="btn-ghost text-rose-300">🗑 Delete</button>` : ""}
@@ -117,6 +118,8 @@ export async function renderRecipe(view, params, state) {
         { ingredient: Number(i), allergen, checked: on === "1" });
       draw();
     })));
+    const shop = $("#shop", view);
+    if (shop) shop.onclick = () => attempt(() => addToShopping(r, view_.factor));
     const cook = $("#cook", view);
     if (cook) cook.onclick = () => startCooking(r, view_);
     const version = $("#version", view);
@@ -196,4 +199,23 @@ function pantryLabel(i, allergen, hints, manage) {
   if (h.traces.includes(allergen)) return `<div class="text-amber-300">🥫 Your pantry's ${name}: the label says it may contain ${esc(nm(allergen))}.</div>`;
   return `<div class="text-emerald-300">🥫 Your pantry's ${name}: its label lists no ${esc(nm(allergen))}.
     ${manage ? `<button data-label="${i}:${allergen}:1" class="ml-1 underline">Use this label</button>` : ""}</div>`;
+}
+
+// addToShopping puts the recipe (at this scale) on the list, and says what
+// the pantry probably has already.
+async function addToShopping(r, factor) {
+  const res = await post("/api/shopping/recipe", { id: r.id, factor });
+  if (!res.have.length) return toast(`Added ${res.added} thing${res.added === 1 ? "" : "s"} to the shopping list`);
+  const d = sheet(`<div class="space-y-3">
+    <div class="flex items-center"><h2 class="text-lg font-semibold">Added ${res.added} to the shopping list</h2>
+      <button type="button" data-close class="btn-ghost ml-auto">✕</button></div>
+    <p class="text-sm text-slate-300">These look like they're in the house already, so they weren't added:</p>
+    <ul class="space-y-1 text-sm">${res.have.map((h, i) => `<li class="flex flex-wrap items-center gap-2"><span class="min-w-0 flex-1 basis-40 break-words">${esc(h.line)}
+      <span class="block text-xs text-slate-500">${h.area === "home" ? "Supplies" : "Pantry"}: ${esc(h.stock)}</span></span>
+      <button data-have="${i}" class="btn-ghost min-h-0 py-1">+ Add anyway</button></li>`).join("")}</ul>
+    <a href="#/shopping" class="btn-primary" data-close>Open the list</a></div>`);
+  $$("[data-have]", d).forEach((b) => (b.onclick = () => attempt(async () => {
+    await post("/api/shopping", { text: res.have[Number(b.dataset.have)].line });
+    b.replaceWith(Object.assign(document.createElement("span"), { className: "text-xs text-emerald-300", textContent: "✓ Added" }));
+  })));
 }

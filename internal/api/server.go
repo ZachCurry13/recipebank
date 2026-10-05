@@ -71,6 +71,12 @@ func (s *Server) Router() http.Handler {
 			r.Get("/photos/{name}", s.handlePhoto)
 			r.Get("/stock", s.handleListStock)
 			r.Post("/stock/{id}/adjust", s.handleAdjustStock)
+			r.Get("/shopping", s.handleShopping)
+			r.Post("/shopping", s.handleAddShopping)
+			r.Post("/shopping/recipe", s.handleShopRecipe)
+			r.Post("/shopping/clear", s.handleClearShopping)
+			r.Put("/shopping/{id}", s.handleUpdateShopping)
+			r.Delete("/shopping/{id}", s.handleDeleteShopping)
 
 			// Parents: add and edit recipes and people.
 			r.Group(func(r chi.Router) {
