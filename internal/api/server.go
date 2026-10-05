@@ -10,6 +10,7 @@ import (
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/zachcurry13/recipebank/internal/auth"
 	"github.com/zachcurry13/recipebank/internal/config"
+	"github.com/zachcurry13/recipebank/internal/foodfacts"
 	"github.com/zachcurry13/recipebank/internal/store"
 )
 
@@ -22,6 +23,7 @@ type Server struct {
 	OldPhotos string       // <data>/photos when photos moved to their own folder; still read from
 	CacheDir  string       // previews (re-creatable)
 	Fetch     *http.Client // outside pages and images; tests swap it
+	Products  productBases // Open Food Facts databases; tests point them at a fake
 	logins    *loginLimiter
 	etags     sync.Map  // static file name → ETag
 	buildOnce sync.Once // buildID, computed once
@@ -34,6 +36,9 @@ func (s *Server) Router() http.Handler {
 	s.logins = newLoginLimiter()
 	if s.Fetch == nil {
 		s.Fetch = newFetchClient()
+	}
+	if s.Products.FoodBases == nil {
+		s.Products = productBases{FoodBases: foodfacts.FoodBases, HomeBases: foodfacts.HomeBases}
 	}
 	r := chi.NewRouter()
 	r.Use(realIP(s.Cfg.TrustProxy))
@@ -64,6 +69,8 @@ func (s *Server) Router() http.Handler {
 			r.Get("/recipes/{id}", s.handleGetRecipe)
 			r.Put("/recipes/{id}/rating", s.handleRating)
 			r.Get("/photos/{name}", s.handlePhoto)
+			r.Get("/stock", s.handleListStock)
+			r.Post("/stock/{id}/adjust", s.handleAdjustStock)
 
 			// Parents: add and edit recipes and people.
 			r.Group(func(r chi.Router) {
@@ -82,6 +89,10 @@ func (s *Server) Router() http.Handler {
 				r.Put("/people/{id}", s.handleSavePerson)
 				r.Delete("/people/{id}", s.handleDeletePerson)
 				r.Put("/household", s.handleHousehold)
+				r.Get("/stock/lookup", s.handleLookupBarcode)
+				r.Post("/stock", s.handleSaveStock)
+				r.Put("/stock/{id}", s.handleSaveStock)
+				r.Delete("/stock/{id}", s.handleDeleteStock)
 			})
 
 			// Admins: the AI and accounts.
@@ -102,3 +113,6 @@ func (s *Server) Router() http.Handler {
 	r.NotFound(s.serveStatic)
 	return r
 }
+
+// productBases are the product databases for the pantry and the closet.
+type productBases struct{ FoodBases, HomeBases []string }

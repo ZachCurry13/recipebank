@@ -1,6 +1,8 @@
 // RecipeBank bootstrap: session check, hash router, navigation.
 import { get, post, setUnauthorizedHandler } from "./api.js";
-import { $, $$, esc, canManage } from "./ui.js";
+import { $, esc } from "./ui.js";
+import { buildNav, markNav } from "./nav.js";
+import { renderStock } from "./stock.js";
 import { applyAppearance } from "./appearance.js";
 import { renderLibrary } from "./library.js";
 import { renderRecipe } from "./recipe.js";
@@ -12,19 +14,11 @@ import { renderProfile } from "./profile.js";
 
 export const state = { user: null, info: null };
 
-// Pages: [route, label, icon, who may see it].
-const NAV = [
-  ["kitchen", "Kitchen", "🍲", () => true],
-  ["home", "Home & Care", "🧴", () => true],
-  ["add", "Add", "➕", canManage],
-  ["family", "Family", "👪", () => true],
-  ["admin", "Admin", "⚙️", (u) => u.role === "admin"],
-  ["profile", "Me", "🙂", () => true],
-];
-
 const routes = {
   kitchen: (v, p, s) => renderLibrary(v, "kitchen", p, s),
   home: (v, p, s) => renderLibrary(v, "home", p, s),
+  pantry: (v, p, s) => renderStock(v, "kitchen", p, s),
+  supplies: (v, p, s) => renderStock(v, "home", p, s),
   recipe: renderRecipe,
   add: renderAdd,
   edit: renderEdit,
@@ -38,13 +32,6 @@ function showOnly(id) {
   for (const v of ["#setup-view", "#login-view", "#app-view"]) $(v).classList.toggle("hidden", v !== id);
 }
 
-function buildNav() {
-  const items = NAV.filter(([, , , may]) => may(state.user));
-  $("#nav").innerHTML = items.map(([r, label, ico]) => `<a href="#/${r}" data-route="${r}" class="nav-link">${ico} ${esc(label)}</a>`).join("");
-  $("#mobile-nav").innerHTML = items.map(([r, label, ico]) =>
-    `<a href="#/${r}" data-route="${r}"><span class="ico">${ico}</span><span>${esc(label)}</span></a>`).join("");
-}
-
 export async function refreshInfo() {
   state.info = await get("/api/info");
   return state.info;
@@ -55,7 +42,7 @@ async function showApp() {
   document.body.dataset.role = state.user.role;
   applyAppearance(state.user);
   await refreshInfo().catch(() => {});
-  buildNav();
+  buildNav(state.user);
   const v = state.user.version || "dev";
   $("#version-label").textContent = `Version ${v}`;
   $("#header-version").textContent = v;
@@ -72,7 +59,7 @@ async function route() {
   const params = Object.fromEntries(new URLSearchParams(query));
   if (id) params.id = id;
   const lit = page in NAV_OF ? NAV_OF[page] : page;
-  $$("[data-route]").forEach((a) => a.classList.toggle("active", a.dataset.route === lit));
+  markNav(lit);
   if (leaving) {
     leaving();
     leaving = null;

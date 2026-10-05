@@ -10,7 +10,12 @@ import { go } from "./app.js";
 const HAZARD_BOX = { danger: "box-danger", caution: "box-caution", info: "box-info" };
 const HAZARD_ICON = { danger: "⛔", caution: "⚠️", info: "ℹ️" };
 
+// Allergen names for this page ("treenut" → "tree nuts").
+let NAMES = {};
+const nm = (k) => NAMES[k] || k;
+
 export async function renderRecipe(view, params, state) {
+  NAMES = Object.fromEntries((state.info?.all_allergens || []).map((a) => [a.key, a.label.toLowerCase()]));
   const people = await get("/api/people");
   const view_ = { who: people.filter((p) => !p.is_guest).map((p) => p.id), factor: 1, servings: 0,
     system: state.user.units || state.info?.default_units || "us" };
@@ -154,8 +159,9 @@ function ingredients(r, data, manage, v) {
     return `${head}<li class="min-w-0">
       <div class="${bad} break-words">${ing.unsure ? `<b class="text-amber-300" title="The AI wasn't sure">?</b> ` : ""}${esc(amountLine(ing, v.factor, v.system))}</div>
       ${flags.map((f) => `<div class="pl-3 text-xs ${f.status === "no" ? "text-rose-300" : "text-amber-300"}">${f.status === "no" ? "✕" : "⚠"} ${esc(f.person)}: ${esc(f.text)}
-        ${manage && f.status === "unsure" && f.allergen ? `<button data-label="${i}:${f.allergen}:1" class="ml-1 underline">I checked the label: no ${esc(f.allergen)}</button>` : ""}</div>`).join("")}
-      ${(ing.checked || []).map((a) => `<div class="pl-3 text-xs text-emerald-300">✓ Label checked: no ${esc(a)}${manage ? ` <button data-label="${i}:${a}:0" class="ml-1 underline">undo</button>` : ""}</div>`).join("")}
+        ${manage && f.status === "unsure" && f.allergen ? `<button data-label="${i}:${f.allergen}:1" class="ml-1 underline">I checked the label: no ${esc(nm(f.allergen))}</button>` : ""}
+        ${f.status === "unsure" && f.allergen ? pantryLabel(i, f.allergen, data.pantry, manage) : ""}</div>`).join("")}
+      ${(ing.checked || []).map((a) => `<div class="pl-3 text-xs text-emerald-300">✓ Label checked: no ${esc(nm(a))}${manage ? ` <button data-label="${i}:${a}:0" class="ml-1 underline">undo</button>` : ""}</div>`).join("")}
       ${swaps.map((s) => `<div class="pl-3 text-xs text-emerald-300">↔ Swap for <b>${esc(s.to)}</b>${s.note ? ` (${esc(s.note)})` : ""}: OK for everyone picked</div>`).join("")}
     </li>`;
   }).join("");
@@ -179,4 +185,15 @@ function source(r) {
   return `<div class="card space-y-2"><h2 class="font-semibold">Where it's from</h2>${parts.map((p) => `<p class="text-sm text-slate-300">${p}</p>`).join("")}
     ${photos ? `<div class="flex flex-wrap gap-2">${photos}</div>` : ""}
     <p class="text-xs text-slate-500">Kept for the family's own use.</p></div>`;
+}
+
+// pantryLabel: a labelled product in the pantry that settles a "not sure" line.
+function pantryLabel(i, allergen, hints, manage) {
+  const h = (hints || []).find((x) => x.ingredient === i);
+  if (!h) return "";
+  const name = esc([h.brand, h.name].filter(Boolean).join(" "));
+  if (h.allergens.includes(allergen)) return `<div class="text-rose-300">🥫 Your pantry's ${name}: the label says it contains ${esc(nm(allergen))}.</div>`;
+  if (h.traces.includes(allergen)) return `<div class="text-amber-300">🥫 Your pantry's ${name}: the label says it may contain ${esc(nm(allergen))}.</div>`;
+  return `<div class="text-emerald-300">🥫 Your pantry's ${name}: its label lists no ${esc(nm(allergen))}.
+    ${manage ? `<button data-label="${i}:${allergen}:1" class="ml-1 underline">Use this label</button>` : ""}</div>`;
 }

@@ -88,3 +88,25 @@ CREATE TABLE IF NOT EXISTS token_usage (
     completion_tokens INTEGER NOT NULL DEFAULT 0,
     seconds           REAL NOT NULL DEFAULT 0
 );
+
+-- What's in the house: the pantry (area 'kitchen') and the supply closet
+-- (area 'home'). Labels come from Open Food Facts or a parent.
+CREATE TABLE IF NOT EXISTS stock (
+    id               INTEGER PRIMARY KEY AUTOINCREMENT,
+    area             TEXT NOT NULL DEFAULT 'kitchen' CHECK (area IN ('kitchen', 'home')),
+    name             TEXT NOT NULL,
+    brand            TEXT NOT NULL DEFAULT '',
+    barcode          TEXT NOT NULL DEFAULT '',
+    qty              REAL NOT NULL DEFAULT 1,
+    unit             TEXT NOT NULL DEFAULT '',
+    location         TEXT NOT NULL DEFAULT '',      -- fridge, freezer, pantry, bathroom, laundry…
+    use_by           TEXT NOT NULL DEFAULT '',      -- YYYY-MM-DD
+    low_at           REAL NOT NULL DEFAULT 0,       -- running low at or below this; 0 = not watched
+    allergens        TEXT NOT NULL DEFAULT '[]',    -- allergen keys the label lists
+    traces           TEXT NOT NULL DEFAULT '[]',    -- "may contain"
+    ingredients_text TEXT NOT NULL DEFAULT '',
+    label_source     TEXT NOT NULL DEFAULT '',      -- 'off' (Open Food Facts), 'parent', '' = no label
+    created_at       DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at       DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+CREATE INDEX IF NOT EXISTS stock_area ON stock(area, name);

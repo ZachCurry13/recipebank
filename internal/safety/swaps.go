@@ -39,8 +39,9 @@ var swapTable = []struct {
 	{compile("tahini"), []swapIdea{{"sunflower seed butter", "check the label"}}},
 	{compile("fish sauce", "worcestershire"), []swapIdea{{"coconut aminos", "add a pinch of salt; check the label"}}},
 	{compile("shrimp", "crab", "prawn", "lobster", "scallop"), []swapIdea{{"chicken", ""}, {"white beans", ""}}},
+	// Broth before meat: "chicken broth" needs a broth swap, not chickpeas.
+	{compile("chicken broth", "beef broth", "chicken stock", "beef stock", "broth", "stock"), []swapIdea{{"vegetable broth", "check the label"}, {"water, salt and herbs", "less flavor"}}},
 	{compile("chicken", "beef", "pork", "turkey", "lamb", "sausage", "bacon", "meat"), []swapIdea{{"mushrooms", ""}, {"chickpeas", ""}, {"lentils", ""}}},
-	{compile("chicken broth", "beef broth", "chicken stock", "beef stock", "broth", "stock"), []swapIdea{{"water, salt and herbs", "less flavor"}}},
 	{compile("honey"), []swapIdea{{"maple syrup", ""}}},
 	{compile("gelatin"), []swapIdea{{"agar", "use about half as much"}}},
 	{compile("wine", "beer", "sherry"), []swapIdea{{"water and apple cider vinegar", "mostly water, a splash of vinegar"}}},

@@ -116,7 +116,7 @@ func (s *Server) writeChecked(w http.ResponseWriter, r *http.Request, rc *recipe
 		verdicts = append(verdicts, safety.Check(rc, p))
 	}
 	out := map[string]any{"recipe": rc, "verdicts": verdicts, "swaps": safety.Swaps(rc, diners, verdicts),
-		"heat": heatOf(rc), "hazards": []safety.Hazard{}}
+		"heat": heatOf(rc), "hazards": []safety.Hazard{}, "pantry": s.pantryHints(rc, verdicts)}
 	if rc.Area == recipe.AreaHome {
 		out["hazards"] = safety.Hazards(rc, s.Store.Pets())
 	}

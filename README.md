@@ -50,3 +50,6 @@ Go 1.26+. The web app is plain JavaScript modules and a Tailwind stylesheet that
 ## License
 
 MIT, © 2026 ZachCurry13. Built from the same core as [NovelCheck](https://github.com/ZachCurry13/novelcheck).
+
+Bundled: [ZXing](https://github.com/zxing-js/library) for reading barcodes (Apache License 2.0, `web/static/vendor/zxing.LICENSE.txt`).
+Product details come from [Open Food Facts](https://world.openfoodfacts.org) and its sister databases (open data, ODbL); only the barcode is sent.

@@ -1,8 +1,8 @@
 # Status
 
 **Where it stands (2026-10-05):** 0.1.0 released (image `ghcr.io/zachcurry13/recipebank:0.1.0` / `:latest`).
-0.1.1 released (separate folders). 0.1.2 ready on `feature/v0.1`: database in `/config` like the user's other apps;
-card photos shrink to fit home AI models with a 4096-token context.
+0.1.1 released (separate folders), 0.1.2 released (`/config` folder; card photos fit 4096-token home AI models).
+Building 0.2.0 on `feature/v0.2` (plan in HANDOFF section 1b).
 - Backend: accounts and first-run setup, people with allergies/diets/dislikes/sensitivities/heat,
   recipes (Kitchen and Home & Care), imports from links (JSON-LD, else AI), photos (AI) and pasted
   text (AI, or headings without it), per-person verdicts with strict mode, swaps, label checks,
@@ -15,5 +15,6 @@ card photos shrink to fit home AI models with a 4096-token context.
   CHANGELOG 0.1.0, HANDOFF. CI tests pass on `feature/v0.1`.
 
 ## Next
-- Release 0.1.2 (with the user's OK); the user retests reading card photos on their home AI.
+- 0.2.0 parts 1-9 (HANDOFF 1b): pantry/supplies, shopping list, meal plan + Tonight, collections + seasons,
+  smart search, cook-mode voice, remote access, notifications; then release with the user's OK.
 - 0.2: pantry, supply closet, shopping list, meal plan; kitchen tablet only if wanted.

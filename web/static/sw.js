@@ -1,7 +1,7 @@
 // RecipeBank service worker: lets the installed app open offline and start
 // fast. Versioned files (/v/<build>/…) never change, so they're served from
 // the cache; pages are fetched fresh when online. The API is never cached.
-const CACHE = "recipebank-shell-v2";
+const CACHE = "recipebank-shell-v3";
 
 self.addEventListener("install", () => self.skipWaiting());
 

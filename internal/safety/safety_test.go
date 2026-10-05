@@ -185,3 +185,37 @@ func TestStrictKnowsPlainFoods(t *testing.T) {
 		}
 	}
 }
+
+func TestSameFood(t *testing.T) {
+	yes := [][2]string{{"chicken broth", "Brand Chicken Broth 32 oz"}, {"flour", "King Arthur All-Purpose Flour"},
+		{"large eggs", "Eggs, large, dozen"}, {"olive oil", "Kirkland Extra Virgin Olive Oil"},
+		{"ground beef", "Ground Beef 80/20 1 lb"}, {"salt", "Morton Kosher Salt"}, {"butter", "Unsalted Butter"},
+		{"chicken broth", "Chicken Broth, Low Sodium"}, {"chicken broth", "Organic Chicken Broth With Herbs"},
+		{"tuna", "Tuna in Water"}}
+	no := [][2]string{{"butter", "Peanut Butter"}, {"chicken", "Chicken Broth"}, {"vinegar", "Rice Vinegar"},
+		{"syrup", "Corn Syrup"}, {"milk", "Oat Milk"}, {"flour", "Almond Flour"}, {"oil", "Olive Oil"}}
+	for _, c := range yes {
+		if !SameFood(c[0], c[1]) {
+			t.Errorf("%q should match %q", c[0], c[1])
+		}
+	}
+	for _, c := range no {
+		if SameFood(c[0], c[1]) {
+			t.Errorf("%q should not match %q", c[0], c[1])
+		}
+	}
+}
+
+func TestBrothSwapIsABroth(t *testing.T) {
+	r := dish("4 cups chicken broth")
+	veg := Person{ID: 1, Name: "V", HeatMax: -1, Diets: []string{"vegetarian"}}
+	swaps := Swaps(r, []Person{veg}, []Verdict{Check(r, veg)})
+	if len(swaps) == 0 || swaps[0].To != "vegetable broth" {
+		t.Fatalf("swaps for chicken broth: %+v", swaps)
+	}
+	for _, s := range swaps {
+		if s.To == "chickpeas" || s.To == "lentils" {
+			t.Errorf("a meat swap was offered for broth: %+v", s)
+		}
+	}
+}

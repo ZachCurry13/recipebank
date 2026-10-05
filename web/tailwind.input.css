@@ -69,7 +69,7 @@ html.light .dialog::backdrop { background: rgb(15 23 42 / 0.45); }
     border-top: 1px solid rgb(var(--slate-800)); background: rgb(var(--slate-950) / 0.95); backdrop-filter: blur(8px);
     padding-bottom: env(safe-area-inset-bottom);
   }
-  .mobile-nav a {
+  .mobile-nav a, .mobile-nav button {
     flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: center; gap: 0.15rem;
     padding: 0.5rem 0 0.45rem; font-size: 0.72rem; color: rgb(var(--slate-400));
   }
