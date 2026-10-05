@@ -42,6 +42,7 @@ export async function renderAdmin(view, params, state) {
         <label class="block"><span class="label">Stay signed in for (days)</span>
           <input name="session_days" type="number" min="1" max="365" class="input" value="${esc(s.session_days)}"></label>
         <button class="btn-primary">Save</button>
+        ${folders(s.folders)}
       </form>
     </div>
     <div class="card mt-4 space-y-3">
@@ -111,4 +112,18 @@ export async function renderAdmin(view, params, state) {
       }, "Account added");
     };
   };
+}
+
+// folders shows where the database, photos and previews are kept.
+function folders(f) {
+  if (!f) return "";
+  const row = (label, path, own, help) => `<li class="min-w-0"><b>${label}:</b> <code class="break-all text-xs">${esc(path)}</code>
+    ${own === undefined ? "" : own ? `<span class="chip-ok">own dataset</span>` : `<span class="chip-info">inside the data folder</span>`}
+    <div class="text-xs text-slate-500">${help}</div></li>`;
+  return `<div class="border-t border-slate-800 pt-3"><h3 class="mb-1 text-sm font-semibold">Where files are kept</h3>
+    <ul class="space-y-2 text-sm text-slate-300">
+      ${row("Database", f.data, undefined, "Small and important: keep it on a fast pool with snapshots.")}
+      ${row("Photos", f.photos, f.photos_own, "Dish photos and card scans: back these up.")}
+      ${row("Previews", f.cache, f.cache_own, "Smaller copies of photos; safe to delete, made again when needed.")}
+    </ul></div>`;
 }

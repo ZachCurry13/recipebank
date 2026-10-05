@@ -91,7 +91,7 @@ export function editRecipe(view, r, preview) {
         ${field("source_url", "Web address it came from", r.source_url, 'type="url"')}
         ${field("source_note", "Where it's from", r.source_note, 'placeholder="Grandma\'s card, 1962 · cookbook, page 42"')}
         ${(r.source_photos || []).length ? `<div class="flex flex-wrap gap-2">${r.source_photos.map((p) =>
-          `<a href="/api/photos/${esc(p)}" target="_blank" rel="noopener"><img src="/api/photos/${esc(p)}" alt="The original" class="h-24 rounded-lg object-cover"></a>`).join("")}</div>` : ""}
+          `<a href="/api/photos/${esc(p)}" target="_blank" rel="noopener"><img src="/api/photos/${esc(p)}?w=480" alt="The original" class="h-24 rounded-lg object-cover"></a>`).join("")}</div>` : ""}
       </div>
       <div class="sticky bottom-0 flex flex-wrap gap-2 border-t border-slate-800 bg-slate-950/95 py-3 lg:col-span-2 above-tabbar">
         <button class="btn-primary">💾 Save</button>
@@ -101,7 +101,7 @@ export function editRecipe(view, r, preview) {
 
   const form = $("#edit", view);
   const drawPhoto = () => {
-    $("#photo-box", view).innerHTML = `${photo ? `<img src="/api/photos/${esc(photo)}" alt="" class="h-24 w-32 rounded-lg object-cover">` : ""}
+    $("#photo-box", view).innerHTML = `${photo ? `<img src="/api/photos/${esc(photo)}?w=480" alt="" class="h-24 w-32 rounded-lg object-cover">` : ""}
       <label class="btn-secondary cursor-pointer">📷 ${photo ? "Change" : "Add a photo"}<input type="file" accept="image/*" class="sr-only" id="photo-in"></label>
       ${photo ? `<button type="button" id="photo-rm" class="btn-ghost">Remove</button>` : ""}`;
     $("#photo-in", view).onchange = (e) => attempt(async () => {

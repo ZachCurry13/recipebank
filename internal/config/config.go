@@ -7,11 +7,15 @@ import (
 	"os"
 	"strconv"
 	"strings"
+
+	"github.com/zachcurry13/recipebank/internal/files"
 )
 
 type Config struct {
 	Addr          string   // HTTP listen address
-	DataDir       string   // directory holding recipebank.db and photos (SSD dataset)
+	DataDir       string   // recipebank.db (SSD dataset)
+	PhotosDir     string   // recipe photos and card scans: /photos when mounted, else <data>/photos
+	CacheDir      string   // previews that can be made again: /cache when mounted, else <data>/cache
 	AdminUser     string   // bootstrap admin username
 	AdminPassword string   // optional: pre-create the first admin (else set up in the browser)
 	TrustProxy    bool     // honor X-Forwarded-For / CF-Connecting-IP
@@ -20,7 +24,7 @@ type Config struct {
 }
 
 func Load() Config {
-	return Config{
+	c := Config{
 		Addr:          env("RECIPEBANK_ADDR", ":8080"),
 		DataDir:       env("RECIPEBANK_DATA_DIR", "/data"),
 		AdminUser:     env("RECIPEBANK_ADMIN_USER", "admin"),
@@ -29,6 +33,9 @@ func Load() Config {
 		CORSOrigins:   splitList(os.Getenv("RECIPEBANK_CORS_ORIGINS")),
 		SessionDays:   envInt("RECIPEBANK_SESSION_DAYS", 30),
 	}
+	c.PhotosDir = files.Dir("RECIPEBANK_PHOTOS_DIR", "/photos", c.DataDir, "photos")
+	c.CacheDir = files.Dir("RECIPEBANK_CACHE_DIR", "/cache", c.DataDir, "cache")
+	return c
 }
 
 func env(key, def string) string {

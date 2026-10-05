@@ -18,6 +18,7 @@ import (
 	"github.com/zachcurry13/recipebank/internal/auth"
 	"github.com/zachcurry13/recipebank/internal/config"
 	"github.com/zachcurry13/recipebank/internal/db"
+	"github.com/zachcurry13/recipebank/internal/files"
 	"github.com/zachcurry13/recipebank/internal/store"
 	"github.com/zachcurry13/recipebank/internal/version"
 	"github.com/zachcurry13/recipebank/web"
@@ -45,8 +46,10 @@ func main() {
 		Store:    st,
 		Auth:     &auth.Manager{Store: st, SessionDays: cfg.SessionDays},
 		Web:      web.FS(),
-		PhotoDir: filepath.Join(cfg.DataDir, "photos"),
+		PhotoDir: cfg.PhotosDir,
+		CacheDir: cfg.CacheDir,
 	}
+	setUpFolders(cfg, srv)
 	httpSrv := &http.Server{
 		Addr:              cfg.Addr,
 		Handler:           srv.Router(),
@@ -69,6 +72,25 @@ func main() {
 	shut, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 	_ = httpSrv.Shutdown(shut)
+}
+
+// setUpFolders checks the photo and cache folders can be written, and moves
+// photos into a newly mounted /photos dataset from the data folder.
+func setUpFolders(cfg config.Config, srv *api.Server) {
+	log.Printf("photos in %s; previews in %s", cfg.PhotosDir, cfg.CacheDir)
+	for _, d := range []string{cfg.PhotosDir, cfg.CacheDir} {
+		if err := files.Writable(d); err != nil {
+			log.Printf("WARNING: can't write to %s (%v). Give the apps user (568) write access to that dataset.", d, err)
+		}
+	}
+	old := filepath.Join(cfg.DataDir, "photos")
+	if filepath.Clean(old) == filepath.Clean(cfg.PhotosDir) {
+		return
+	}
+	srv.OldPhotos = old
+	if n := files.MoveAll(old, cfg.PhotosDir); n > 0 {
+		log.Printf("moved %d photos from %s to %s", n, old, cfg.PhotosDir)
+	}
 }
 
 // housekeeping drops expired sessions and unused photos now and then.

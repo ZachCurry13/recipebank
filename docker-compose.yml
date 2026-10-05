@@ -1,6 +1,8 @@
 # RecipeBank: a single container. For TrueNAS SCALE see docs/TRUENAS.md
 # (Install Custom App form, or Install via YAML with the block there).
-#   * /data -> a dataset for recipebank.db and the photos folder (SSD if you have one)
+#   * /data   -> recipebank.db (small, changes often: SSD with snapshots)
+#   * /photos -> dish photos and card scans (grows; back it up). Optional: else inside /data
+#   * /cache  -> smaller copies of photos (safe to delete). Optional: else inside /data
 # On first visit the web page asks you to create the admin account.
 services:
   recipebank:
@@ -17,4 +19,6 @@ services:
       RECIPEBANK_SESSION_DAYS: "30"
       TZ: Etc/UTC                                  # change to your time zone, e.g. Europe/Berlin
     volumes:
-      - ./data:/data                               # change to your dataset, e.g. /mnt/ssd/recipebank
+      - ./data:/data                               # change to your datasets, e.g. /mnt/ssd/recipebank-data
+      - ./photos:/photos                           #   e.g. /mnt/tank/recipebank-photos
+      - ./cache:/cache                             #   e.g. /mnt/ssd/recipebank-cache

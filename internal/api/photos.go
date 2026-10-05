@@ -14,6 +14,7 @@ import (
 	"time"
 
 	"github.com/go-chi/chi/v5"
+	"github.com/zachcurry13/recipebank/internal/files"
 	"github.com/zachcurry13/recipebank/internal/recipe"
 )
 
@@ -77,17 +78,41 @@ func (s *Server) handleUploadPhoto(w http.ResponseWriter, r *http.Request) {
 	writeErr(w, http.StatusBadRequest, err.Error())
 }
 
-// handlePhoto serves a stored photo. Names are random and never reused, so
-// browsers may keep them.
-func (s *Server) handlePhoto(w http.ResponseWriter, r *http.Request) {
-	name := chi.URLParam(r, "name")
+// photoPath finds a stored photo: in the photos folder, or in the data
+// folder's old photos folder for files not moved yet.
+func (s *Server) photoPath(name string) (string, bool) {
 	if !photoName.MatchString(name) {
+		return "", false
+	}
+	for _, dir := range []string{s.PhotoDir, s.OldPhotos} {
+		if dir == "" {
+			continue
+		}
+		p := filepath.Join(dir, name)
+		if st, err := os.Stat(p); err == nil && st.Mode().IsRegular() {
+			return p, true
+		}
+	}
+	return "", false
+}
+
+// handlePhoto serves a stored photo, or with ?w=480 / ?w=1200 a smaller
+// preview from the cache. Names are random and never reused, so browsers
+// may keep them.
+func (s *Server) handlePhoto(w http.ResponseWriter, r *http.Request) {
+	p, ok := s.photoPath(chi.URLParam(r, "name"))
+	if !ok {
 		writeErr(w, http.StatusNotFound, "not found")
 		return
 	}
+	if width := queryInt(r, "w"); width > 0 && s.CacheDir != "" {
+		if t, err := files.Thumb(s.CacheDir, p, width); err == nil {
+			p = t
+		}
+	}
 	w.Header().Set("Cache-Control", "private, max-age=31536000, immutable")
 	w.Header().Del("Pragma")
-	http.ServeFile(w, r, filepath.Join(s.PhotoDir, name))
+	http.ServeFile(w, r, p)
 }
 
 // downloadPhoto saves a web recipe's photo.
@@ -108,10 +133,7 @@ func (s *Server) ownPhotos(rc *recipe.Recipe) bool {
 		if n == "" {
 			continue
 		}
-		if !photoName.MatchString(n) {
-			return false
-		}
-		if _, err := os.Stat(filepath.Join(s.PhotoDir, n)); err != nil {
+		if _, ok := s.photoPath(n); !ok {
 			return false
 		}
 	}
@@ -119,22 +141,33 @@ func (s *Server) ownPhotos(rc *recipe.Recipe) bool {
 }
 
 // cleanPhotos removes photos no recipe uses any more, once they're a day
-// old (younger ones may belong to a draft still being edited).
+// old (younger ones may belong to a draft still being edited), and the
+// previews of photos that are gone.
 func (s *Server) cleanPhotos() {
 	used, err := s.Store.PhotosInUse()
 	if err != nil {
 		return
 	}
-	entries, err := os.ReadDir(s.PhotoDir)
-	if err != nil {
-		return
-	}
-	for _, e := range entries {
-		info, err := e.Info()
-		if err != nil || used[e.Name()] || !photoName.MatchString(e.Name()) || time.Since(info.ModTime()) < 24*time.Hour {
+	kept := map[string]bool{}
+	for _, dir := range []string{s.PhotoDir, s.OldPhotos} {
+		entries, err := os.ReadDir(dir)
+		if dir == "" || err != nil {
 			continue
 		}
-		_ = os.Remove(filepath.Join(s.PhotoDir, e.Name()))
+		for _, e := range entries {
+			info, err := e.Info()
+			if err != nil || !photoName.MatchString(e.Name()) {
+				continue
+			}
+			if used[e.Name()] || time.Since(info.ModTime()) < 24*time.Hour {
+				kept[strings.TrimSuffix(e.Name(), filepath.Ext(e.Name()))] = true
+				continue
+			}
+			_ = os.Remove(filepath.Join(dir, e.Name()))
+		}
+	}
+	if s.CacheDir != "" {
+		files.PruneThumbs(s.CacheDir, func(base string) bool { return kept[base] })
 	}
 }
 

@@ -28,7 +28,7 @@ export async function renderRecipe(view, params, state) {
       <a href="#/${r.area}" class="text-sm text-slate-400 hover:text-slate-200">‹ ${home ? "Home & Care" : "Kitchen"}</a>
       <div class="mt-2 grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.3fr)]">
         <div class="min-w-0 space-y-4">
-          ${r.photo ? `<img src="/api/photos/${esc(r.photo)}" alt="" class="max-h-80 w-full rounded-xl object-cover">` : ""}
+          ${r.photo ? `<img src="/api/photos/${esc(r.photo)}?w=1200" alt="" class="max-h-80 w-full rounded-xl object-cover">` : ""}
           <div>
             <h1 class="break-words text-2xl font-bold leading-tight">${esc(r.title)}</h1>
             ${r.summary ? `<p class="mt-1 text-slate-300">${esc(r.summary)}</p>` : ""}
@@ -174,7 +174,7 @@ function source(r) {
   const parts = [];
   if (r.source_url) parts.push(`<a class="break-all underline" href="${esc(r.source_url)}" target="_blank" rel="noopener noreferrer">${esc(r.source_url)}</a>`);
   if (r.source_note) parts.push(esc(r.source_note));
-  const photos = (r.source_photos || []).map((p) => `<a href="/api/photos/${esc(p)}" target="_blank" rel="noopener"><img src="/api/photos/${esc(p)}" alt="The original" class="h-28 rounded-lg object-cover"></a>`).join("");
+  const photos = (r.source_photos || []).map((p) => `<a href="/api/photos/${esc(p)}" target="_blank" rel="noopener"><img src="/api/photos/${esc(p)}?w=480" alt="The original" class="h-28 rounded-lg object-cover"></a>`).join("");
   if (!parts.length && !photos) return "";
   return `<div class="card space-y-2"><h2 class="font-semibold">Where it's from</h2>${parts.map((p) => `<p class="text-sm text-slate-300">${p}</p>`).join("")}
     ${photos ? `<div class="flex flex-wrap gap-2">${photos}</div>` : ""}

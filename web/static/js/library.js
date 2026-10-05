@@ -98,7 +98,7 @@ function renderCards(list, area, f) {
   box.innerHTML = `<p class="mb-2 text-sm text-slate-400">${list.length} recipe${list.length === 1 ? "" : "s"}</p>
     <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">${list.map((r) => `
       <a href="#/recipe/${r.id}" class="card block min-w-0 p-0 hover:ring-emerald-700">
-        ${r.photo ? `<img src="/api/photos/${esc(r.photo)}" alt="" loading="lazy" class="h-40 w-full rounded-t-xl object-cover">`
+        ${r.photo ? `<img src="/api/photos/${esc(r.photo)}?w=480" alt="" loading="lazy" class="h-40 w-full rounded-t-xl object-cover">`
           : `<div class="flex h-24 items-center justify-center rounded-t-xl bg-slate-800 text-4xl">${area === "home" ? "🧴" : "🍲"}</div>`}
         <div class="space-y-2 p-3">
           <h2 class="break-words font-semibold leading-snug">${esc(r.title)}</h2>

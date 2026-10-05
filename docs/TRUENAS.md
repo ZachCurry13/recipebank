@@ -6,17 +6,24 @@ You'll need your TrueNAS web address (for example `http://192.168.1.50`).
 
 ---
 
-## Step 1: Make a folder for RecipeBank's data
+## Step 1: Make three folders (datasets)
 
-RecipeBank keeps its recipes, people and settings in one small database file, plus a `photos` folder. It needs a home, ideally on your fast (SSD) pool.
+RecipeBank keeps three kinds of files apart, so each can live where it fits best:
+
+| Folder | What's in it | Where it fits |
+|---|---|---|
+| **Data** | The database: recipes, people, settings. Small, changes often. | Your fast (SSD) pool, with snapshots |
+| **Photos** | Dish photos and the scans of recipe cards. Grows over time and can't be replaced. | Any pool, for example next to your other photos; back it up |
+| **Cache** | Smaller copies of photos for quick pages. Safe to delete; made again when needed. | Your fast pool; no snapshots or backups needed |
+
+Make each one the same way:
 
 1. In TrueNAS, open **Datasets** from the left menu.
-2. Click the pool you want to use, then **Add Dataset**.
-3. Enter:
-   - **Name:** `recipebank`
-   - **Dataset Preset:** `Apps`. This lets apps save files there.
-4. Click **Save**.
-5. Write down the path shown at the top of the dataset's details, for example `/mnt/ssd/recipebank`. You'll need it in Step 2.
+2. Click the pool you want, then **Add Dataset**.
+3. Enter the **Name** (`recipebank-data`, `recipebank-photos` or `recipebank-cache`) and set **Dataset Preset** to `Apps`. This lets apps save files there.
+4. Click **Save**, and write down the path shown at the top of the dataset's details, for example `/mnt/ssd/recipebank-data`, `/mnt/tank/recipebank-photos`, `/mnt/ssd/recipebank-cache`. You'll need all three in Step 2.
+
+Only **Data** is required. If you skip **Photos** or **Cache**, RecipeBank keeps those files in a folder inside Data instead. You can add them later: when a Photos folder appears, RecipeBank moves the photos into it by itself the next time it starts (each one is copied and checked before the old copy is removed).
 
 ## Step 2: Install the app
 
@@ -41,7 +48,9 @@ Both use the image `ghcr.io/zachcurry13/recipebank` and TrueNAS's default pull p
 | | Restart Policy | **Unless Stopped** |
 | Security Context Configuration | Custom User | tick it, then **User ID** `568` and **Group ID** `568` |
 | Network Configuration | Ports → **Add** | Container Port `8080`, Host Port `30090`, Protocol **TCP** |
-| Storage Configuration | Storage → **Add** | Type **Host Path**, Mount Path `/data`, Host Path = your **Step 1** folder (for example `/mnt/ssd/recipebank`) |
+| Storage Configuration | Storage → **Add** (1st) | Type **Host Path**, Mount Path `/data`, Host Path = your **Data** folder (for example `/mnt/ssd/recipebank-data`) |
+| | Storage → **Add** (2nd) | Type **Host Path**, Mount Path `/photos`, Host Path = your **Photos** folder (for example `/mnt/tank/recipebank-photos`) |
+| | Storage → **Add** (3rd) | Type **Host Path**, Mount Path `/cache`, Host Path = your **Cache** folder (for example `/mnt/ssd/recipebank-cache`) |
 
 3. Click **Install**. TrueNAS downloads RecipeBank, which takes a minute. Wait until the app shows **Running**.
 
@@ -52,7 +61,7 @@ Field names can differ slightly between TrueNAS versions (for example "Ports" ma
 1. Open **Apps** from the left menu, then click **Discover Apps** (top right).
 2. Click the **⋮** (three dots) menu at the top right and choose **Install via YAML**.
 3. **Name:** `recipebank`
-4. Paste the text below into the big box, then change the **two lines marked `👈 CHANGE`**:
+4. Paste the text below into the big box, then change the **four lines marked `👈 CHANGE`**:
 
 ```yaml
 services:
@@ -67,10 +76,13 @@ services:
     environment:
       TZ: Etc/UTC                            # 👈 CHANGE to your time zone, e.g. Europe/Berlin
     volumes:
-      - /mnt/ssd/recipebank:/data            # 👈 CHANGE left side to your Step 1 path
+      - /mnt/ssd/recipebank-data:/data       # 👈 CHANGE left side to your Data folder
+      - /mnt/tank/recipebank-photos:/photos  # 👈 CHANGE left side to your Photos folder
+      - /mnt/ssd/recipebank-cache:/cache     # 👈 CHANGE left side to your Cache folder
 ```
 
-   - On the volume line, only change the part **before** the `:`. Leave `:/data` exactly as it is.
+   - On the volume lines, only change the part **before** the `:`. Leave `:/data`, `:/photos` and `:/cache` exactly as they are.
+   - Skipping Photos or Cache? Delete that line.
 5. Click **Save**. Wait until the app shows **Running**.
 
 ## Step 3: Create your admin account
@@ -100,7 +112,7 @@ Cook mode keeps the screen on only when RecipeBank is opened through a secure (`
 
 ## Updating RecipeBank
 
-To update, go to **Apps** and click **recipebank**. When TrueNAS shows that an update is available, click **Update**. Your recipes, people and photos are kept. (TrueNAS checks for new images now and then, so it may take a while to notice a new version.)
+To update, go to **Apps** and click **recipebank**. When TrueNAS shows that an update is available, click **Update**. Your recipes, people and photos are kept. To add the Photos or Cache folder to an existing install, **Edit** the app, add the storage entry (or volume line) from Step 2, and **Save**. (TrueNAS checks for new images now and then, so it may take a while to notice a new version.)
 
 If TrueNAS doesn't offer the update:
 1. **Apps → Configuration → Manage Container Images → Pull Image**. Enter `ghcr.io/zachcurry13/recipebank` with the tag `latest`, and pull it.
@@ -110,13 +122,18 @@ The version you are running shows at the bottom of every page.
 
 ## Backups
 
-Everything lives in the Step 1 dataset: `recipebank.db` and the `photos` folder. Protect it with TrueNAS snapshots (**Data Protection → Periodic Snapshot Tasks**) or copy the folder somewhere safe. The database holds passwords (scrambled) and your AI key.
+- **Data** (`recipebank.db`) and **Photos** are the ones that matter. Protect them with TrueNAS snapshots (**Data Protection → Periodic Snapshot Tasks**) or copy them somewhere safe. The database holds passwords (scrambled) and your AI key.
+- **Cache** never needs a backup.
+
+To check where RecipeBank keeps each kind of file, open **Admin → House settings → Where files are kept**. "Own dataset" means that folder is mounted separately.
 
 ## Troubleshooting
 
 | Problem | Fix |
 |---|---|
-| App won't start, logs say **permission denied** on `/data` | The Step 1 dataset must use the **Apps** preset. Or: **Datasets → recipebank → Permissions → Edit** and give the **apps** user (568) *Modify* access. |
+| App won't start, logs say **permission denied** on `/data` | The Data dataset must use the **Apps** preset. Or: **Datasets → recipebank-data → Permissions → Edit** and give the **apps** user (568) *Modify* access. |
+| Logs say **can't write to /photos** (or `/cache`), or photos won't save | Same fix for that dataset: the **Apps** preset, or *Modify* access for the **apps** user (568). |
+| Photos show inside the data folder in **Where files are kept** | The `/photos` mount is missing or misspelled. **Edit** the app, check the Mount Path is exactly `/photos`, and **Save**. Existing photos are moved over on the next start. |
 | Can't open `http://…:30090` | Another app may already use port 30090. Edit the app and change `30090` to another number like `30091`. |
 | A recipe link says the site **blocks apps** | Some publishers block apps on purpose. Open the recipe in your browser, select and copy it, then use **Paste text**. |
 | Photos or pasted text say **no AI is set up** | Set one up under **Admin → AI** (Step 4). Pasted text still works without it when it has a line saying *Ingredients* and a line saying *Directions*. |

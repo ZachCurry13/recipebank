@@ -18,7 +18,9 @@ type Server struct {
 	Store     *store.Store
 	Auth      *auth.Manager
 	Web       fs.FS        // embedded static assets
-	PhotoDir  string       // recipe photos (under the data folder)
+	PhotoDir  string       // recipe photos and card scans
+	OldPhotos string       // <data>/photos when photos moved to their own folder; still read from
+	CacheDir  string       // previews (re-creatable)
 	Fetch     *http.Client // outside pages and images; tests swap it
 	logins    *loginLimiter
 	etags     sync.Map  // static file name → ETag

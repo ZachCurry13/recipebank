@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"net/http"
+	"path/filepath"
 	"strings"
 	"time"
 
@@ -35,6 +36,8 @@ func (s *Server) handleGetSettings(w http.ResponseWriter, r *http.Request) {
 		out[k] = v
 	}
 	out["tokens_this_month"] = s.Store.TokensThisMonth()
+	out["folders"] = map[string]any{"data": s.Cfg.DataDir, "photos": s.PhotoDir, "cache": s.CacheDir,
+		"photos_own": !inside(s.Cfg.DataDir, s.PhotoDir), "cache_own": !inside(s.Cfg.DataDir, s.CacheDir)}
 	writeJSON(w, http.StatusOK, out)
 }
 
@@ -212,4 +215,10 @@ func truncate(s string, n int) string {
 		return s
 	}
 	return s[:n] + "…"
+}
+
+// inside reports whether path is dir or a folder within it.
+func inside(dir, path string) bool {
+	rel, err := filepath.Rel(dir, path)
+	return err == nil && rel != ".." && !strings.HasPrefix(rel, ".."+string(filepath.Separator))
 }

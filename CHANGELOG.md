@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.1.1] - 2026-10-05
+
+### 🗂️ Separate folders for data, photos and cache
+- RecipeBank can now keep its database, its photos and a cache in three separate folders, so on TrueNAS each can be its own dataset: the database on a fast pool with snapshots, the photos next to your other photos, and the cache somewhere that needs no backup. The install guide shows how (form and YAML).
+- The photos and cache folders are optional. Without them everything stays in the data folder as before; add a photos folder later and RecipeBank moves the photos into it by itself (each one is copied and checked first).
+- Library cards and recipe pages load smaller copies of photos from the cache, so pages open faster on phones.
+- **Admin → House settings → Where files are kept** shows which folder holds what.
+
 ## [0.1.0] - 2026-09-29
 
 The first version, for testing.
