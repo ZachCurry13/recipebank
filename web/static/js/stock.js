@@ -3,6 +3,7 @@
 import { get, post } from "./api.js";
 import { $, $$, esc, attempt, canManage, cap, money } from "./ui.js";
 import { editStock, scanStock } from "./stockedit.js";
+import { scanReceipt } from "./receipt.js";
 
 const view_ = { kitchen: { q: "", show: "" }, home: { q: "", show: "" } };
 
@@ -65,7 +66,7 @@ export async function renderStock(view, area, params, state) {
           <p class="text-sm text-slate-400">${home ? "Cleaning, laundry and bathroom supplies: what's in the house and what's running low."
             : "Food in the house: what's here, what to use soon, and what's running low."}</p>
         </div>
-        ${manage ? `<button id="scan" class="btn-primary">📷 Scan a barcode</button><button id="add" class="btn-secondary">➕ Add</button>` : ""}
+        ${manage ? `<button id="scan" class="btn-primary">📷 Scan a barcode</button><button id="receipt" class="btn-secondary">🧾 Scan a receipt</button><button id="add" class="btn-secondary">➕ Add</button>` : ""}
       </div>
       <div class="card mb-4 space-y-3">
         <input id="q" type="search" class="input" placeholder="Search" value="${esc(f.q)}">
@@ -100,6 +101,8 @@ export async function renderStock(view, area, params, state) {
     if (add) add.onclick = () => editStock(area, null, state, reload);
     const scan = $("#scan", view);
     if (scan) scan.onclick = () => scanStock(area, state, reload);
+    const receipt = $("#receipt", view);
+    if (receipt) receipt.onclick = () => scanReceipt(state, reload);
   };
   draw();
 }
