@@ -69,6 +69,7 @@ func (s *Server) handleSaveRecipe(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	rc.ID = 0
+	var aiLines []recipe.Ingredient
 	if id, ok := pathID(r, "id"); ok {
 		old, err := s.Store.Recipe(id)
 		if err != nil {
@@ -76,7 +77,9 @@ func (s *Server) handleSaveRecipe(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		rc.ID, rc.CreatedBy, rc.VersionOf = id, old.CreatedBy, old.VersionOf
+		aiLines = s.learnFrom(old, &rc)
 	} else {
+		aiLines = s.learnFrom(nil, &rc)
 		rc.CreatedBy = auth.UserFrom(r).Username
 		if rc.VersionOf != nil {
 			if _, err := s.Store.Recipe(*rc.VersionOf); err != nil {
@@ -96,6 +99,7 @@ func (s *Server) handleSaveRecipe(w http.ResponseWriter, r *http.Request) {
 		writeStoreErr(w, err)
 		return
 	}
+	s.learnMisreads(aiLines, rc.Ingredients)
 	writeJSON(w, http.StatusOK, map[string]int64{"id": id})
 }
 

@@ -39,7 +39,7 @@ the catch-ups and new ideas below. Build in this order:
 0. [ ] **Cleaner recipe display** (the user found it sloppy): amounts in a bold column, the item beside it,
    recipe wording ("to serve", "plus extra for frying", "optional") as a small grey note, problems as short
    tags, tap a row to tick it off; amounts in the steps converted (and scaled) to match the list.
-0b. [ ] **Better photo reading** (from the user's test card on 2026-10-06: a handwritten two-column card came
+0b. [x] **Better photo reading** (from the user's test card on 2026-10-06: a handwritten two-column card came
    back with every amount dropped, 6 of 20 ingredients missing from the right column, "red pepper flakes" read as
    "bell pepper flakes", and invented "Filling"/"Topping" sections copied from the prompt's examples; the photo was
    also uploaded rotated). Build first, in this order:
@@ -51,7 +51,8 @@ the catch-ups and new ideas below. Build in this order:
       allergen no line has → "not sure"; Staple no longer counts bell pepper/garlic salt) Automatic cross-check (no AI): foods the steps mention that the list lacks, lines without amounts, odd
       amounts; while unchecked, verdicts for allergic/severe people say "not sure"; "Checked against the card" clears it.
    4. DONE (POST /import/photo/again keeps nothing; js/readagain.js compares, ⟳ turns, Keep) Read again: re-read the saved photos (optionally another model), show line-by-line changes, keep either.
-   5. Teach it: corrections become short reading hints (abbreviations, misreads) sent with the next cards;
+   5. DONE (reading_hints table, recipe.Misreads, api/hints_handlers.go, js/readinghints.js; learned only on a
+      photo recipe's first save or while it still needs checking) Teach it: corrections become short reading hints (abbreviations, misreads) sent with the next cards;
       listed and editable under Admin → AI.
 1. [ ] **What can I make?** (backend started) Tick what's on hand (pantry items pre-ticked, extras typed) or photograph the
    fridge/pantry (vision AI lists foods; the person confirms). Recipes ranked by coverage; **food near its

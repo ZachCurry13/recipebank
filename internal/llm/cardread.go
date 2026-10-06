@@ -32,7 +32,8 @@ oz. = ounce, pkg. = package, serv. = servings, qt. = quart, pt. = pint.`
 func TranscribePrompt(hints []string) string {
 	p := transcribeBase + "\n" + abbreviations
 	if len(hints) > 0 {
-		p += "\nOn this family's earlier cards these were misread: " + strings.Join(hints, "; ") + "."
+		p += "\nIn this family's handwriting these were misread before, so look twice at similar words, " +
+			"but always copy what is really written: " + strings.Join(hints, "; ") + "."
 	}
 	return p
 }

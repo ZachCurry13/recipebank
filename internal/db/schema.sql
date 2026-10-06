@@ -177,3 +177,14 @@ CREATE TABLE IF NOT EXISTS push_subscriptions (
     device     TEXT NOT NULL DEFAULT '',
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
+
+-- What the AI misread on this family's cards ("bell pepper flakes" was
+-- "red pepper flakes"), learned from corrections and sent with new cards.
+CREATE TABLE IF NOT EXISTS reading_hints (
+    id         INTEGER PRIMARY KEY AUTOINCREMENT,
+    wrong      TEXT NOT NULL,
+    right_text TEXT NOT NULL,
+    times      INTEGER NOT NULL DEFAULT 1,
+    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE (wrong, right_text)
+);

@@ -189,7 +189,7 @@ var aiPhotoSides = []int{1280, 896, 640}
 func (s *Server) readPhotos(ctx context.Context, originals []llm.Image) (recipe.Recipe, error) {
 	var copied, model string
 	var err error
-	prompt := llm.TranscribePrompt(nil)
+	prompt := llm.TranscribePrompt(s.readingHints())
 	for _, side := range aiPhotoSides {
 		images := make([]llm.Image, len(originals))
 		for i, im := range originals {

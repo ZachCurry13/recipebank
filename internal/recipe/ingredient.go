@@ -85,9 +85,10 @@ func takeUnit(in *Ingredient, rest string) string {
 	words := strings.Fields(rest)
 	for n := min(3, len(words)); n >= 1; n-- {
 		key := strings.Join(words[:n], " ")
-		u, ok := unitNames[key]
-		if !ok && key != "T" { // "T" is a tablespoon, never lower-cased to "t"
-			u, ok = unitNames[strings.ToLower(key)]
+		u, ok := unitName(key)
+		if !ok && strings.HasSuffix(key, ".") { // cards write "T." and "pt."
+			key = strings.TrimSuffix(key, ".")
+			u, ok = unitName(key)
 		}
 		if !ok {
 			continue
@@ -144,4 +145,12 @@ func nonEmpty(ss []string) []string {
 		}
 	}
 	return out
+}
+
+func unitName(key string) (string, bool) {
+	u, ok := unitNames[key]
+	if !ok && key != "T" { // "T" is a tablespoon, never lower-cased to "t"
+		u, ok = unitNames[strings.ToLower(key)]
+	}
+	return u, ok
 }

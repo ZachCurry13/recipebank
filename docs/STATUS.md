@@ -15,8 +15,14 @@ smart search, cook-mode voice, remote access, phone notifications (HANDOFF secti
 - Install docs done: `docs/TRUENAS.md` (Custom App form and YAML), `docker-compose.yml`, README,
   CHANGELOG 0.1.0, HANDOFF. CI tests pass on `feature/v0.1`.
 
+**0.3 in progress on `feature/v0.3` (2026-10-06):** cleaner ingredient layout; better photo reading done
+(photos the right way up, two-step reading, cross-check with "not sure" until checked against the card, Read
+the card again, reading hints learned from corrections under Admin → AI); kitchen substitutions started.
+
 ## Next
-- The user tests 0.2.0, especially over the https address (scanning, voice, notifications) and with a real AI; fixes go out as 0.2.x.
-- Then 0.3 (HANDOFF section 1c): "What can I make?", dish photo → ideas, share + print.
+- 0.3 (HANDOFF section 1c): "Missing something?" on the recipe page (cumin → alternatives), then wire up
+  "What can I make?", dish photo → ideas, Cooked it + 👍/👎, nutrition, share + print. Ask the user which Ollama
+  model reads their photos.
+- The user tests 0.2.0 with a real AI; fixes go out as 0.2.x.
 - Later (from the user's list): "what can I make?" from a photo of the fridge, dish photo → ideas, kitchen tablet
   (only if wanted), cookbooks and the card pile, share from the phone and printing, other-app imports, Cast to TV.
