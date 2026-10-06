@@ -61,7 +61,7 @@ func (s *Server) handleListRecipes(w http.ResponseWriter, r *http.Request) {
 			maxMin > 0 && (rc.TotalMin == 0 || rc.TotalMin > maxMin) ||
 			heatErr == nil && heat > maxHeat ||
 			!matches(q.Get("course"), rc.Course) || !matches(q.Get("cuisine"), rc.Cuisine) || !matches(q.Get("protein"), rc.Protein) ||
-			q.Get("level") != "" && rc.Level() != q.Get("level") {
+			q.Get("level") != "" && rc.Level() != q.Get("level") || q.Get("kids") == "1" && !rc.KidsCanHelp() {
 			continue
 		}
 		if diet != "" && safety.Check(rc, safety.Person{HeatMax: -1, Diets: []string{diet}}).Status != safety.OK {

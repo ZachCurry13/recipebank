@@ -63,7 +63,7 @@ export async function renderTonight(view, params, state) {
   $$("[data-cook]", view).forEach((b) => (b.onclick = () => attempt(async () => {
     const m = data.meals[Number(b.dataset.cook)];
     const full = await get(`/api/recipes/${m.recipe.id}`);
-    startCooking(full.recipe, { factor: factorOf(m), system });
+    startCooking(full.recipe, { factor: factorOf(m), system, needs: full.needs });
   })));
   $$("[data-shop]", view).forEach((b) => (b.onclick = () => attempt(async () => {
     const m = data.meals[Number(b.dataset.shop)];

@@ -41,6 +41,8 @@ func (s *Server) writeChecked(w http.ResponseWriter, r *http.Request, rc *recipe
 		"heat": heatOf(rc), "hazards": []safety.Hazard{}, "pantry": s.pantryHints(rc, verdicts), "level": rc.Level()}
 	if rc.Area == recipe.AreaHome {
 		out["hazards"] = safety.Hazards(rc, s.Store.Pets())
+	} else {
+		out["needs"], out["kids"] = rc.Needs(), rc.KidsCanHelp()
 	}
 	if rc.NeedsReview && rc.SourceKind == "photo" {
 		out["card_check"] = safety.CrossCheck(rc)

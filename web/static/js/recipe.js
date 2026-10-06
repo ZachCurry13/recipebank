@@ -4,6 +4,7 @@ import { get, post, put, del, qs } from "./api.js";
 import { $, $$, esc, attempt, busy, fmtMin, peppers, levelChip, money, canManage, canEmail, cap, toast, sheet } from "./ui.js";
 import { verdictList } from "./verdicts.js";
 import { startCooking } from "./cook.js";
+import { kidsChip } from "./kids.js";
 import { ingredientList, stepList } from "./recipeparts.js";
 import { cardBox } from "./cardcheck.js";
 import { readAgain } from "./readagain.js";
@@ -49,7 +50,7 @@ export async function renderRecipe(view, params, state) {
             ${data.original ? `<p class="mt-1 text-sm text-slate-400">Our version of <a class="underline" href="#/recipe/${data.original.id}">${esc(data.original.title)}</a></p>` : ""}
             <div class="mt-2 flex flex-wrap items-center gap-1">
               ${r.total_min ? `<span class="chip-info">⏱ ${fmtMin(r.total_min)}${r.prep_min ? ` (prep ${fmtMin(r.prep_min)})` : ""}</span>` : ""}
-              ${home ? "" : peppers(data.heat) + levelChip(data.level)}
+              ${home ? "" : peppers(data.heat) + levelChip(data.level) + kidsChip(data.kids)}
               ${data.cost ? `<span class="chip-info" title="From the pantry's prices: ${data.cost.priced} of ${data.cost.lines} ingredients priced">💲 about ${money(data.cost.total, state.info?.currency)}${data.cost.priced < data.cost.lines ? ` · ${data.cost.priced} of ${data.cost.lines} priced` : ""}</span>` : ""}
               ${r.course ? `<span class="chip-cat">${esc(cap(r.course))}</span>` : ""}
               ${r.cuisine ? `<span class="chip-cat">${esc(r.cuisine)}</span>` : ""}
@@ -161,7 +162,7 @@ export async function renderRecipe(view, params, state) {
     $$("[data-ing]", view).forEach((li) => (li.onclick = (e) => { if (!e.target.closest("button")) li.classList.toggle("line-through-soft"); }));
     wireSubstitute(view, r, view_.sub, () => view_.who.join(",") || "0", draw);
     const cook = $("#cook", view);
-    if (cook) cook.onclick = () => startCooking(r, view_);
+    if (cook) cook.onclick = () => startCooking(r, { ...view_, needs: data.needs });
     const version = $("#version", view);
     if (version) version.onclick = () => attempt(async () => {
       const { id } = await post(`/api/recipes/${r.id}/version`);

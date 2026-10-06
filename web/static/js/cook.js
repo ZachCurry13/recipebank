@@ -6,6 +6,7 @@ import { temps, timersIn } from "./units.js";
 import { parts, stepText } from "./ingredients.js";
 import { canSpeak, canListen, voiceOn, setVoice, speak, stopSpeaking, listen } from "./cookvoice.js";
 import { cookedSheet } from "./cooked.js";
+import { kidsOn, setKids, stepHelp } from "./kids.js";
 
 let wake = null;
 const timers = []; // {label, ends, done}
@@ -115,12 +116,14 @@ export function startCooking(r, v) {
         <div class="flex items-center gap-2">
           <span class="text-sm text-slate-400">Step ${at + 1} of ${r.steps.length}${step.section ? ` · ${esc(step.section)}` : ""}</span>
           <span class="ml-auto flex flex-wrap justify-end gap-1">
+            ${v.needs ? `<button id="cook-kids" class="btn-ghost px-2 ${kidsOn() ? "text-emerald-300" : ""}" aria-pressed="${kidsOn()}">🧒 Kid helper</button>` : ""}
             ${canSpeak() ? `<button id="cook-voice" class="btn-ghost px-2 ${voiceOn() ? "text-emerald-300" : ""}" aria-pressed="${voiceOn()}">${voiceOn() ? "🔊" : "🔈"} Read aloud</button>` : ""}
             ${canListen() ? `<button id="cook-listen" class="btn-ghost px-2 ${stopListening ? "text-emerald-300" : ""}" aria-pressed="${Boolean(stopListening)}">🎙️ ${stopListening ? "Listening" : "Listen"}</button>` : ""}
             <button id="cook-close" class="btn-ghost px-2">✕ Close</button></span>
         </div>
         ${stopListening ? `<p class="text-xs text-slate-400">Say "next", "back", "repeat" or "timer".</p>` : ""}
         <div class="h-1.5 w-full rounded-full bg-slate-800"><div id="cook-bar" class="h-full rounded-full bg-emerald-500"></div></div>
+        ${kidsOn() ? stepHelp(v.needs?.[at]) : ""}
         <p class="cook-step min-h-[30vh] break-words font-medium">${esc(temps(stepText(step.text, v.system), v.system))}</p>
         ${found.length ? `<div class="flex flex-wrap gap-2">${found.map((t, i) => `<button data-timer="${i}" class="btn-secondary">⏱ Start ${esc(t.label)}</button>`).join("")}</div>` : ""}
         <div id="cook-timers" class="flex flex-wrap gap-2"></div>
@@ -145,6 +148,8 @@ export function startCooking(r, v) {
       if (r.id && r.area !== "home") cookedSheet(r, () => window.dispatchEvent(new HashChangeEvent("hashchange"))).catch(() => {});
     };
     $$("[data-timer]", box).forEach((b) => (b.onclick = () => startTimer(found[Number(b.dataset.timer)])));
+    const kids = $("#cook-kids", box);
+    if (kids) kids.onclick = () => { setKids(!kidsOn()); draw(); };
     const voice = $("#cook-voice", box);
     if (voice) voice.onclick = () => { setVoice(!voiceOn()); if (voiceOn()) say(); draw(); };
     const ear = $("#cook-listen", box);

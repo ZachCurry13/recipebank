@@ -158,7 +158,7 @@ Build in this order, each tested, checked at 360×760 and pushed to `feature/v0.
    recipes; shown as a draft to keep or change.
 5. [x] **Scan a receipt:** a photo of a store receipt → lines with names, amounts and prices (vision AI); the
    person ticks what's right; matched to pantry items (amount added, price kept) or added as new ones.
-6. [ ] **Kids can help:** each step marked by what it needs (knife, stove, oven, hot liquid) from word lists;
+6. [x] **Kids can help:** each step marked by what it needs (knife, stove, oven, hot liquid) from word lists;
    a kid view in cook mode shows which steps a kid can do and which need a grown-up; "kids can help" filter.
 7. [ ] **Cookbooks and the card pile:** cookbooks by barcode (Open Library: title, author, cover), their recipes by
    page (typed, or a photo of the index read by the AI), recipes can say "Cookbook, page N"; "Still to

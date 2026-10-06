@@ -50,7 +50,9 @@ export async function renderLibrary(view, area, params, state) {
         <label><span class="label">Heat</span><select id="heat" class="input"><option value="">Any</option>${[0, 1, 2, 3, 4].map((h) =>
           `<option value="${h}" ${f.heat === String(h) ? "selected" : ""}>${h ? "Up to " + "🌶️".repeat(h) : "No heat"}</option>`).join("")}</select></label>
         <label><span class="label">How hard</span><select id="level" class="input"><option value="">Any</option>${Object.entries(LEVELS).map(([k, l]) =>
-          `<option value="${k}" ${f.level === k ? "selected" : ""}>${l}</option>`).join("")}</select></label>`}
+          `<option value="${k}" ${f.level === k ? "selected" : ""}>${l}</option>`).join("")}</select></label>
+        <label><span class="label">Helpers</span><select id="kids" class="input"><option value="">Anyone</option>
+          <option value="1" ${f.kids === "1" ? "selected" : ""}>🧒 Kids can help</option></select></label>`}
       </div>
       <div id="facets" class="mt-3 grid gap-3 sm:grid-cols-3"></div>
       </details>
@@ -61,7 +63,7 @@ export async function renderLibrary(view, area, params, state) {
   const load = async () => {
     const q = isQuestion(f.q) ? "" : f.q;
     const data = await get("/api/recipes" + qs({ area, who: f.who.join(",") || "0", q, ok: f.ok, max_min: f.max_min,
-      diet: f.diet, heat: f.heat, level: f.level, course: f.course, cuisine: f.cuisine, protein: f.protein }));
+      diet: f.diet, heat: f.heat, level: f.level, kids: f.kids, course: f.course, cuisine: f.cuisine, protein: f.protein }));
     if (!home) renderFacets(data.facets, f, load);
     renderCards(data.recipes, area, f);
   };
@@ -85,7 +87,7 @@ export async function renderLibrary(view, area, params, state) {
     b.classList.toggle("on");
     load();
   }));
-  for (const key of ["ok", "course", "max_min", "diet", "heat", "level"]) {
+  for (const key of ["ok", "course", "max_min", "diet", "heat", "level", "kids"]) {
     const el = $("#" + key);
     if (el) el.onchange = () => { f[key] = el.value; load(); };
   }
@@ -141,7 +143,7 @@ export function cardGrid(list, area, remove = false) {
 
 // filtered: any filter beyond search and who's eating is on.
 function filtered(f) {
-  return Boolean(f.ok || f.max_min || f.diet || f.heat || f.level || f.course || f.cuisine || f.protein);
+  return Boolean(f.ok || f.max_min || f.diet || f.heat || f.level || f.kids || f.course || f.cuisine || f.protein);
 }
 
 // isQuestion: three words or more is a question for Ask, not a word search.
