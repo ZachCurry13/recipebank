@@ -151,7 +151,7 @@ func (s *Server) handlePlan(w http.ResponseWriter, r *http.Request) {
 		}
 		out = append(out, d)
 	}
-	writeJSON(w, http.StatusOK, map[string]any{"days": out, "people": pc.people})
+	writeJSON(w, http.StatusOK, map[string]any{"days": out, "people": pc.people, "cost": s.planCost(entries)})
 }
 
 // handleSavePlan adds (POST) or moves/changes (PUT) a planned meal.

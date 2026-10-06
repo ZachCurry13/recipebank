@@ -1,6 +1,7 @@
 package api
 
 import (
+	"github.com/zachcurry13/recipebank/internal/budget"
 	"net/http"
 	"strconv"
 
@@ -46,6 +47,11 @@ func (s *Server) writeChecked(w http.ResponseWriter, r *http.Request, rc *recipe
 	}
 	if rc.ID > 0 {
 		out["cooks"], _ = s.Store.CooksFor(rc.ID)
+	}
+	if stock, err := s.Store.ListStock(rc.Area); err == nil {
+		if c := budget.Recipe(rc, stock, 1); c.Priced > 0 {
+			out["cost"] = c
+		}
 	}
 	if rc.VersionOf != nil {
 		if orig, err := s.Store.Recipe(*rc.VersionOf); err == nil {

@@ -114,7 +114,7 @@ Build in this order (each with tests, phone checks, a commit):
    servings grow to cover it, the shopping list skips the leftovers meal, Tonight says what to reheat.
 3. [x] **Email a recipe or the list:** Admin → Email (SMTP, from NovelCheck's delivery/smtp.go, password kept
    secret, test button); ✉️ on the recipe page and the shopping list; one address at a time, rate-limited.
-4. [ ] **Budget:** price and package size on pantry/supply items; the shopping list estimates each priced line and
+4. [x] **Budget:** price and package size on pantry/supply items; the shopping list estimates each priced line and
    the total against an optional weekly budget (Admin → House settings, currency); recipes show "about $X to
    make" from priced pantry items (share of the package used), saying how many lines were priced.
 5. [ ] **Events:** holiday menus and potlucks: name, date, who's coming (people and guests), the menu (recipes or

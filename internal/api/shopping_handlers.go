@@ -1,6 +1,7 @@
 package api
 
 import (
+	"github.com/zachcurry13/recipebank/internal/budget"
 	"net/http"
 	"strings"
 
@@ -35,7 +36,9 @@ func (s *Server) handleShopping(w http.ResponseWriter, r *http.Request) {
 			low = append(low, st)
 		}
 	}
-	writeJSON(w, http.StatusOK, map[string]any{"items": items, "low": low})
+	costs, total := budget.Shopping(items, stock)
+	writeJSON(w, http.StatusOK, map[string]any{"items": items, "low": low, "costs": costs,
+		"budget": map[string]any{"cost": total, "weekly": s.Store.SettingFloat(store.KeyBudgetWeekly)}})
 }
 
 // handleAddShopping adds one thing ({"text": "2 lb apples"} or {"stock_id": 4}).

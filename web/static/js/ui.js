@@ -68,6 +68,15 @@ export function fmtMin(m) {
 
 export const HEAT = ["No heat", "Mild", "Warm", "Hot", "Very hot", "Extreme"];
 
+// money formats a price in the house currency.
+export function money(v, currency) {
+  try {
+    return new Intl.NumberFormat(undefined, { style: "currency", currency: currency || "USD" }).format(v);
+  } catch {
+    return (Math.round(v * 100) / 100).toFixed(2);
+  }
+}
+
 // levelChip shows a recipe's difficulty.
 export const LEVELS = { easy: "🟢 Easy", medium: "🟡 Medium", hard: "🔴 Hard" };
 export const levelChip = (level) => (LEVELS[level] ? `<span class="chip-info" title="How hard it is to make">${LEVELS[level]}</span>` : "");

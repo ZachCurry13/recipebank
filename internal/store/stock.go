@@ -26,6 +26,8 @@ type StockItem struct {
 	Traces          []string `db:"-" json:"traces"`
 	IngredientsText string   `db:"ingredients_text" json:"ingredients_text"`
 	LabelSource     string   `db:"label_source" json:"label_source"`
+	Price           float64  `db:"price" json:"price"` // for one, as counted (0 = not priced)
+	Size            string   `db:"size" json:"size"`   // the package: "16 oz", "12 count"
 	CreatedAt       string   `db:"created_at" json:"created_at"`
 	UpdatedAt       string   `db:"updated_at" json:"updated_at"`
 }
@@ -34,7 +36,7 @@ type StockItem struct {
 func (it *StockItem) Low() bool { return it.LowAt > 0 && it.Qty <= it.LowAt }
 
 const stockCols = `id, area, name, brand, barcode, qty, unit, location, use_by, low_at, allergens, traces,
-	ingredients_text, label_source, created_at, updated_at`
+	ingredients_text, label_source, price, size, created_at, updated_at`
 
 func decodeStock(items []StockItem) []StockItem {
 	for i := range items {
@@ -85,10 +87,10 @@ func (s *Store) SaveStock(it *StockItem) (int64, error) {
 	tr, _ := json.Marshal(nonNilStrings(it.Traces))
 	args := []any{it.Area, it.Name, strings.TrimSpace(it.Brand), strings.TrimSpace(it.Barcode), max(0, it.Qty),
 		strings.TrimSpace(it.Unit), strings.TrimSpace(it.Location), it.UseBy, max(0, it.LowAt), string(al), string(tr),
-		it.IngredientsText, it.LabelSource}
+		it.IngredientsText, it.LabelSource, max(0, it.Price), strings.TrimSpace(it.Size)}
 	if it.ID == 0 {
 		res, err := s.DB.Exec(`INSERT INTO stock (area, name, brand, barcode, qty, unit, location, use_by, low_at,
-			allergens, traces, ingredients_text, label_source) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`, args...)
+			allergens, traces, ingredients_text, label_source, price, size) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`, args...)
 		if err != nil {
 			return 0, err
 		}
@@ -96,7 +98,7 @@ func (s *Store) SaveStock(it *StockItem) (int64, error) {
 	}
 	res, err := s.DB.Exec(`UPDATE stock SET area = ?, name = ?, brand = ?, barcode = ?, qty = ?, unit = ?,
 		location = ?, use_by = ?, low_at = ?, allergens = ?, traces = ?, ingredients_text = ?, label_source = ?,
-		updated_at = CURRENT_TIMESTAMP WHERE id = ?`, append(args, it.ID)...)
+		price = ?, size = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?`, append(args, it.ID)...)
 	if err != nil {
 		return 0, err
 	}

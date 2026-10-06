@@ -1,7 +1,7 @@
 // Pantry (food) and Supplies (cleaning and bathroom): what's in the house,
 // what to use soon, and what's running low.
 import { get, post } from "./api.js";
-import { $, $$, esc, attempt, canManage, cap } from "./ui.js";
+import { $, $$, esc, attempt, canManage, cap, money } from "./ui.js";
 import { editStock, scanStock } from "./stockedit.js";
 
 const view_ = { kitchen: { q: "", show: "" }, home: { q: "", show: "" } };
@@ -38,6 +38,7 @@ export async function renderStock(view, area, params, state) {
     <div class="min-w-0 flex-1 basis-40">
       ${manage ? `<button data-edit="${it.id}" class="break-words text-left font-medium hover:underline">${esc(it.name)}</button>` : `<span class="break-words font-medium">${esc(it.name)}</span>`}
       ${it.brand ? `<span class="text-xs text-slate-400">${esc(it.brand)}</span>` : ""}
+      ${it.price ? `<span class="text-xs text-slate-400"> · ${money(it.price, state.info?.currency)}${it.size ? " for " + esc(it.size) : ""}</span>` : ""}
       <div class="mt-1 flex flex-wrap gap-1">${useByChip(it.use_by)}
         ${isLow(it) ? `<span class="chip-unsure">${it.qty ? "Running low" : "Out"}</span>` : ""}
         ${it.allergens.map((a) => `<span class="chip-no">${esc(names[a] || a)}</span>`).join("")}

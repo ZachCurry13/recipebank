@@ -24,6 +24,8 @@ const (
 
 	KeyCheckUpdates = "check_updates" // ask GitHub (every few hours) whether a newer RecipeBank is out
 	KeyGuide        = "guide"         // the admin's "Getting started": steps ticked by hand, and "hidden"
+	KeyCurrency     = "currency"      // for prices: USD, EUR, GBP, CAD, AUD…
+	KeyBudgetWeekly = "budget_weekly" // the week's food budget (0 = none)
 
 	KeyMorningHour = "morning_hour" // "use soon" reminder (0-23, -1 = off)
 	KeyTonightHour = "tonight_hour" // tonight's dinner reminder (0-23, -1 = off)
@@ -48,6 +50,8 @@ var Defaults = map[string]string{
 	KeyMorningHour:       "9",
 	KeyTonightHour:       "16",
 	KeyCheckUpdates:      "true",
+	KeyCurrency:          "USD",
+	KeyBudgetWeekly:      "0",
 }
 
 // SecretKeys are never returned to the browser in clear text.
@@ -161,4 +165,13 @@ func SplitList(list string) []string {
 		}
 	}
 	return out
+}
+
+// SettingFloat reads a number setting; anything else (or below 0) is 0.
+func (s *Store) SettingFloat(key string) float64 {
+	f, err := strconv.ParseFloat(strings.TrimSpace(s.Setting(key)), 64)
+	if err != nil || f < 0 {
+		return 0
+	}
+	return f
 }

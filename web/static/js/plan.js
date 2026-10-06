@@ -1,6 +1,6 @@
 // The meal plan: a week of meals, who's eating each day, and the week's shopping.
 import { get, post, del } from "./api.js";
-import { $, $$, esc, attempt, canManage, toast } from "./ui.js";
+import { $, $$, esc, attempt, canManage, toast, money } from "./ui.js";
 import { verdictChips } from "./verdicts.js";
 import { pickMeal, pickWho, localDate, dayLabel, MEAL_NAMES, mealName } from "./planpick.js";
 
@@ -40,6 +40,8 @@ export async function renderPlan(view, params, state) {
   view.innerHTML = `
     <div class="mb-4 flex flex-wrap items-end gap-3">
       <div class="min-w-0 basis-full sm:basis-auto sm:flex-1"><h1 class="text-2xl font-bold">📅 Meal plan</h1>
+        ${data.cost?.priced ? `<p class="text-sm text-slate-400">These recipes: about ${money(data.cost.total, state.info?.currency)} from the pantry's prices
+          (${data.cost.priced} of ${data.cost.lines} ingredients priced).</p>` : ""}
         <p class="text-sm text-slate-400">Plan the week; every meal is checked for who's eating that day.</p></div>
       ${manage ? `<button id="shop" class="btn-primary">🛒 Add this week to the shopping list</button>` : ""}
     </div>

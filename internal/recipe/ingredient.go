@@ -71,6 +71,14 @@ func ParseLine(line string) Ingredient {
 			}
 		}
 	}
+	// "pinch of salt", "can of beans": one of the unit.
+	if in.Qty == nil {
+		var one Ingredient
+		if after := takeUnit(&one, rest); one.Unit != "" && strings.HasPrefix(strings.ToLower(after), "of ") {
+			q := 1.0
+			in.Qty, in.Unit, rest = &q, one.Unit, after
+		}
+	}
 	// "2 x 400g tins tomatoes": the size goes in the note, the tin is the unit.
 	if m := timesRE.FindStringSubmatch(rest); in.Qty != nil && m != nil {
 		notes = append(notes, strings.ReplaceAll(m[1], ",", ".")+" "+strings.ToLower(m[2]))
@@ -212,4 +220,16 @@ func sameKind(a, b string) (float64, float64, bool) {
 		return unitG[a], unitG[b], true
 	}
 	return 0, 0, false
+}
+
+// Convert changes an amount between units of the same kind (volume or
+// weight); ok is false when they can't be compared ("cup" and "lb").
+func Convert(q float64, from, to string) (float64, bool) {
+	if from == to {
+		return q, true
+	}
+	if a, b, ok := sameKind(from, to); ok {
+		return q * a / b, true
+	}
+	return 0, false
 }

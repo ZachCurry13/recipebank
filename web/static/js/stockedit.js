@@ -34,6 +34,8 @@ export function editStock(area, item, state, done, prefill = {}) {
         <label class="block"><span class="label">Kept in</span><input name="location" list="locs" class="input" value="${esc(it.location)}">
           <datalist id="locs">${LOCATIONS[area].map((l) => `<option value="${l}">`).join("")}</datalist></label>
         <label class="block"><span class="label">Running low at</span><input name="low_at" type="number" min="0" step="any" class="input" value="${it.low_at || ""}" placeholder="not watched"></label>
+        <label class="block"><span class="label">Price for one</span><input name="price" type="number" min="0" step="0.01" inputmode="decimal" class="input" value="${it.price || ""}" placeholder="not priced"></label>
+        <label class="block"><span class="label">Package size</span><input name="size" class="input" value="${esc(it.size || "")}" placeholder="16 oz, 5 lb, 12 count"></label>
         ${area === "kitchen" ? `<label class="col-span-2 block"><span class="label">Use by</span><input name="use_by" type="date" class="input" value="${esc(it.use_by)}"></label>` : ""}
       </div>
       <label class="block"><span class="label">Barcode</span><input name="barcode" inputmode="numeric" class="input" value="${esc(it.barcode)}"></label>
@@ -56,12 +58,12 @@ export function editStock(area, item, state, done, prefill = {}) {
     const labelChanged = picked("has").join() !== it.allergens.join() || picked("may").join() !== it.traces.join();
     const body = { ...it, name: f.name.value, brand: f.brand.value, qty: Number(f.qty.value) || 0, unit: f.unit.value,
       location: f.location.value.trim().toLowerCase(), use_by: f.use_by?.value || "", low_at: Number(f.low_at.value) || 0,
+      price: Number(f.price.value) || 0, size: f.size.value.trim(),
       barcode: f.barcode.value.trim(), allergens: picked("has"), traces: picked("may"),
       label_source: f.read.checked ? (labelChanged || !it.label_source ? "parent" : it.label_source) : "" };
     delete body.note;
     delete body.photo;
     delete body.scanned;
-    delete body.size;
     attempt(async () => {
       await (it.id ? put(`/api/stock/${it.id}`, body) : post("/api/stock", body));
       d.close();

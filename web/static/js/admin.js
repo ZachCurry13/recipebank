@@ -48,6 +48,11 @@ export async function renderAdmin(view, params, state) {
         </div>
         <label class="block"><span class="label">Stay signed in for (days)</span>
           <input name="session_days" type="number" min="1" max="365" class="input" value="${esc(s.session_days)}"></label>
+        <div class="grid grid-cols-2 gap-3">
+          <label class="block"><span class="label">Currency</span><select name="currency" class="input">${[["USD", "$ US dollar"], ["CAD", "$ Canadian dollar"],
+            ["AUD", "$ Australian dollar"], ["EUR", "€ Euro"], ["GBP", "£ Pound"], ["NZD", "$ NZ dollar"]].map(([k, l]) => opt(k, s.currency, l)).join("")}</select></label>
+          <label class="block"><span class="label">Weekly food budget</span><input name="budget_weekly" type="number" min="0" step="1" inputmode="decimal"
+            class="input" value="${Number(s.budget_weekly) || ""}" placeholder="none"></label></div>
         <label class="block"><span class="label">USDA FoodData Central key, for nutrition estimates ${s.usda_api_key_set ? "(saved; leave blank to keep it)" : ""}</span>
           <input name="usda_api_key" type="password" autocomplete="off" class="input"></label>
         <p class="text-xs text-slate-500">Free: <a href="https://fdc.nal.usda.gov/api-key-signup" target="_blank" rel="noopener noreferrer" class="underline">sign up for a key</a>
@@ -98,7 +103,8 @@ export async function renderAdmin(view, params, state) {
     attempt(async () => {
       await put("/api/admin/settings", { allergen_list: house.allergen_list.value, default_units: house.default_units.value, session_days: house.session_days.value,
         morning_hour: house.morning_hour.value, tonight_hour: house.tonight_hour.value,
-        check_updates: house.check_updates.checked ? "true" : "false", usda_api_key: house.usda_api_key.value.trim() });
+        check_updates: house.check_updates.checked ? "true" : "false", usda_api_key: house.usda_api_key.value.trim(),
+        currency: house.currency.value, budget_weekly: String(Number(house.budget_weekly.value) || 0) });
       house.usda_api_key.value = "";
       await refreshInfo();
     }, "Saved");

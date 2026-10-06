@@ -1,6 +1,7 @@
 package api
 
 import (
+	"github.com/zachcurry13/recipebank/internal/budget"
 	"github.com/zachcurry13/recipebank/internal/recipe"
 	"github.com/zachcurry13/recipebank/internal/store"
 )
@@ -55,4 +56,28 @@ func (s *Server) mealFactor(e store.PlanEntry, rc *recipe.Recipe) float64 {
 		return 1 + float64(len(m.For)) // unknown servings: one more batch per leftovers meal
 	}
 	return (servingsOf(e, rc) + m.Extra) / rc.Servings
+}
+
+// planCost estimates the planned recipes (leftovers included in the meal
+// they come from) from the pantry's prices.
+func (s *Server) planCost(entries []store.PlanEntry) budget.Cost {
+	var total budget.Cost
+	stock, err := s.Store.ListStock("kitchen")
+	if err != nil {
+		return total
+	}
+	for _, e := range entries {
+		if e.RecipeID == nil || e.LeftoversOf != nil {
+			continue
+		}
+		rc, err := s.Store.Recipe(*e.RecipeID)
+		if err != nil {
+			continue
+		}
+		c := budget.Recipe(rc, stock, s.mealFactor(e, rc))
+		total.Total += c.Total
+		total.Priced += c.Priced
+		total.Lines += c.Lines
+	}
+	return total
 }

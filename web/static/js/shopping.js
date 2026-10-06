@@ -1,7 +1,19 @@
 // The shopping list: shared by the family, grouped by store section, and
 // usable in the store without signal (ticks are sent once back online).
 import { get, post, put, del } from "./api.js";
-import { $, $$, esc, attempt, toast } from "./ui.js";
+import { $, $$, esc, attempt, toast, money } from "./ui.js";
+
+// budgetCard: about what the list costs, from the pantry's prices, against
+// the weekly budget if one is set.
+function budgetCard(b, currency) {
+  const c = b?.cost;
+  if (!c || (!c.priced && !b.weekly)) return "";
+  const over = b.weekly > 0 && c.total > b.weekly;
+  return `<div class="card mb-4 space-y-2 text-sm">
+    <p>About <b>${money(c.total, currency)}</b> for ${c.priced} of ${c.lines} thing${c.lines === 1 ? "" : "s"}${c.lines > c.priced ? ` (${c.lines - c.priced} without a price in the pantry)` : ""}.</p>
+    ${b.weekly > 0 ? `<progress class="h-2 w-full" max="${b.weekly}" value="${Math.min(c.total, b.weekly)}"></progress>
+      <p class="${over ? "text-rose-300" : "text-slate-400"}">${over ? `${money(c.total - b.weekly, currency)} over` : `${money(b.weekly - c.total, currency)} left of`} the ${money(b.weekly, currency)} weekly budget.</p>` : ""}</div>`;
+}
 import { amountText } from "./units.js";
 import { emailSheet } from "./email.js";
 
@@ -31,6 +43,7 @@ export async function flush() {
 
 export async function renderShopping(view, params, state) {
   const system = state.user.units || state.info?.default_units || "us";
+  const currency = state.info?.currency;
   let data = { items: [], low: [] };
   let offline = false;
   const refresh = async () => {
@@ -66,6 +79,7 @@ export async function renderShopping(view, params, state) {
       <input type="checkbox" data-tick="${it.id}" class="h-6 w-6 shrink-0 accent-emerald-600" ${it.checked ? "checked" : ""}>
       <span class="min-w-0 break-words ${it.checked ? "line-through-soft" : ""}">
         ${it.qty ? `<b>${esc(amountText(it.qty, it.unit, system))}</b> ` : ""}${esc(it.name)}
+        ${!it.checked && data.costs?.[it.id] ? `<span class="text-xs text-slate-400"> · ≈ ${money(data.costs[it.id], currency)}</span>` : ""}
         ${it.note ? `<span class="block text-xs text-slate-500">${esc(it.note)}</span>` : ""}</span></label>
     ${offline ? "" : `<button data-rm="${it.id}" class="btn-ghost min-h-0 px-2 py-1 text-slate-500" aria-label="Remove">✕</button>`}</li>`;
   const draw = () => {
@@ -76,6 +90,7 @@ export async function renderShopping(view, params, state) {
       <h1 class="text-2xl font-bold">🛒 Shopping list</h1>
       <p class="mb-4 text-sm text-slate-400">One list for the whole family. Add recipes from their page, or type things here.</p>
       ${!offline && open.length ? `<button id="mail-list" class="btn-ghost mb-3 min-h-0 py-1">✉️ Email the list</button>` : ""}
+      ${!offline ? budgetCard(data.budget, currency) : ""}
       ${offline ? `<p class="box-caution mb-4">Offline: showing the list saved on this phone. Ticks are kept and sent when you're back online.</p>` : ""}
       ${offline ? "" : `<form id="add" class="mb-4 flex flex-wrap gap-2"><input name="text" class="input min-w-0 flex-1 basis-48" placeholder="Add something: 2 lb apples, milk" autocomplete="off">
         <button class="btn-primary">Add</button></form>`}
