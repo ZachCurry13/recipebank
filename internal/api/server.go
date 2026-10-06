@@ -179,6 +179,8 @@ func (s *Server) Router() http.Handler {
 				r.Use(auth.RequireAdmin)
 				r.Get("/admin/settings", s.handleGetSettings)
 				r.Get("/admin/guide", s.handleGuide)
+				r.Get("/admin/backup", s.handleBackup)
+				r.Post("/admin/backup", s.handleRestore)
 				r.Put("/admin/guide", s.handleGuideUpdate)
 				r.Put("/admin/settings", s.handlePutSettings)
 				r.Post("/admin/ai/test", s.handleTestAI)

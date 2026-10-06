@@ -149,7 +149,7 @@ a reload; a recipe's cost says "N of M priced" in words (phones show no tooltips
 
 Build in this order, each tested, checked at 360×760 and pushed to `feature/v0.5`:
 1. [x] **Who may send email:** Admin → Email "Who can send": parents only (default) or everyone.
-2. [ ] **Back up and move recipes:** Admin → Back up: download every recipe (Kitchen and Home & Care, photos,
+2. [x] **Back up and move recipes:** Admin → Back up: download every recipe (Kitchen and Home & Care, photos,
    cooks, collections) as one .zip; import such a file into any RecipeBank (skips recipes it already has).
 3. [ ] **Share a recipe by link:** a read-only page for someone without an account, expiring after 7 days, which
    parents can stop sharing; no names or allergies on it.
