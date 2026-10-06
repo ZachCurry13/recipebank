@@ -2,6 +2,7 @@
 // the bold column), the item, and recipe wording ("to serve", "optional") as
 // a quiet note.
 import { US, METRIC, toMetric, toUS, usNumber, metricNumber, unitLabel, singular } from "./units.js";
+import { weigh } from "./cupweights.js";
 
 // Phrases that say how a recipe uses something, not what it is.
 const TRAILING = [" plus ", " for ", " to serve", " to taste", " to garnish", " as needed", " if needed", ", divided", " divided", " optional"];
@@ -28,9 +29,11 @@ export function parts(ing, factor, system) {
   const [name, extra] = splitName((ing.food || ing.line || "").trim());
   const note = [extra, ing.note].filter(Boolean).map((n) => n.replace(/^\((.*)\)$/, "$1")).join(" · ");
   if (ing.qty === undefined || ing.qty === null) return { amount: "", name, note };
-  const [q, unit] = convert(ing.qty * factor, ing.unit, system);
+  // In metric, cups of flour, sugar or butter are weighed, as metric recipes do.
+  const conv = (n) => weigh(n, ing.unit, name, system) || convert(n, ing.unit, system);
+  const [q, unit] = conv(ing.qty * factor);
   let amount = number(q, unit);
-  if (ing.qty_max) amount += "–" + number(convert(ing.qty_max * factor, ing.unit, system)[0], unit);
+  if (ing.qty_max) amount += "–" + number(conv(ing.qty_max * factor)[0], unit);
   const one = !unit && q <= 1 && !ing.qty_max;
   return { amount: `${amount} ${unitLabel(unit, ing.qty_max ? 2 : q)}`.trim(), name: one ? singular(name) : name, note };
 }
@@ -56,10 +59,13 @@ function parseNumber(s) {
 // stepText rewrites the amounts in a step into the unit system ("Put 100g
 // flour" → "Put 3 ½ oz flour"), leaving everything else as written.
 export function stepText(text, system) {
-  return text.replace(AMOUNT_RE, (whole, num, word) => {
+  return text.replace(AMOUNT_RE, (whole, num, word, at, all) => {
     const unit = UNIT_WORDS[word.toLowerCase()];
     if (!unit || !needsConvert(unit, system)) return whole;
-    const [q, u] = convert(parseNumber(num), unit, system);
+    // The food is the next few words ("2 cups of flour, then…" → "flour").
+    const food = all.slice(at + whole.length, at + whole.length + 40).replace(/^\s*(of\s+)?/, "")
+      .split(/[,.;:]|\s(?:and|with|or|into|in|to)\s/)[0].split(/\s+/).slice(0, 3).join(" ");
+    const [q, u] = weigh(parseNumber(num), unit, food, system) || convert(parseNumber(num), unit, system);
     // Non-breaking spaces keep "1 ¼ cups" on one line.
     return q > 0 ? `${number(q, u)} ${unitLabel(u, q)}`.replace(/ /g, "\u00a0") : whole;
   });
