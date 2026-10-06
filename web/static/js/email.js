@@ -2,6 +2,7 @@
 // mail server set up under Admin → Email. Admin → Email lives here too.
 import { post, put } from "./api.js";
 import { $, esc, attempt, busy, sheet, toast } from "./ui.js";
+import { refreshInfo } from "./app.js";
 
 const LAST = "recipebank.lastEmailTo";
 const lastTo = () => { try { return localStorage.getItem(LAST) || ""; } catch { return ""; } };
@@ -55,7 +56,7 @@ export function renderEmailAdmin(box, s) {
   f.onsubmit = (e) => {
     e.preventDefault();
     const body = Object.fromEntries(["smtp_host", "smtp_port", "smtp_username", "smtp_password", "smtp_from"].map((k) => [k, f[k].value.trim()]));
-    attempt(async () => { await put("/api/admin/settings", body); f.smtp_password.value = ""; }, "Saved");
+    attempt(async () => { await put("/api/admin/settings", body); f.smtp_password.value = ""; await refreshInfo(); }, "Saved");
   };
   $("#mail-test", box).onclick = (e) => attempt(() => busy(e.currentTarget, "Sending…", async () => {
     await post("/api/admin/email/test", { to: $("#mail-test-to", box).value.trim() });

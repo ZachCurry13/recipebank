@@ -49,7 +49,7 @@ export async function renderRecipe(view, params, state) {
             <div class="mt-2 flex flex-wrap items-center gap-1">
               ${r.total_min ? `<span class="chip-info">⏱ ${fmtMin(r.total_min)}${r.prep_min ? ` (prep ${fmtMin(r.prep_min)})` : ""}</span>` : ""}
               ${home ? "" : peppers(data.heat) + levelChip(data.level)}
-              ${data.cost ? `<span class="chip-info" title="From the pantry's prices: ${data.cost.priced} of ${data.cost.lines} ingredients priced">💲 about ${money(data.cost.total, state.info?.currency)}${data.cost.priced < data.cost.lines ? "+" : ""}</span>` : ""}
+              ${data.cost ? `<span class="chip-info" title="From the pantry's prices: ${data.cost.priced} of ${data.cost.lines} ingredients priced">💲 about ${money(data.cost.total, state.info?.currency)}${data.cost.priced < data.cost.lines ? ` · ${data.cost.priced} of ${data.cost.lines} priced` : ""}</span>` : ""}
               ${r.course ? `<span class="chip-cat">${esc(cap(r.course))}</span>` : ""}
               ${r.cuisine ? `<span class="chip-cat">${esc(r.cuisine)}</span>` : ""}
               ${r.protein ? `<span class="chip-cat">${esc(cap(r.protein))}</span>` : ""}

@@ -8,6 +8,8 @@ import { $, $$, esc, attempt, toast, money } from "./ui.js";
 function budgetCard(b, currency) {
   const c = b?.cost;
   if (!c || (!c.priced && !b.weekly)) return "";
+  if (!c.priced) return `<p class="mb-4 text-sm text-slate-400">No prices yet: give pantry items a price to see what the list costs
+    against the ${money(b.weekly, currency)} weekly budget.</p>`;
   const over = b.weekly > 0 && c.total > b.weekly;
   return `<div class="card mb-4 space-y-2 text-sm">
     <p>About <b>${money(c.total, currency)}</b> for ${c.priced} of ${c.lines} thing${c.lines === 1 ? "" : "s"}${c.lines > c.priced ? ` (${c.lines - c.priced} without a price in the pantry)` : ""}.</p>

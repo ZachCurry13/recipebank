@@ -109,3 +109,19 @@ func TestEvents(t *testing.T) {
 		t.Fatalf("after delete: %d", code)
 	}
 }
+
+// Someone taken off the Family page no longer counts as coming.
+func TestEventCountsOnlyPeopleStillThere(t *testing.T) {
+	c, _ := setup(t)
+	var p struct{ ID int64 }
+	c.do("POST", "/api/people", map[string]any{"name": "Cousin", "heat_max": -1}, &p)
+	c.do("POST", "/api/events", map[string]any{"name": "Picnic", "who": []int64{p.ID}, "extra": 2}, nil)
+	c.do("DELETE", fmt.Sprintf("/api/people/%d", p.ID), nil, nil)
+	var all struct {
+		Events []eventCard
+	}
+	c.do("GET", "/api/events", nil, &all)
+	if len(all.Events) != 1 || all.Events[0].People != 2 {
+		t.Fatalf("list: %+v", all.Events)
+	}
+}

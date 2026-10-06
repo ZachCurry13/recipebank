@@ -27,14 +27,29 @@ func (s *Server) handleListEvents(w http.ResponseWriter, r *http.Request) {
 		writeStoreErr(w, err)
 		return
 	}
+	people, err := s.Store.ListPeople()
+	if err != nil {
+		writeStoreErr(w, err)
+		return
+	}
+	known := map[int64]bool{}
+	for _, p := range people {
+		known[p.ID] = true
+	}
 	out := []eventCard{}
 	for _, e := range events {
+		coming := 0
+		for _, id := range e.Who {
+			if known[id] { // someone since taken off the Family page doesn't count
+				coming++
+			}
+		}
 		dishes, err := s.Store.Dishes(e.ID)
 		if err != nil {
 			writeStoreErr(w, err)
 			return
 		}
-		out = append(out, eventCard{Event: e, Dishes: len(dishes), People: len(e.Who) + e.Extra})
+		out = append(out, eventCard{Event: e, Dishes: len(dishes), People: coming + e.Extra})
 	}
 	writeJSON(w, http.StatusOK, map[string]any{"events": out})
 }
