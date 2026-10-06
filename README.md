@@ -21,8 +21,12 @@ Runs as one small Docker container (made for TrueNAS SCALE), works on phones, an
 - **Pantry, Supplies and the shopping list:** scan barcodes (Open Food Facts fills in the label), use-by dates and running-low levels; one shared shopping list that combines amounts, skips what's in the house, and works in the store without signal.
 - **Collections and seasons:** themed shelves (the AI can suggest recipes; RecipeBank's rules check them), plus seasonal shelves and feast days from Advent baking to Lent Fridays and summer grilling.
 - **Smart search:** ask in plain words ("quick dairy-free dinners everyone can eat").
+- **What can I make?** from what's ticked, typed or seen in a photo of the fridge, and **Substitute** for an ingredient you don't have, only with stand-ins that suit everyone eating.
+- **Card photos read carefully:** a word-for-word copy first, a check for missed or misread lines (a recipe stays "not sure" for allergies until someone checks it against the card), **read again**, and reading hints learned from the family's corrections.
+- **From a dish:** a photo of a meal finds similar recipes, or the AI drafts its best guess.
+- **We cooked it** with each person's 👍/👎, **nutrition estimates** from USDA FoodData Central, **printing** and a **family cookbook** to print or save as a PDF, and sharing links from an Android phone.
 - **Cook mode voice**, **phone notifications** (timers, use soon, running low, tonight's dinner) and **remote access** through a built-in Cloudflare Tunnel ([docs/REMOTE_ACCESS.md](docs/REMOTE_ACCESS.md)).
-- **Accounts** for parents and kids; people without accounts (guests) still get checked.
+- **Accounts** for parents and kids; people without accounts (guests) still get checked. A short welcome for new people, a setup checklist for the admin, update notices and **What's new** in the app.
 
 RecipeBank helps, but it doesn't replace reading labels. When in doubt, ask a doctor, dentist or vet.
 

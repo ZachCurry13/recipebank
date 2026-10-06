@@ -1,5 +1,52 @@
 # Changelog
 
+## [0.3.0] - 2026-10-06
+
+Cooking from what you have, better reading of recipe cards, and a guide for new people.
+
+### 🥕 What can I make?
+- Tick what's in the kitchen (the pantry is ticked already), type more, or photograph the fridge and untick anything the AI got wrong.
+- Recipes that need least come first, then ones that use up food near its date. Each shows what's missing, swaps already in the kitchen, and **Add what's missing to the list**.
+
+### ↔ Substitute
+- On a recipe, tap **Substitute**, then the ingredient you don't have (cumin, buttermilk…): stand-ins with how much to use. Only ideas that suit everyone eating are shown, and what's in the pantry comes first.
+- The AI can suggest more ideas; they're checked by the same allergy and diet rules.
+
+### 📷 Reading recipe cards
+- Photos stay the right way up, and ⟳ turns any that aren't.
+- The AI copies the card word for word first and then organizes it, so amounts aren't lost. Two-column cards are read left column first.
+- After every scan RecipeBank checks the recipe against itself: foods the steps use that no line has, lines without an amount, "11/2" that probably means 1 1/2. Until someone taps **Checked against the card**, the recipe is "not sure" for anyone with an allergy.
+- **Read the card again** (turned, or with another AI) and keep the new reading only if it's better.
+- Lines you fix while checking teach the reader for the next cards (**Admin → AI** lists what it learned).
+- Steps that name an allergen no ingredient line has ("stir in the butter") also make a recipe "not sure".
+
+### 🍽️ From a dish
+- **Add → From a dish:** photograph a meal to find your recipes like it, or let the AI draft its best guess, checked like any other draft.
+
+### 🍳 We cooked it
+- Log a cook with each person's 👍 or 👎 and a note. The recipe shows its history, and Tonight's ideas put what people liked first.
+
+### 🥗 Nutrition estimates
+- Calories, protein, carbohydrates, fat, fiber and sodium per serving, from USDA FoodData Central (a free key in **Admin → House settings**). It lists what it couldn't count. Only food names are sent.
+
+### 🖨 Share, print and the family cookbook
+- On Android, share a recipe link to RecipeBank from any app.
+- Print a recipe, or the whole **family cookbook** (or one collection) with a cover and contents. Save it as a PDF from the print menu.
+
+### 🥫 Pantry
+- A scanned barcode shows the package photo: "Is this what you scanned?" Scanning something already in the house asks before counting one more.
+
+### 👋 Getting started and updates
+- A short welcome the first time someone opens RecipeBank, and a **Getting started** checklist for whoever set it up.
+- When a new version is out, parents see a note and admins can get a phone notification. After an update, everyone sees what's new once; all the notes are under **Me → What's new**.
+
+### Also
+- Ingredients in a cleaner layout, with the amounts in their own column.
+- Typing "cheddar" counts as cheddar cheese, and bell peppers and garlic salt are no longer counted as always in the kitchen.
+- Card abbreviations like "1 T." and "1 t." are read as tablespoon and teaspoon.
+
+Updating: nothing to change in TrueNAS. RecipeBank adds what it needs to its database by itself.
+
 ## [0.2.0] - 2026-10-06
 
 A big one: the pantry, shopping, planning the week, and using RecipeBank away from home.

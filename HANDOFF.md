@@ -88,7 +88,7 @@ the catch-ups and new ideas below. Build in this order:
    banner when the server changed under an open page, a once-per-release push to admins ("updates" kind),
    #/whatsnew (bundled CHANGELOG.md via changelog.go + GitHub notes), "What's new" sheet once per person after an
    update. The 0.3.0 CHANGELOG section must exist before release, or nobody sees notes after updating.
-7. [ ] Phone checks, docs, CHANGELOG 0.3.0, release with the user's OK.
+7. [~] Phone checks (all 22 pages at 360×760, light and dark), docs and CHANGELOG 0.3.0 done; release only with the user's OK.
 
 0.4 first (chosen 2026-10-06): budget (prices, weekly estimate, cost per recipe), difficulty, planned leftovers,
 email a recipe or the list, events (holiday menus, potlucks, guests per meal).
