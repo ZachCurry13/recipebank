@@ -60,7 +60,7 @@ export async function renderEvent(view, params, state) {
             : `<p class="text-sm text-slate-400">Nothing on the menu yet.</p>`}
           <div class="no-print flex flex-wrap gap-2">
             ${manage ? `<button id="add-dish" class="btn-secondary">➕ Add a dish</button>` : ""}
-            ${data.dishes.some((d) => d.recipe && !d.brings) ? `<button id="shop" class="btn-ghost">🛒 Our dishes to the list (for ${data.headcount})</button>` : ""}</div>
+            ${data.dishes.some((d) => d.recipe && !d.brings) ? `<button id="shop" class="btn-ghost">🛒 Our dishes to the list (${data.headcount ? `for ${data.headcount}` : "as written"})</button>` : ""}</div>
         </div>
       </div>`;
     $("#print", view).onclick = () => window.print();
