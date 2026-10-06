@@ -17,6 +17,11 @@ Runs as one small Docker container (made for TrueNAS SCALE), works on phones, an
 - **Diets:** vegetarian, vegan, pescatarian, meatless (Fridays and Lent), gluten-free, dairy-free, nut-free, halal, kosher-style. Plus dislikes and a heat limit (0–5 peppers).
 - **Home & Care warnings:** dangerous mixes (bleach with ammonia, vinegar or alcohol; peroxide with vinegar), things kids must not swallow, oils toxic to cats, xylitol for dogs, acids that etch stone, storage and labels.
 - **Recipe pages** with a servings scaler and US ⇄ metric, **cook mode** (one big step at a time, timers that ring), "our version" of a recipe that keeps the original, ratings and notes.
+- **Tonight and the meal plan:** a week of meals with who's home (guests too), every meal checked for the people eating, and Tonight as the first page.
+- **Pantry, Supplies and the shopping list:** scan barcodes (Open Food Facts fills in the label), use-by dates and running-low levels; one shared shopping list that combines amounts, skips what's in the house, and works in the store without signal.
+- **Collections and seasons:** themed shelves (the AI can suggest recipes; RecipeBank's rules check them), plus seasonal shelves and feast days from Advent baking to Lent Fridays and summer grilling.
+- **Smart search:** ask in plain words ("quick dairy-free dinners everyone can eat").
+- **Cook mode voice**, **phone notifications** (timers, use soon, running low, tonight's dinner) and **remote access** through a built-in Cloudflare Tunnel ([docs/REMOTE_ACCESS.md](docs/REMOTE_ACCESS.md)).
 - **Accounts** for parents and kids; people without accounts (guests) still get checked.
 
 RecipeBank helps, but it doesn't replace reading labels. When in doubt, ask a doctor, dentist or vet.

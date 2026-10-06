@@ -123,6 +123,10 @@ services:
 
 Cook mode keeps the screen on only when RecipeBank is opened through a secure (`https://`) address; on a plain `http://` address the screen may dim while you cook.
 
+## Step 6 (optional): Use it away from home, and get notifications
+
+To use the shopping list in the store on cellular, turn on the built-in Cloudflare Tunnel under **Admin → Remote access** ([step-by-step guide](REMOTE_ACCESS.md)). The secure `https://` address it gives you is also what phones need for live barcode scanning, voice in cook mode, keeping the screen on, and notifications. Open that address on each phone, add it to the home screen, then turn notifications on under **Me → Phone notifications**.
+
 ---
 
 ## Updating RecipeBank

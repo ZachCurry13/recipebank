@@ -29,7 +29,8 @@ Work on `feature/v0.2`, commit and push after each part. Status per part:
 6. [x] Cook mode voice: read steps aloud; "next/back/repeat" where supported.
 7. [x] Remote access: Cloudflare tunnel from NovelCheck (`internal/tunnel`, cloudflared in the image).
 8. [x] Phone notifications: Web Push from NovelCheck (`internal/push`): timers, use-by, low stock, tonight.
-9. [ ] Phone checks, docs (TRUENAS, REMOTE_ACCESS, CHANGELOG), release 0.2.0.
+9. [x] Phone checks (all 18 pages at 360 px, light and dark), docs (TRUENAS, REMOTE_ACCESS, CHANGELOG, README).
+   [ ] Release 0.2.0 (waiting for the user's OK).
 
 ## 2. Rules
 
@@ -63,12 +64,15 @@ lost once and test data landed in the repo folder).
 
 ## 6. Not built yet
 
-Pantry, supply closet, shopping list, meal plan (0.2); cookbooks and the to-digitize pile; share from phone;
-seasons and feasts; AI collections; smart (semantic) search; kitchen tablet with PINs (only if wanted);
-Mealie/Tandoor/Paprika imports (to review with the user); Google Cast; remote access; update banner.
+"What can I make?" (photo of the fridge or ticked items), dish photo → recipe ideas, cookbooks and the
+to-digitize pile, share from phone and printing / family cookbook PDF, kitchen tablet with PINs (only if
+wanted), Mealie/Tandoor/Paprika imports (to review with the user), Google Cast, update banner, embedding-model
+search ranking.
 
 ## 7. Next immediate steps
 
-1. Build the 0.2.0 parts in order (section 1b), ticking them off here.
+1. With the user's OK, release 0.2.0 (all parts built on `feature/v0.2`, CI passing).
+   Not tried for real yet: live camera scanning, notifications and voice (need the https address on a phone),
+   the tunnel connecting (needs the user's Cloudflare token), AI suggestions with a real model.
 2. Not yet tested for real: reading card photos with an AI (no AI was set up locally).
 3. Then plan 0.2 with the user (pantry, supply closet, shopping list, meal plan).
