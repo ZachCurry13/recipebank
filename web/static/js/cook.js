@@ -2,7 +2,8 @@
 // that ring, and the screen kept on where the browser allows it.
 import { $, $$, esc } from "./ui.js";
 import { post, del } from "./api.js";
-import { amountLine, temps, timersIn } from "./units.js";
+import { temps, timersIn } from "./units.js";
+import { parts, stepText } from "./ingredients.js";
 import { canSpeak, canListen, voiceOn, setVoice, speak, stopSpeaking, listen } from "./cookvoice.js";
 
 let wake = null;
@@ -51,7 +52,7 @@ export function startCooking(r, v) {
   let at = 0;
   let spoken = -1; // the step last read aloud
   let stopListening = null;
-  const say = () => { spoken = at; speak(`Step ${at + 1}. ${temps(r.steps[at].text, v.system)}`); };
+  const say = () => { spoken = at; speak(`Step ${at + 1}. ${temps(stepText(r.steps[at].text, v.system), v.system)}`); };
   const startTimer = (t) => {
     const timer = { label: t.label, ends: Date.now() + t.secs * 1000, done: false, id: null };
     timers.push(timer);
@@ -119,11 +120,11 @@ export function startCooking(r, v) {
         </div>
         ${stopListening ? `<p class="text-xs text-slate-400">Say "next", "back", "repeat" or "timer".</p>` : ""}
         <div class="h-1.5 w-full rounded-full bg-slate-800"><div id="cook-bar" class="h-full rounded-full bg-emerald-500"></div></div>
-        <p class="cook-step min-h-[30vh] break-words font-medium">${esc(temps(step.text, v.system))}</p>
+        <p class="cook-step min-h-[30vh] break-words font-medium">${esc(temps(stepText(step.text, v.system), v.system))}</p>
         ${found.length ? `<div class="flex flex-wrap gap-2">${found.map((t, i) => `<button data-timer="${i}" class="btn-secondary">⏱ Start ${esc(t.label)}</button>`).join("")}</div>` : ""}
         <div id="cook-timers" class="flex flex-wrap gap-2"></div>
         ${used.length ? `<div class="card"><h2 class="label">For this step</h2><ul class="space-y-1 text-lg">${used.map((ing) =>
-          `<li>${esc(amountLine(ing, v.factor, v.system))}</li>`).join("")}</ul></div>` : ""}
+          { const p = parts(ing, v.factor, v.system); return `<li class="grid grid-cols-[5.5rem_minmax(0,1fr)] gap-x-3"><b class="text-right tabular-nums">${esc(p.amount)}</b><span class="min-w-0 break-words">${esc(p.name)}</span></li>`; }).join("")}</ul></div>` : ""}
         ${wake ? "" : `<p class="text-xs text-slate-500">Tip: this browser may let the screen go dark. Opening RecipeBank through a secure (https) address keeps it on.</p>`}
         <div class="sticky bottom-0 mt-auto grid grid-cols-2 gap-3 bg-slate-950 py-3 pb-safe">
           <button id="cook-prev" class="btn-secondary py-4 text-lg" ${at === 0 ? "disabled" : ""}>‹ Back</button>

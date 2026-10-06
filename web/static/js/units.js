@@ -2,8 +2,8 @@
 
 const ML = { tsp: 4.929, tbsp: 14.787, cup: 236.59, "fl oz": 29.574, pint: 473.18, quart: 946.35, gallon: 3785.4, ml: 1, l: 1000 };
 const G = { oz: 28.35, lb: 453.59, g: 1, kg: 1000 };
-const US = new Set(["tsp", "tbsp", "cup", "fl oz", "pint", "quart", "gallon", "oz", "lb"]);
-const METRIC = new Set(["ml", "l", "g", "kg"]);
+export const US = new Set(["tsp", "tbsp", "cup", "fl oz", "pint", "quart", "gallon", "oz", "lb"]);
+export const METRIC = new Set(["ml", "l", "g", "kg"]);
 // Count words shown in the plural for more than one.
 const PLURAL = { clove: "cloves", can: "cans", stick: "sticks", package: "packages", slice: "slices", bunch: "bunches",
   sprig: "sprigs", head: "heads", jar: "jars", bottle: "bottles", drop: "drops", pinch: "pinches", dash: "dashes",
@@ -12,7 +12,7 @@ const PLURAL = { clove: "cloves", can: "cans", stick: "sticks", package: "packag
 const FRACS = [[0, ""], [1 / 8, "⅛"], [1 / 4, "¼"], [1 / 3, "⅓"], [3 / 8, "⅜"], [1 / 2, "½"], [5 / 8, "⅝"], [2 / 3, "⅔"], [3 / 4, "¾"], [7 / 8, "⅞"], [1, ""]];
 
 // usNumber writes 1.5 as "1 ½" (to the nearest eighth or third).
-function usNumber(n) {
+export function usNumber(n) {
   if (n >= 10) return String(Math.round(n));
   let whole = Math.floor(n);
   const rest = n - whole;
@@ -26,14 +26,14 @@ function usNumber(n) {
   return [whole || "", best[1]].filter(Boolean).join(" ");
 }
 
-function metricNumber(n) {
+export function metricNumber(n) {
   if (n >= 100) return String(Math.round(n / 5) * 5);
   if (n >= 10) return String(Math.round(n));
   return String(Math.round(n * 10) / 10);
 }
 
 // toMetric / toUS convert an amount; unchanged if it's already there or a count.
-function toMetric(q, unit) {
+export function toMetric(q, unit) {
   if (ML[unit] && !METRIC.has(unit)) {
     const ml = q * ML[unit];
     return ml >= 1000 ? [ml / 1000, "l"] : [ml, "ml"];
@@ -45,7 +45,7 @@ function toMetric(q, unit) {
   return [q, unit];
 }
 
-function toUS(q, unit) {
+export function toUS(q, unit) {
   if (unit === "ml" || unit === "l") {
     const ml = q * ML[unit];
     if (ml < 14) return [ml / ML.tsp, "tsp"];
@@ -59,13 +59,13 @@ function toUS(q, unit) {
   return [q, unit];
 }
 
-function unitLabel(unit, q) {
+export function unitLabel(unit, q) {
   if (!unit) return "";
   return q > 1 && PLURAL[unit] ? PLURAL[unit] : unit;
 }
 
 // singular: "1 large egg", not "1 large eggs" (the last word only).
-function singular(food) {
+export function singular(food) {
   if (/(ss|us|is)$/i.test(food)) return food;
   if (/(oes|ches|shes)$/i.test(food)) return food.slice(0, -2);
   return food.replace(/s$/i, "");

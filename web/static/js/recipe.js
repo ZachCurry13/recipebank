@@ -2,9 +2,9 @@
 // servings and units, steps, and the parents' tools.
 import { get, post, put, del, qs } from "./api.js";
 import { $, $$, esc, attempt, fmtMin, peppers, canManage, cap, toast, sheet } from "./ui.js";
-import { verdictList, flagsFor } from "./verdicts.js";
-import { amountLine, temps, timersIn } from "./units.js";
+import { verdictList } from "./verdicts.js";
 import { startCooking } from "./cook.js";
+import { ingredientList, stepList } from "./recipeparts.js";
 import { go } from "./app.js";
 import { addToCollection } from "./collections.js";
 
@@ -76,11 +76,12 @@ export async function renderRecipe(view, params, state) {
               </div>
             </div>
             ${r.needs_review ? `<p class="box-caution mb-3">The AI wasn't sure about lines marked <b>?</b>. Check them against the card${manage ? " and fix them with Edit" : ""}.</p>` : ""}
-            <ul class="space-y-2">${ingredients(r, data, manage, view_)}</ul>
+            <ul class="space-y-0.5">${ingredientList(r, data, manage, view_, nm)}</ul>
           </div>
           <div class="card">
             <h2 class="mb-3 font-semibold">Steps</h2>
-            <ol class="space-y-3">${steps(r, view_)}</ol>
+            ${view_.factor !== 1 ? `<p class="mb-2 text-xs text-slate-500">Amounts in the steps are for the recipe as written (${r.servings ? `${+r.servings} servings` : "×1"}).</p>` : ""}
+            <ol class="space-y-3">${stepList(r, view_)}</ol>
           </div>
           ${r.notes ? `<div class="card"><h2 class="mb-1 font-semibold">Our notes</h2><p class="whitespace-pre-line text-sm text-slate-300">${esc(r.notes)}</p></div>` : ""}
           ${r.storage ? `<div class="card"><h2 class="mb-1 font-semibold">Storage</h2><p class="whitespace-pre-line text-sm text-slate-300">${esc(r.storage)}</p></div>` : ""}
@@ -124,6 +125,7 @@ export async function renderRecipe(view, params, state) {
     if (tocol) tocol.onclick = () => attempt(() => addToCollection(r.id, r.area));
     const shop = $("#shop", view);
     if (shop) shop.onclick = () => attempt(() => addToShopping(r, view_.factor));
+    $$("[data-ing]", view).forEach((li) => (li.onclick = (e) => { if (!e.target.closest("button")) li.classList.toggle("line-through-soft"); }));
     const cook = $("#cook", view);
     if (cook) cook.onclick = () => startCooking(r, view_);
     const version = $("#version", view);
@@ -156,33 +158,6 @@ function scaler(r, v) {
     <button data-serv="1" class="btn-secondary min-h-0 px-3 py-1" aria-label="More">+</button></div>`;
 }
 
-function ingredients(r, data, manage, v) {
-  let section = "";
-  return r.ingredients.map((ing, i) => {
-    const head = ing.section && ing.section !== section ? `<li class="pt-2 text-xs font-semibold uppercase tracking-wide text-slate-400">${esc((section = ing.section))}</li>` : "";
-    const flags = flagsFor(i, data.verdicts);
-    const swaps = data.swaps.filter((s) => s.ingredient === i);
-    const bad = flags.some((f) => f.status === "no") ? "text-rose-200" : flags.length ? "text-amber-200" : "";
-    return `${head}<li class="min-w-0">
-      <div class="${bad} break-words">${ing.unsure ? `<b class="text-amber-300" title="The AI wasn't sure">?</b> ` : ""}${esc(amountLine(ing, v.factor, v.system))}</div>
-      ${flags.map((f) => `<div class="pl-3 text-xs ${f.status === "no" ? "text-rose-300" : "text-amber-300"}">${f.status === "no" ? "✕" : "⚠"} ${esc(f.person)}: ${esc(f.text)}
-        ${manage && f.status === "unsure" && f.allergen ? `<button data-label="${i}:${f.allergen}:1" class="ml-1 underline">I checked the label: no ${esc(nm(f.allergen))}</button>` : ""}
-        ${f.status === "unsure" && f.allergen ? pantryLabel(i, f.allergen, data.pantry, manage) : ""}</div>`).join("")}
-      ${(ing.checked || []).map((a) => `<div class="pl-3 text-xs text-emerald-300">✓ Label checked: no ${esc(nm(a))}${manage ? ` <button data-label="${i}:${a}:0" class="ml-1 underline">undo</button>` : ""}</div>`).join("")}
-      ${swaps.map((s) => `<div class="pl-3 text-xs text-emerald-300">↔ Swap for <b>${esc(s.to)}</b>${s.note ? ` (${esc(s.note)})` : ""}: OK for everyone picked</div>`).join("")}
-    </li>`;
-  }).join("");
-}
-
-function steps(r, v) {
-  let section = "";
-  return r.steps.map((s) => {
-    const head = s.section && s.section !== section ? `<li class="list-none pt-2 text-xs font-semibold uppercase tracking-wide text-slate-400">${esc((section = s.section))}</li>` : "";
-    const t = timersIn(s.text).map((x) => `<span class="chip-info">⏱ ${esc(x.label)}</span>`).join(" ");
-    return `${head}<li class="ml-5 list-decimal break-words text-slate-200">${s.unsure ? `<b class="text-amber-300">?</b> ` : ""}${esc(temps(s.text, v.system))} ${t}</li>`;
-  }).join("");
-}
-
 function source(r) {
   const parts = [];
   if (r.source_url) parts.push(`<a class="break-all underline" href="${esc(r.source_url)}" target="_blank" rel="noopener noreferrer">${esc(r.source_url)}</a>`);
@@ -192,17 +167,6 @@ function source(r) {
   return `<div class="card space-y-2"><h2 class="font-semibold">Where it's from</h2>${parts.map((p) => `<p class="text-sm text-slate-300">${p}</p>`).join("")}
     ${photos ? `<div class="flex flex-wrap gap-2">${photos}</div>` : ""}
     <p class="text-xs text-slate-500">Kept for the family's own use.</p></div>`;
-}
-
-// pantryLabel: a labelled product in the pantry that settles a "not sure" line.
-function pantryLabel(i, allergen, hints, manage) {
-  const h = (hints || []).find((x) => x.ingredient === i);
-  if (!h) return "";
-  const name = esc([h.brand, h.name].filter(Boolean).join(" "));
-  if (h.allergens.includes(allergen)) return `<div class="text-rose-300">🥫 Your pantry's ${name}: the label says it contains ${esc(nm(allergen))}.</div>`;
-  if (h.traces.includes(allergen)) return `<div class="text-amber-300">🥫 Your pantry's ${name}: the label says it may contain ${esc(nm(allergen))}.</div>`;
-  return `<div class="text-emerald-300">🥫 Your pantry's ${name}: its label lists no ${esc(nm(allergen))}.
-    ${manage ? `<button data-label="${i}:${allergen}:1" class="ml-1 underline">Use this label</button>` : ""}</div>`;
 }
 
 // addToShopping puts the recipe (at this scale) on the list, and says what

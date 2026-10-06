@@ -32,19 +32,30 @@ Work on `feature/v0.2`, commit and push after each part. Status per part:
 9. [x] Phone checks (all 18 pages at 360 px, light and dark), docs (TRUENAS, REMOTE_ACCESS, CHANGELOG, README).
    [x] **Released 0.2.0 on 2026-10-06** (https://github.com/ZachCurry13/recipebank/releases/tag/v0.2.0).
 
-## 1c. 0.3 plan (chosen 2026-10-06; build only after the user has tried 0.2.0 and the fixes are out)
+## 1c. 0.3 plan (chosen 2026-10-06; the user said to build it now and test 0.2.0 later)
 
+Checked against the original notes (concepts/recipebank_features.md, recipes.md) on 2026-10-06; the user added
+the catch-ups and new ideas below. Build in this order:
+0. [ ] **Cleaner recipe display** (the user found it sloppy): amounts in a bold column, the item beside it,
+   recipe wording ("to serve", "plus extra for frying", "optional") as a small grey note, problems as short
+   tags, tap a row to tick it off; amounts in the steps converted (and scaled) to match the list.
 1. [ ] **What can I make?** Tick what's on hand (pantry items pre-ticked, extras typed) or photograph the
-   fridge/pantry (the vision AI lists foods, small photo for 4096-token models; the person confirms the list).
-   Kitchen recipes ranked by how much is covered (staples like salt and oil count as on hand), showing
-   what's missing, safe swaps for it, everyone's verdicts, "only what I have", and "add missing to shopping".
-2. [ ] **Dish photo → ideas:** a photo of a finished meal; the vision AI describes it (name, likely
-   ingredients, cuisine). Shows matching recipes already in RecipeBank (smart search) and an AI-drafted
-   recipe to try, labelled as a best guess, going through the normal import draft and checks before saving.
-3. [ ] **Share + print:** the app as a share target (Android: Share → RecipeBank opens Add with the link
-   read; iPhone can't receive shares from Safari, so: copy the link and paste); a clean print layout and a
-   Print button on recipes; a family cookbook (a collection or all recipes, cover, contents, one recipe per
-   page with card photos) printed or saved as PDF from the browser.
+   fridge/pantry (vision AI lists foods; the person confirms). Recipes ranked by coverage; **food near its
+   use-by date first ("use it up")**; what's missing, with swaps from the table and **AI swap ideas from what's
+   on hand, checked against everyone's rules**; "only what I have"; "add missing to shopping".
+2. [ ] **Dish photo → ideas:** vision AI describes a meal; matching recipes already in RecipeBank, plus an
+   AI-drafted recipe (labelled a best guess) through the normal draft and checks.
+3. [ ] **Photo double-check:** a second AI pass on card/page photos fixes spelling and flags odd amounts
+   ("1 cup salt" in cookies) as lines to check; never changes amounts silently.
+4. [ ] **Cooked it + 👍/👎:** log a cook with each person's thumbs; Tonight's ideas and suggestions favor what
+   the family liked; the recipe page shows the history.
+5. [ ] **Nutrition estimates:** per serving from USDA FoodData Central (a free key the user signs up for,
+   Admin → Nutrition), labelled an estimate; cached per food.
+6. [ ] **Share + print:** share target (Android), print layout + Print button, family cookbook to print/PDF.
+7. [ ] Phone checks, docs, CHANGELOG 0.3.0, release with the user's OK.
+
+Not chosen (2026-10-06): keto diet, cross-contact note, kids can help, kitchen tablet, cookbooks + card pile,
+other-app imports, Cast.
 
 ## 2. Rules
 
