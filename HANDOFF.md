@@ -13,7 +13,9 @@
 - **0.3.0 released 2026-10-06** (https://github.com/ZachCurry13/recipebank/releases/tag/v0.3.0): What can I make?,
   Substitute, better card reading (two steps, cross-check, read again, hints), From a dish, We cooked it, nutrition,
   share/print/cookbook, first-time guide, update notices and What's new (section 1c). `:0.3.0` = `:latest`.
-  Work continues on `feature/v0.4`.
+- **0.4.0 released 2026-10-06** (https://github.com/ZachCurry13/recipebank/releases/tag/v0.4.0): fixes from a 0.3
+  review, difficulty, planned leftovers, email, budget, events (section 1d). `:0.4.0` = `:latest`. The user was away
+  and gave the OK to fix bugs and release. Work continues on `feature/v0.5`.
 - Repo: https://github.com/ZachCurry13/recipebank (public, MIT). Image: `ghcr.io/zachcurry13/recipebank`.
 - Decisions made with the user are in Claude's project memory (`recipebank-decisions`): name, public repo,
   Home & Care area, strict allergy mode in 0.1, links and photos only for imports, US + metric, separate
@@ -164,7 +166,8 @@ search ranking.
 
 ## 7. Next immediate steps
 
-1. The user updates TrueNAS to 0.3.0 and tests. Not tried for real yet (no AI locally): the fridge photo, the dish photo,
+1. The user updates TrueNAS to 0.4.0 and tests (also new: an email account under Admin → Email, prices in the
+   pantry, events). Not tried for real yet (no AI locally): the fridge photo, the dish photo,
    AI substitutes and two-step card reading with a real model; nutrition beyond flour (DEMO_KEY's hourly limit);
    live camera scanning, notifications, voice and the Android share target (need the https address on a phone).
 2. The user's AI was Ollama with qwen2.5:3b / qwen2.5vl:3b (too small for handwriting); Gemini's free tier was

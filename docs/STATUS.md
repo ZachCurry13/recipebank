@@ -24,7 +24,7 @@ We cooked it with 👍/👎; nutrition estimates (USDA FoodData Central); share 
 CHANGELOG 0.3.0 written; every page checked at 360×760 (light and dark).
 
 ## Next
-- 0.4.0 (2026-10-06): bug fixes from a review of 0.3 (ingredient lines, metric grams), difficulty, planned
+- 0.4.0 released 2026-10-06: bug fixes from a review of 0.3 (ingredient lines, metric grams), difficulty, planned
   leftovers, email (SMTP), budget (pantry prices, list and recipe costs, weekly budget), events (menus, who
   brings what, checks for everyone coming).
 - Next: the user tests with a real AI, a USDA key and an email account; fixes go out as 0.4.x. The user's photo model is a 3B vision model; a cloud model (Gemini's free tier) was suggested.
