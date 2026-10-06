@@ -4,6 +4,7 @@ import { $, $$, esc, attempt, busy, toast, sheet } from "./ui.js";
 import { refreshInfo } from "./app.js";
 import { renderRemote } from "./remoteaccess.js";
 import { renderHints } from "./readinghints.js";
+import { renderEmailAdmin } from "./email.js";
 
 const ROLES = [["admin", "Admin (everything)"], ["editor", "Parent (recipes and people)"], ["kid", "Kid (reads and cooks)"]];
 
@@ -58,6 +59,7 @@ export async function renderAdmin(view, params, state) {
       </form>
     </div>
     <div id="hints" class="mt-4"></div>
+    <div id="mail" class="mt-4"></div>
     <div id="remote" class="mt-4"></div>
     <div class="card mt-4 space-y-3">
       <div class="flex flex-wrap items-center gap-2"><h2 class="mr-auto font-semibold">Accounts</h2><button id="new-user" class="btn-primary">➕ Add an account</button></div>
@@ -74,6 +76,7 @@ export async function renderAdmin(view, params, state) {
 
   renderRemote($("#remote", view)).catch(() => {});
   renderHints($("#hints", view)).catch(() => {});
+  renderEmailAdmin($("#mail", view), s);
   const ai = $("#ai", view);
   const showURL = () => $("[data-openai]", ai).classList.toggle("hidden", ai.llm_provider.value === "anthropic");
   ai.llm_provider.onchange = showURL;

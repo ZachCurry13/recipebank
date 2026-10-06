@@ -3,6 +3,7 @@
 import { get, post, put, del } from "./api.js";
 import { $, $$, esc, attempt, toast } from "./ui.js";
 import { amountText } from "./units.js";
+import { emailSheet } from "./email.js";
 
 const SECTIONS = ["Produce", "Bakery", "Meat & fish", "Dairy & eggs", "Frozen", "Pantry", "Spices & baking", "Drinks",
   "Household", "Personal care", "Other"];
@@ -74,6 +75,7 @@ export async function renderShopping(view, params, state) {
     view.innerHTML = `
       <h1 class="text-2xl font-bold">🛒 Shopping list</h1>
       <p class="mb-4 text-sm text-slate-400">One list for the whole family. Add recipes from their page, or type things here.</p>
+      ${!offline && open.length ? `<button id="mail-list" class="btn-ghost mb-3 min-h-0 py-1">✉️ Email the list</button>` : ""}
       ${offline ? `<p class="box-caution mb-4">Offline: showing the list saved on this phone. Ticks are kept and sent when you're back online.</p>` : ""}
       ${offline ? "" : `<form id="add" class="mb-4 flex flex-wrap gap-2"><input name="text" class="input min-w-0 flex-1 basis-48" placeholder="Add something: 2 lb apples, milk" autocomplete="off">
         <button class="btn-primary">Add</button></form>`}
@@ -88,6 +90,8 @@ export async function renderShopping(view, params, state) {
         ${offline ? "" : `<button id="clear" class="btn-secondary min-h-0 py-1">Clear ticked items</button>`}</div>
         <ul class="divide-y divide-slate-800">${done.map(row).join("")}</ul></div>` : ""}`;
     $$("[data-tick]", view).forEach((c) => (c.onchange = () => tick(data.items.find((i) => i.id === Number(c.dataset.tick)))));
+    const mailList = $("#mail-list", view);
+    if (mailList) mailList.onclick = () => emailSheet(state, "the shopping list", "/api/shopping/email", false);
     $$("[data-rm]", view).forEach((b) => (b.onclick = () => attempt(async () => { await del(`/api/shopping/${b.dataset.rm}`); await refresh(); })));
     $$("[data-low]", view).forEach((b) => (b.onclick = () => attempt(async () => { data = await post("/api/shopping", { stock_id: Number(b.dataset.low) }); draw(); })));
     const addLow = $("#add-low", view);

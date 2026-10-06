@@ -18,6 +18,7 @@ func (s *Server) handleInfo(w http.ResponseWriter, r *http.Request) {
 		"diets":         safety.Diets,
 		"pets":          s.Store.Pets(),
 		"ai_ready":      s.Store.AIConfig().Ready(),
+		"email_ready":   s.emailReady(),
 		"default_units": s.Store.Setting(store.KeyDefaultUnits),
 	})
 }

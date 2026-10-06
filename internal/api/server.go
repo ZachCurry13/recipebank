@@ -11,6 +11,7 @@ import (
 	"github.com/zachcurry13/recipebank/internal/auth"
 	"github.com/zachcurry13/recipebank/internal/config"
 	"github.com/zachcurry13/recipebank/internal/foodfacts"
+	"github.com/zachcurry13/recipebank/internal/mail"
 	"github.com/zachcurry13/recipebank/internal/nutrition"
 	"github.com/zachcurry13/recipebank/internal/push"
 	"github.com/zachcurry13/recipebank/internal/store"
@@ -29,10 +30,12 @@ type Server struct {
 	Fetch     *http.Client // outside pages and images; tests swap it
 	Products  productBases // Open Food Facts databases; tests point them at a fake
 	Tunnel    *tunnel.Manager
-	Push      *push.Service    // phone notifications
-	Updates   *updates.Checker // newer releases on GitHub; tests point it at a fake
-	Nutrition string           // USDA FoodData Central's address; tests point it at a fake
-	timers    push.Timers      // cook-mode timers that buzz the phone
+	Push      *push.Service                         // phone notifications
+	Updates   *updates.Checker                      // newer releases on GitHub; tests point it at a fake
+	Nutrition string                                // USDA FoodData Central's address; tests point it at a fake
+	SendMail  func(mail.Config, mail.Message) error // tests catch emails here; nil = mail.Send
+	mails     mailLimiter
+	timers    push.Timers // cook-mode timers that buzz the phone
 	logins    *loginLimiter
 	etags     sync.Map  // static file name → ETag
 	buildOnce sync.Once // buildID, computed once
@@ -96,6 +99,8 @@ func (s *Server) Router() http.Handler {
 			r.Get("/recipes/{id}/cooks", s.handleListCooks)
 			r.Get("/recipes/{id}/nutrition", s.handleNutrition)
 			r.Get("/cookbook", s.handleCookbook)
+			r.Post("/recipes/{id}/email", s.handleEmailRecipe)
+			r.Post("/shopping/email", s.handleEmailShopping)
 			r.Post("/recipes/{id}/cooks", s.handleAddCook)
 			r.Post("/make", s.handleMake)
 			r.Post("/make/photo", s.handleMakePhoto)
@@ -168,6 +173,7 @@ func (s *Server) Router() http.Handler {
 				r.Put("/admin/guide", s.handleGuideUpdate)
 				r.Put("/admin/settings", s.handlePutSettings)
 				r.Post("/admin/ai/test", s.handleTestAI)
+				r.Post("/admin/email/test", s.handleEmailTest)
 				r.Get("/admin/hints", s.handleListHints)
 				r.Post("/admin/hints", s.handleAddHint)
 				r.Delete("/admin/hints/{id}", s.handleDeleteHint)

@@ -112,7 +112,7 @@ Build in this order (each with tests, phone checks, a commit):
    cards and the recipe page; editor choice; Library filter; "easy" in smart search.
 2. [x] **Planned leftovers:** a plan meal can be "Leftovers from" an earlier planned recipe; the earlier meal's
    servings grow to cover it, the shopping list skips the leftovers meal, Tonight says what to reheat.
-3. [ ] **Email a recipe or the list:** Admin → Email (SMTP, from NovelCheck's delivery/smtp.go, password kept
+3. [x] **Email a recipe or the list:** Admin → Email (SMTP, from NovelCheck's delivery/smtp.go, password kept
    secret, test button); ✉️ on the recipe page and the shopping list; one address at a time, rate-limited.
 4. [ ] **Budget:** price and package size on pantry/supply items; the shopping list estimates each priced line and
    the total against an optional weekly budget (Admin → House settings, currency); recipes show "about $X to
