@@ -77,3 +77,57 @@ var modifierFoods = map[string]bool{"peanut": true, "almond": true, "apple": tru
 // FoodKey is a food's identifying words, so "2 large eggs" and "1 egg" end
 // up on one shopping line.
 func FoodKey(food string) string { return strings.Join(core(food), " ") }
+
+// cutWords are parts of an animal or plant that are still that food
+// ("chicken" covers "chicken thighs").
+var cutWords = map[string]bool{"breast": true, "thigh": true, "wing": true, "drumstick": true, "leg": true,
+	"fillet": true, "filet": true, "tenderloin": true, "chop": true, "loin": true, "steak": true, "rib": true,
+	"shoulder": true, "clove": true, "leaf": true, "stalk": true, "head": true, "floret": true, "yolk": true, "white": true}
+
+// Covers reports whether something on hand ("chicken", or a pantry product
+// "Brand Chicken Broth") is the food a recipe line needs. "chicken" covers
+// "boneless chicken breasts" but not "chicken broth"; "milk" doesn't cover
+// "coconut milk".
+func Covers(have, food string) bool {
+	if SameFood(food, have) {
+		return true
+	}
+	h, f := core(have), core(food)
+	if len(h) == 0 || len(h) > len(f) {
+		return false
+	}
+	for i := 0; i+len(h) <= len(f); i++ {
+		if strings.Join(f[i:i+len(h)], " ") != strings.Join(h, " ") {
+			continue
+		}
+		if i > 0 && (knownFoods[f[i-1]] || modifierFoods[f[i-1]]) {
+			continue // "coconut milk" isn't milk
+		}
+		rest := f[i+len(h):]
+		if len(rest) == 0 || (len(rest) == 1 && cutWords[rest[0]]) {
+			return true
+		}
+	}
+	return false
+}
+
+// Staple is something nearly every kitchen has (salt, pepper, oil, water),
+// counted as on hand.
+func Staple(food string) bool {
+	switch strings.Join(core(food), " ") {
+	case "salt", "pepper", "black pepper", "water", "ice", "oil", "olive oil", "vegetable oil", "canola oil",
+		"cooking spray", "salt pepper":
+		return true
+	}
+	parts := splitParts(food)
+	if len(parts) == 0 {
+		return false
+	}
+	for _, p := range parts {
+		w := strings.Join(p, " ")
+		if w != "salt" && w != "pepper" && w != "black pepper" && !strings.HasSuffix(w, "salt") && !strings.HasSuffix(w, "pepper") {
+			return false
+		}
+	}
+	return true
+}

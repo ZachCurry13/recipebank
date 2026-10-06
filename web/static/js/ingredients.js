@@ -61,6 +61,6 @@ export function stepText(text, system) {
     if (!unit || !needsConvert(unit, system)) return whole;
     const [q, u] = convert(parseNumber(num), unit, system);
     // Non-breaking spaces keep "1 ¼ cups" on one line.
-    return q > 0 ? `${number(q, u)} ${unitLabel(u, q)}`.replace(/ /g, " ") : whole;
+    return q > 0 ? `${number(q, u)} ${unitLabel(u, q)}`.replace(/ /g, "\u00a0") : whole;
   });
 }

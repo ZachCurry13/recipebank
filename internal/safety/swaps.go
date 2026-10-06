@@ -87,7 +87,7 @@ func Swaps(r *recipe.Recipe, diners []Person, verdicts []Verdict) []Swap {
 func okForAll(area, food string, diners []Person) bool {
 	// Only the name counts: "(1 tbsp … per egg)" explains how to make it.
 	name := strings.TrimSpace(strings.SplitN(food, "(", 2)[0])
-	probe := &recipe.Recipe{Area: area, Heat: 0, Ingredients: []recipe.Ingredient{{Line: name, Food: name}}}
+	probe := &recipe.Recipe{Area: area, Heat: -1, Ingredients: []recipe.Ingredient{{Line: name, Food: name}}}
 	for _, p := range diners {
 		if Check(probe, p).Status != OK {
 			return false
@@ -95,3 +95,28 @@ func okForAll(area, food string, diners []Person) bool {
 	}
 	return true
 }
+
+// SwapIdea is a replacement the table knows for a food.
+type SwapIdea struct {
+	To   string `json:"to"`
+	Note string `json:"note,omitempty"`
+}
+
+// SwapIdeasFor lists the table's replacements for a food (not yet checked
+// against anyone's rules: use OKForAll).
+func SwapIdeasFor(food string) []SwapIdea {
+	t := newText(food)
+	for _, row := range swapTable {
+		if t.has(row.when) {
+			out := make([]SwapIdea, len(row.ideas))
+			for i, idea := range row.ideas {
+				out[i] = SwapIdea{To: idea.to, Note: idea.note}
+			}
+			return out
+		}
+	}
+	return nil
+}
+
+// OKForAll reports whether a food passes every diner's rules on its own.
+func OKForAll(area, food string, diners []Person) bool { return okForAll(area, food, diners) }

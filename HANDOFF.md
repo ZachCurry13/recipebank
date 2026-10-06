@@ -39,13 +39,26 @@ the catch-ups and new ideas below. Build in this order:
 0. [ ] **Cleaner recipe display** (the user found it sloppy): amounts in a bold column, the item beside it,
    recipe wording ("to serve", "plus extra for frying", "optional") as a small grey note, problems as short
    tags, tap a row to tick it off; amounts in the steps converted (and scaled) to match the list.
-1. [ ] **What can I make?** Tick what's on hand (pantry items pre-ticked, extras typed) or photograph the
+0b. [ ] **Better photo reading** (from the user's test card on 2026-10-06: a handwritten two-column card came
+   back with every amount dropped, 6 of 20 ingredients missing from the right column, "red pepper flakes" read as
+   "bell pepper flakes", and invented "Filling"/"Topping" sections copied from the prompt's examples; the photo was
+   also uploaded rotated). Build first, in this order:
+   1. Photos the right way up: decode through an <img> (honours the phone's rotation info) and ⟳ buttons.
+   2. Smarter reading: no example sections in the prompt; "two columns: left column first, then right"; keep every
+      amount and abbreviation; read in two steps (vision copies the card as plain text, then a text step
+      organizes it); record which model read each card.
+   3. Automatic cross-check (no AI): foods the steps mention that the list lacks, lines without amounts, odd
+      amounts; while unchecked, verdicts for allergic/severe people say "not sure"; "Checked against the card" clears it.
+   4. Read again: re-read the saved photos (optionally another model), show line-by-line changes, keep either.
+   5. Teach it: corrections become short reading hints (abbreviations, misreads) sent with the next cards;
+      listed and editable under Admin → AI.
+1. [ ] **What can I make?** (backend started) Tick what's on hand (pantry items pre-ticked, extras typed) or photograph the
    fridge/pantry (vision AI lists foods; the person confirms). Recipes ranked by coverage; **food near its
    use-by date first ("use it up")**; what's missing, with swaps from the table and **AI swap ideas from what's
    on hand, checked against everyone's rules**; "only what I have"; "add missing to shopping".
 2. [ ] **Dish photo → ideas:** vision AI describes a meal; matching recipes already in RecipeBank, plus an
    AI-drafted recipe (labelled a best guess) through the normal draft and checks.
-3. [ ] **Photo double-check:** a second AI pass on card/page photos fixes spelling and flags odd amounts
+3. [ ] **Photo double-check:** (folded into 0b) a second AI pass on card/page photos fixes spelling and flags odd amounts
    ("1 cup salt" in cookies) as lines to check; never changes amounts silently.
 4. [ ] **Cooked it + 👍/👎:** log a cook with each person's thumbs; Tonight's ideas and suggestions favor what
    the family liked; the recipe page shows the history.

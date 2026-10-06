@@ -219,3 +219,47 @@ func TestBrothSwapIsABroth(t *testing.T) {
 		}
 	}
 }
+
+func TestCovers(t *testing.T) {
+	yes := [][2]string{{"chicken", "boneless skinless chicken breasts"}, {"eggs", "2 large eggs"}, {"milk", "whole milk"},
+		{"Brand Chicken Broth", "chicken broth"}, {"garlic", "garlic cloves, minced"}, {"flour", "all-purpose flour"}}
+	no := [][2]string{{"chicken", "chicken broth"}, {"milk", "coconut milk"}, {"butter", "peanut butter"}, {"flour", "almond flour"}}
+	for _, c := range yes {
+		if !Covers(c[0], recipe.ParseLine(c[1]).Food) {
+			t.Errorf("%q should cover %q", c[0], c[1])
+		}
+	}
+	for _, c := range no {
+		if Covers(c[0], recipe.ParseLine(c[1]).Food) {
+			t.Errorf("%q should not cover %q", c[0], c[1])
+		}
+	}
+	if !Staple("salt and pepper to taste") || !Staple("kosher salt") || Staple("chicken") {
+		t.Error("staples")
+	}
+}
+
+func TestSubstitutes(t *testing.T) {
+	cumin := Substitutes(recipe.ParseLine("1 tsp ground cumin").Food)
+	if len(cumin) == 0 || cumin[0].To != "chili powder" {
+		t.Fatalf("cumin: %+v", cumin)
+	}
+	bm := Substitutes("buttermilk")
+	if len(bm) == 0 || bm[0].To != "milk and lemon juice" {
+		t.Fatalf("buttermilk: %+v", bm)
+	}
+	milkKid := allergic("milk", Allergic)
+	if OKForAll("kitchen", "milk and lemon juice", []Person{milkKid}) {
+		t.Error("milk and lemon juice offered for a milk allergy")
+	}
+	if !OKForAll("kitchen", "chili powder", []Person{milkKid}) {
+		t.Error("chili powder should be fine for a milk allergy")
+	}
+	mild := Person{Name: "M", HeatMax: 0}
+	if OKForAll("kitchen", "cayenne", []Person{mild}) {
+		t.Error("cayenne offered to someone who wants no heat")
+	}
+	if len(Substitutes("unobtainium")) != 0 {
+		t.Error("ideas for an unknown food")
+	}
+}
