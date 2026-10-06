@@ -25,16 +25,10 @@ Rules:
 - "protein": the main protein (chicken, beef, pork, fish, seafood, turkey, lamb, eggs, beans, tofu,
   cheese) or "" if none. "cuisine": e.g. Italian, Mexican, American, or "".
 - "heat": 0 (no heat) to 5 (extreme), from the chilies used; -1 if you can't tell.
-- "section" names a part of the recipe ("Filling", "Topping") when the recipe has parts, else "".
+- "section" is the heading of a part only when the recipe itself has headings for its parts; otherwise "".
+  Never make up headings.
 - "storage": how to store it and how long it keeps, if the recipe says.
 - Use 0 or "" for anything not given.`
-
-// PhotoPrompt asks a vision model to read recipe cards, pages or clippings.
-const PhotoPrompt = `These photos show one recipe: a handwritten card, a cookbook page or a clipping
-(several photos may be the front and back, or pages in order). Read it carefully.
-If a word or amount is hard to read, give your best reading and set "unsure": true on that line.
-If the photos don't show a recipe, reply {"title": ""}.
-` + recipeJSON
 
 // TextSystem is the system prompt for pulling a recipe out of pasted text or a web page.
 const TextSystem = `You turn text into a structured recipe for a family recipe app.

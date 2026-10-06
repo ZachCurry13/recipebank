@@ -75,3 +75,23 @@ func TestFromText(t *testing.T) {
 		t.Error("read a recipe from plain words")
 	}
 }
+
+// A card copied by the AI as plain text: two columns already flattened,
+// amounts with abbreviations, a [?] where the writing was unclear.
+func TestFromTextCard(t *testing.T) {
+	card := "Unstuffed Peppers (4 serv.)\nIngredients:\n- 3 tbsp. olive oil\n- 1 1/2 c. diced onion\n- 1/8 tsp. red pepper flakes [?]\n- 1 lb. ground beef\n- salt & pepper\nInstructions:\nHeat 2 tbsp. olive oil in pan over medium-high heat.\n"
+	r, ok := FromText(card)
+	if !ok || r.Title != "Unstuffed Peppers" || r.Servings != 4 || len(r.Ingredients) != 5 || !r.NeedsReview {
+		t.Fatalf("%v %+v", ok, r)
+	}
+	oil, onion, flakes := r.Ingredients[0], r.Ingredients[1], r.Ingredients[2]
+	if oil.Qty == nil || *oil.Qty != 3 || oil.Unit != "tbsp" || oil.Food != "olive oil" {
+		t.Errorf("oil: %+v", oil)
+	}
+	if onion.Qty == nil || *onion.Qty != 1.5 || onion.Unit != "cup" {
+		t.Errorf("onion: %+v", onion)
+	}
+	if !flakes.Unsure || flakes.Food != "red pepper flakes" {
+		t.Errorf("flakes: %+v", flakes)
+	}
+}

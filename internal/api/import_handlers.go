@@ -169,9 +169,12 @@ func (s *Server) handleImportPhoto(w http.ResponseWriter, r *http.Request) {
 // server often has room for only about 4,000 tokens, photos included).
 var aiPhotoSides = []int{1280, 896, 640}
 
+// readPhotos reads a recipe from photos in two steps: the vision model copies
+// the card as plain text, then organize turns the copy into a recipe.
 func (s *Server) readPhotos(ctx context.Context, originals []llm.Image) (recipe.Recipe, error) {
-	var rc recipe.Recipe
+	var copied, model string
 	var err error
+	prompt := llm.TranscribePrompt(nil)
 	for _, side := range aiPhotoSides {
 		images := make([]llm.Image, len(originals))
 		for i, im := range originals {
@@ -180,15 +183,46 @@ func (s *Server) readPhotos(ctx context.Context, originals []llm.Image) (recipe.
 				images[i] = llm.Image{Data: small, MediaType: "image/jpeg"}
 			}
 		}
-		err = llm.AskImages(ctx, s.Store, llm.PhotoPrompt, images, func(out string) (perr error) {
-			rc, perr = llm.ParseRecipe(out)
+		model, err = llm.AskImages(ctx, s.Store, prompt, images, func(out string) (perr error) {
+			copied, perr = llm.ParseTranscript(out)
 			return perr
 		})
-		if err == nil || !llm.TooLong(err) {
-			return rc, err
+		if err == nil {
+			rc, oerr := s.organize(ctx, copied)
+			rc.ReadBy, rc.AIReading = model, copied
+			return rc, oerr
+		}
+		if !llm.TooLong(err) {
+			return recipe.Recipe{}, err
 		}
 	}
-	return rc, errPhotoTooBig
+	return recipe.Recipe{}, errPhotoTooBig
+}
+
+// organize turns a card's plain-text copy into a recipe: the AI fills in the
+// title, servings, steps and tags, while the ingredient lines come from the
+// copy itself when it has them all, so no amount is lost.
+func (s *Server) organize(ctx context.Context, copied string) (recipe.Recipe, error) {
+	plain, ok := recipe.FromText(copied)
+	ai, err := s.askText(ctx, llm.CardText(copied))
+	switch {
+	case err != nil && ok:
+		return plain, nil
+	case err != nil:
+		return recipe.Recipe{}, err
+	case ok:
+		if len(plain.Ingredients) >= len(ai.Ingredients) {
+			ai.Ingredients = plain.Ingredients
+		}
+		if len(ai.Steps) == 0 {
+			ai.Steps = plain.Steps
+		}
+		if ai.Servings == 0 {
+			ai.Servings = plain.Servings
+		}
+		ai.NeedsReview = ai.NeedsReview || plain.NeedsReview
+	}
+	return ai, nil
 }
 
 var errPhotoTooBig = errors.New("photo too big for the AI")

@@ -2,6 +2,7 @@ package recipe
 
 import (
 	"regexp"
+	"strconv"
 	"strings"
 )
 
@@ -10,6 +11,8 @@ var (
 	stepHead = regexp.MustCompile(`(?i)^\s*(directions?|instructions?|method|steps|preparation|how to make( it)?)\s*:?\s*$`)
 	noteHead = regexp.MustCompile(`(?i)^\s*(notes?|tips?|storage)\s*:?\s*$`)
 	stepNum  = regexp.MustCompile(`^\s*(step\s*)?\d+[.):]\s*`)
+	servRE   = regexp.MustCompile(`(?i)\s*\(\s*(?:serves\s*)?(\d+)\s*(?:servings?|serv\.?|portions?)?\s*\)\s*$`)
+	unsureRE = regexp.MustCompile(`\s*\[\?\]`)
 	bullet   = regexp.MustCompile(`^\s*[-•*▢□]\s*`)
 )
 
@@ -35,10 +38,21 @@ func FromText(text string) (r Recipe, ok bool) {
 			part = "notes"
 			continue
 		}
+		// "[?]" marks words the reader couldn't make out.
+		unsure := unsureRE.MatchString(line)
+		line = strings.TrimSpace(unsureRE.ReplaceAllString(line, ""))
+		r.NeedsReview = r.NeedsReview || unsure
 		switch part {
 		case "intro":
 			if r.Title == "" {
 				r.Title = line
+				// "Unstuffed Peppers (4 serv.)": the servings go in their own field.
+				if m := servRE.FindStringSubmatch(line); m != nil && strings.ContainsAny(line, "(") {
+					if n, err := strconv.Atoi(m[1]); err == nil && n > 0 && n < 100 {
+						r.Servings = float64(n)
+						r.Title = strings.TrimSpace(servRE.ReplaceAllString(line, ""))
+					}
+				}
 			} else if r.Summary == "" {
 				r.Summary = line
 			}
@@ -47,10 +61,12 @@ func FromText(text string) (r Recipe, ok bool) {
 			if strings.HasSuffix(line, ":") && len(line) < 40 {
 				continue // a sub-heading such as "For the sauce:"
 			}
-			r.Ingredients = append(r.Ingredients, ParseLine(line))
+			in := ParseLine(line)
+			in.Unsure = unsure
+			r.Ingredients = append(r.Ingredients, in)
 		case "steps":
 			if line = stepNum.ReplaceAllString(bullet.ReplaceAllString(line, ""), ""); line != "" {
-				r.Steps = append(r.Steps, Step{Text: line})
+				r.Steps = append(r.Steps, Step{Text: line, Unsure: unsure})
 			}
 		case "notes":
 			notes = append(notes, line)

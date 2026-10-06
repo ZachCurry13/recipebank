@@ -15,21 +15,24 @@ import (
 
 // fakeVisionAI answers like a home AI server with a small context: photos
 // longer than maxSide are refused with llama.cpp's "exceeds the available
-// context size" error; smaller ones get a recipe.
+// context size" error; smaller ones get the card copied as text. A request
+// without photos (organizing the copy) gets a recipe that lost a line.
 func fakeVisionAI(t *testing.T, maxSide int, sides *[]int) *httptest.Server {
 	return httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		var req struct {
 			Messages []struct {
-				Content []struct {
-					ImageURL *struct {
-						URL string `json:"url"`
-					} `json:"image_url"`
-				} `json:"content"`
+				Content json.RawMessage `json:"content"`
 			} `json:"messages"`
 		}
 		_ = json.NewDecoder(r.Body).Decode(&req)
+		var parts []struct {
+			ImageURL *struct {
+				URL string `json:"url"`
+			} `json:"image_url"`
+		}
+		_ = json.Unmarshal(req.Messages[len(req.Messages)-1].Content, &parts)
 		long := 0
-		for _, part := range req.Messages[0].Content {
+		for _, part := range parts {
 			if part.ImageURL == nil {
 				continue
 			}
@@ -41,14 +44,17 @@ func fakeVisionAI(t *testing.T, maxSide int, sides *[]int) *httptest.Server {
 			}
 			long = max(long, cfg.Width, cfg.Height)
 		}
-		*sides = append(*sides, long)
 		w.Header().Set("Content-Type", "application/json")
+		answer := `{"title":"Grandma's Biscuits","area":"kitchen","ingredients":[{"line":"2 cups flour"},{"line":"1 cup buttermilk","unsure":true}],"steps":[{"text":"Mix and bake 12 minutes."}]}`
+		if long > 0 {
+			*sides = append(*sides, long)
+			answer = "Grandma's Biscuits (6 serv.)\nIngredients:\n2 c. flour\n1 c. buttermilk [?]\n1 T. baking powder\nInstructions:\nMix and bake 12 minutes."
+		}
 		if long > maxSide {
 			w.WriteHeader(http.StatusBadRequest)
 			w.Write([]byte(`{"error":{"code":400,"message":"request (4318 tokens) exceeds the available context size (4096 tokens), try increasing it","type":"exceed_context_size_error"}}`))
 			return
 		}
-		answer := `{"title":"Grandma's Biscuits","area":"kitchen","ingredients":[{"line":"2 cups flour"},{"line":"1 cup buttermilk","unsure":true}],"steps":[{"text":"Mix and bake 12 minutes."}]}`
 		resp, _ := json.Marshal(map[string]any{"choices": []any{map[string]any{"message": map[string]string{"role": "assistant", "content": answer}}},
 			"usage": map[string]int{"prompt_tokens": 900, "completion_tokens": 100}})
 		w.Write(resp)
@@ -80,8 +86,15 @@ func TestPhotoShrinksToFitSmallAI(t *testing.T) {
 	if code := c.do("POST", "/api/import/photo", photoBody(2000, 1500), &draft); code != 200 {
 		t.Fatalf("photo import: %d %s (AI saw sides %v)", code, draft.Error, sides)
 	}
-	if draft.Recipe["title"] != "Grandma's Biscuits" || draft.Recipe["needs_review"] != true {
+	if draft.Recipe["title"] != "Grandma's Biscuits" || draft.Recipe["needs_review"] != true || draft.Recipe["servings"] != 6.0 {
 		t.Fatalf("draft: %+v", draft.Recipe)
+	}
+	// The AI dropped the baking powder while organizing; the card's copy keeps it.
+	if ings, _ := draft.Recipe["ingredients"].([]any); len(ings) != 3 {
+		t.Fatalf("ingredients: %v", draft.Recipe["ingredients"])
+	}
+	if draft.Recipe["read_by"] != "test-vision" || !strings.Contains(draft.Recipe["ai_reading"].(string), "[?]") {
+		t.Fatalf("reading not recorded: %q %q", draft.Recipe["read_by"], draft.Recipe["ai_reading"])
 	}
 	if len(sides) != 2 || sides[0] != 1280 || sides[1] != 896 {
 		t.Fatalf("photo sizes sent to the AI: %v, want [1280 896]", sides)

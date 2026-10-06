@@ -36,6 +36,8 @@ type Recipe struct {
 	Photo        string       `db:"photo" json:"photo"`
 	SourcePhotos []string     `db:"-" json:"source_photos"`
 	NeedsReview  bool         `db:"needs_review" json:"needs_review"`
+	ReadBy       string       `db:"read_by" json:"read_by"`       // the AI model that read the photos
+	AIReading    string       `db:"ai_reading" json:"ai_reading"` // what it copied from them, as plain text
 	Rating       int          `db:"rating" json:"rating"`
 	VersionOf    *int64       `db:"version_of" json:"version_of"`
 	CreatedBy    string       `db:"created_by" json:"created_by"`

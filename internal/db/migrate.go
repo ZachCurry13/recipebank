@@ -11,7 +11,8 @@ import (
 // addColumn, one line per column, oldest first.
 func migrate(d *sqlx.DB) error {
 	for _, c := range []struct{ table, column, def string }{
-		// {"recipes", "example", "TEXT NOT NULL DEFAULT ''"},
+		{"recipes", "read_by", "TEXT NOT NULL DEFAULT ''"},
+		{"recipes", "ai_reading", "TEXT NOT NULL DEFAULT ''"},
 	} {
 		if err := addColumn(d, c.table, c.column, c.def); err != nil {
 			return err

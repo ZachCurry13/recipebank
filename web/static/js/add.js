@@ -2,7 +2,7 @@
 // Every import comes back as an unsaved draft, checked for everyone.
 import { post } from "./api.js";
 import { $, $$, attempt, busy } from "./ui.js";
-import { shrinkPhoto } from "./photo.js";
+import { shrinkPhoto, rotatePhoto } from "./photo.js";
 import { editRecipe } from "./editor.js";
 
 const WAYS = [
@@ -48,7 +48,9 @@ export function renderAdd(view, params, state) {
         <p class="text-xs text-slate-400">Lay the card flat in good light. Add the back or the next page as another photo.</p>
         <div id="thumbs" class="flex flex-wrap gap-2">${photos.map((p, i) => `
           <div class="relative"><img src="${p}" alt="Photo ${i + 1}" class="h-28 rounded-lg object-cover">
-          <button data-rm="${i}" class="absolute right-1 top-1 rounded-full bg-slate-900/80 px-2 text-sm" aria-label="Remove">✕</button></div>`).join("")}</div>
+          <button data-rm="${i}" class="absolute right-1 top-1 rounded-full bg-slate-900/80 px-2 text-sm text-white" aria-label="Remove">✕</button>
+          <button data-rot="${i}" class="absolute bottom-1 left-1 rounded-full bg-slate-900/80 px-2 text-sm text-white" aria-label="Turn a quarter turn">⟳</button></div>`).join("")}</div>
+        ${photos.length ? `<p class="text-xs text-slate-400">Is the writing the right way up? Tap ⟳ to turn a photo.</p>` : ""}
         <button id="go" class="btn-primary" ${photos.length && ai ? "" : "disabled"}>Read ${photos.length > 1 ? `these ${photos.length} photos` : "the photo"}</button>
         <p class="text-xs text-slate-500">Reading handwriting can take a minute, longer on a home AI server.</p>`;
       $$("[data-add]", box).forEach((inp) => (inp.onchange = () => attempt(async () => {
@@ -56,6 +58,11 @@ export function renderAdd(view, params, state) {
         draw();
       })));
       $$("[data-rm]", box).forEach((b) => (b.onclick = () => { photos.splice(Number(b.dataset.rm), 1); draw(); }));
+      $$("[data-rot]", box).forEach((b) => (b.onclick = () => attempt(async () => {
+        const i = Number(b.dataset.rot);
+        photos[i] = await rotatePhoto(photos[i]);
+        draw();
+      })));
       $("#go", box).onclick = (e) => run(e.currentTarget, "The AI is reading it…", "/api/import/photo", { images: photos });
     } else if (way === "text") {
       box.innerHTML = `<form id="f" class="space-y-3"><label class="block"><span class="label">The recipe</span>

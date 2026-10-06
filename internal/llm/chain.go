@@ -20,20 +20,22 @@ func Ask(ctx context.Context, st *store.Store, system, user string, parse func(s
 		return ErrNoAI
 	}
 	client := New(ai.Provider, ai.BaseURL, ai.APIKey, ai.JSONMode)
-	return try(ctx, st, ai, ai.Models, parse, func(cctx context.Context, model string) (string, Usage, error) {
+	_, err := try(ctx, st, ai, ai.Models, parse, func(cctx context.Context, model string) (string, Usage, error) {
 		return client.Complete(cctx, model, system, user)
 	})
+	return err
 }
 
-// AskImages shows photos to each vision model in order until parse accepts an answer.
-func AskImages(ctx context.Context, st *store.Store, prompt string, images []Image, parse func(string) error) error {
+// AskImages shows photos to each vision model in order until parse accepts
+// an answer, and says which model answered.
+func AskImages(ctx context.Context, st *store.Store, prompt string, images []Image, parse func(string) error) (string, error) {
 	ai := st.AIConfig()
 	if !ai.Ready() {
-		return ErrNoAI
+		return "", ErrNoAI
 	}
 	reader, ok := New(ai.Provider, ai.BaseURL, ai.APIKey, ai.JSONMode).(ImageReader)
 	if !ok {
-		return errors.New("this AI can't read photos")
+		return "", errors.New("this AI can't read photos")
 	}
 	return try(ctx, st, ai, ai.Vision, parse, func(cctx context.Context, model string) (string, Usage, error) {
 		return reader.ReadImages(cctx, model, prompt, images)
@@ -41,7 +43,7 @@ func AskImages(ctx context.Context, st *store.Store, prompt string, images []Ima
 }
 
 func try(ctx context.Context, st *store.Store, ai store.AIConfig, models []string, parse func(string) error,
-	call func(context.Context, string) (string, Usage, error)) error {
+	call func(context.Context, string) (string, Usage, error)) (string, error) {
 	var errs []string
 	for _, model := range models {
 		cctx, cancel := context.WithTimeout(ctx, Timeout(ai.BaseURL, st.SettingInt(store.KeyLLMTimeoutSeconds)))
@@ -53,16 +55,16 @@ func try(ctx context.Context, st *store.Store, ai store.AIConfig, models []strin
 		}
 		if err == nil {
 			if err = parse(out); err == nil {
-				return nil
+				return model, nil
 			}
 		}
 		if ctx.Err() != nil {
-			return ctx.Err()
+			return "", ctx.Err()
 		}
 		errs = append(errs, fmt.Sprintf("%s: %v", model, err))
 		if HostDown(err) {
 			break // the server is off or stuck: its other models won't answer either
 		}
 	}
-	return errors.New("the AI couldn't do it (" + strings.Join(errs, "; ") + ")")
+	return "", errors.New("the AI couldn't do it (" + strings.Join(errs, "; ") + ")")
 }

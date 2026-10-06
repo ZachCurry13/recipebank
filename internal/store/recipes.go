@@ -10,7 +10,7 @@ import (
 
 const recipeCols = `id, area, title, summary, servings, yield_text, prep_min, cook_min, total_min, heat, course,
 	cuisine, protein, ingredients, steps, notes, storage, source_kind, source_url, source_note, photo,
-	source_photos, needs_review, rating, version_of, created_by, created_at, updated_at`
+	source_photos, needs_review, read_by, ai_reading, rating, version_of, created_by, created_at, updated_at`
 
 // recipeRow is a recipe as stored, with its lists as JSON.
 type recipeRow struct {
@@ -76,12 +76,12 @@ func (s *Store) SaveRecipe(r *recipe.Recipe) (int64, error) {
 	photos, _ := json.Marshal(r.SourcePhotos)
 	args := []any{r.Area, r.Title, r.Summary, r.Servings, r.YieldText, r.PrepMin, r.CookMin, r.TotalMin, r.Heat,
 		r.Course, r.Cuisine, r.Protein, string(ing), string(steps), r.Notes, r.Storage, r.SourceKind, r.SourceURL,
-		r.SourceNote, r.Photo, string(photos), r.NeedsReview, r.Rating, r.VersionOf}
+		r.SourceNote, r.Photo, string(photos), r.NeedsReview, r.ReadBy, r.AIReading, r.Rating, r.VersionOf}
 	if r.ID == 0 {
 		res, err := s.DB.Exec(`INSERT INTO recipes (area, title, summary, servings, yield_text, prep_min, cook_min,
 			total_min, heat, course, cuisine, protein, ingredients, steps, notes, storage, source_kind, source_url,
-			source_note, photo, source_photos, needs_review, rating, version_of, created_by)
-			VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`, append(args, r.CreatedBy)...)
+			source_note, photo, source_photos, needs_review, read_by, ai_reading, rating, version_of, created_by)
+			VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`, append(args, r.CreatedBy)...)
 		if err != nil {
 			return 0, err
 		}
@@ -90,7 +90,7 @@ func (s *Store) SaveRecipe(r *recipe.Recipe) (int64, error) {
 	res, err := s.DB.Exec(`UPDATE recipes SET area = ?, title = ?, summary = ?, servings = ?, yield_text = ?,
 		prep_min = ?, cook_min = ?, total_min = ?, heat = ?, course = ?, cuisine = ?, protein = ?, ingredients = ?,
 		steps = ?, notes = ?, storage = ?, source_kind = ?, source_url = ?, source_note = ?, photo = ?,
-		source_photos = ?, needs_review = ?, rating = ?, version_of = ?, updated_at = CURRENT_TIMESTAMP
+		source_photos = ?, needs_review = ?, read_by = ?, ai_reading = ?, rating = ?, version_of = ?, updated_at = CURRENT_TIMESTAMP
 		WHERE id = ?`, append(args, r.ID)...)
 	if err != nil {
 		return 0, err

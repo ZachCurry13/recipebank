@@ -166,6 +166,7 @@ function source(r) {
   if (!parts.length && !photos) return "";
   return `<div class="card space-y-2"><h2 class="font-semibold">Where it's from</h2>${parts.map((p) => `<p class="text-sm text-slate-300">${p}</p>`).join("")}
     ${photos ? `<div class="flex flex-wrap gap-2">${photos}</div>` : ""}
+    ${r.read_by ? `<p class="text-xs text-slate-500">Read from the photo by ${esc(r.read_by)}.</p>` : ""}
     <p class="text-xs text-slate-500">Kept for the family's own use.</p></div>`;
 }
 
