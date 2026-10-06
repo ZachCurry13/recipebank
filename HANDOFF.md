@@ -75,10 +75,16 @@ the catch-ups and new ideas below. Build in this order:
 5. [ ] **Nutrition estimates:** per serving from USDA FoodData Central (a free key the user signs up for,
    Admin → Nutrition), labelled an estimate; cached per food.
 6. [ ] **Share + print:** share target (Android), print layout + Print button, family cookbook to print/PDF.
-6b. [ ] **First-time guide** (chosen 2026-10-06: both): a "Getting started" checklist for the admin on Tonight that
+6b. [x] **First-time guide** (chosen 2026-10-06: both): a "Getting started" checklist for the admin on Tonight that
    ticks itself off (admin account, family + allergies, first recipe, AI or skip, sign-ins for everyone, on the
    phones) with "Hide this guide"; a short welcome for each person on first sign-in (what ✓/✕/⚠ mean, where
-   things are, put it on your phone). Both reopen from Me.
+   things are, put it on your phone). Both reopen from Me. Built: js/guide.js, js/firstrun.js, /api/admin/guide,
+   users.seen_version (existing users migrated to 0.2.0 so they get "What's new" instead of the welcome).
+6c. [x] **Update notices + changelog in the app** (the user asked 2026-10-06): internal/updates (from NovelCheck,
+   GitHub releases every 6 h, Admin → House settings toggle), banner for parents (js/updatebanner.js), a "Reload"
+   banner when the server changed under an open page, a once-per-release push to admins ("updates" kind),
+   #/whatsnew (bundled CHANGELOG.md via changelog.go + GitHub notes), "What's new" sheet once per person after an
+   update. The 0.3.0 CHANGELOG section must exist before release, or nobody sees notes after updating.
 7. [ ] Phone checks, docs, CHANGELOG 0.3.0, release with the user's OK.
 
 0.4 first (chosen 2026-10-06): budget (prices, weekly estimate, cost per recipe), difficulty, planned leftovers,

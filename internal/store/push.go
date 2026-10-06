@@ -9,7 +9,7 @@ const KeyPushPrivateKey = "push_vapid_private_key"
 func init() { SecretKeys[KeyPushPrivateKey] = true }
 
 // What a device can ask to be told about.
-var PushKinds = []string{"timers", "useby", "low", "tonight"}
+var PushKinds = []string{"timers", "useby", "low", "tonight", "updates"}
 
 // PushSub is one phone or browser that turned on notifications.
 type PushSub struct {

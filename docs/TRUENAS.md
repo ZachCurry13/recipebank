@@ -137,7 +137,10 @@ If TrueNAS doesn't offer the update:
 1. **Apps → Configuration → Manage Container Images → Pull Image**. Enter `ghcr.io/zachcurry13/recipebank` with the tag `latest`, and pull it.
 2. Click **recipebank → Edit**, then **Save** without changing anything. The app restarts on the new version.
 
-The version you are running shows at the bottom of every page.
+The version you are running shows at the bottom of every page; tap it for **What's new**. RecipeBank tells admins
+when a new version is out: a note at the top of the app and, if they turned on phone notifications for it, a
+notification. To do that it asks GitHub's public release list every few hours (only the version number of RecipeBank
+is sent). Turn it off under **Admin → House settings**. After an update, everyone sees the new version's notes once.
 
 ## Backups
 

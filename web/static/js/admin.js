@@ -47,6 +47,8 @@ export async function renderAdmin(view, params, state) {
         </div>
         <label class="block"><span class="label">Stay signed in for (days)</span>
           <input name="session_days" type="number" min="1" max="365" class="input" value="${esc(s.session_days)}"></label>
+        <label class="toggle"><input type="checkbox" name="check_updates" ${s.check_updates === "true" ? "checked" : ""}>
+          Tell me when a new version is out (asks GitHub every few hours)</label>
         <button class="btn-primary">Save</button>
         ${folders(s.folders)}
       </form>
@@ -88,7 +90,8 @@ export async function renderAdmin(view, params, state) {
     e.preventDefault();
     attempt(async () => {
       await put("/api/admin/settings", { allergen_list: house.allergen_list.value, default_units: house.default_units.value, session_days: house.session_days.value,
-        morning_hour: house.morning_hour.value, tonight_hour: house.tonight_hour.value });
+        morning_hour: house.morning_hour.value, tonight_hour: house.tonight_hour.value,
+        check_updates: house.check_updates.checked ? "true" : "false" });
       await refreshInfo();
     }, "Saved");
   };

@@ -6,7 +6,7 @@ import (
 	"fmt"
 )
 
-const userCols = `id, username, password_hash, role, person_id, units, theme, created_at`
+const userCols = `id, username, password_hash, role, person_id, units, theme, seen_version, created_at`
 
 func (s *Store) CountUsers() (int, error) {
 	var n int
@@ -100,4 +100,10 @@ func (s *Store) CountAdmins() (int, error) {
 	var n int
 	err := s.DB.Get(&n, `SELECT COUNT(*) FROM users WHERE role = 'admin'`)
 	return n, err
+}
+
+// SetSeen records the version whose welcome or "What's new" someone has seen.
+func (s *Store) SetSeen(id int64, version string) error {
+	_, err := s.DB.Exec(`UPDATE users SET seen_version = ? WHERE id = ?`, version, id)
+	return err
 }

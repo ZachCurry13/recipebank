@@ -19,6 +19,7 @@ func (s *Server) Reminders(ctx context.Context) {
 	defer t.Stop()
 	for {
 		s.remindIfDue(time.Now())
+		s.notifyUpdate() // asks GitHub at most every few hours
 		select {
 		case <-ctx.Done():
 			return

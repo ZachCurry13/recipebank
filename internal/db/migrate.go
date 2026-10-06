@@ -18,6 +18,20 @@ func migrate(d *sqlx.DB) error {
 			return err
 		}
 	}
+	// The last version each person saw "What's new" for. People who used the
+	// app before 0.3 get 0.3's notes instead of the first-time welcome.
+	var had int
+	if err := d.Get(&had, `SELECT COUNT(*) FROM pragma_table_info('users') WHERE name = 'seen_version'`); err != nil {
+		return err
+	}
+	if had == 0 {
+		if err := addColumn(d, "users", "seen_version", "TEXT NOT NULL DEFAULT ''"); err != nil {
+			return err
+		}
+		if _, err := d.Exec(`UPDATE users SET seen_version = '0.2.0'`); err != nil {
+			return err
+		}
+	}
 	return nil
 }
 

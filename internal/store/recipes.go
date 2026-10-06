@@ -129,3 +129,10 @@ func (s *Store) PhotosInUse() (map[string]bool, error) {
 	}
 	return used, nil
 }
+
+// CountRecipes counts every saved recipe, Kitchen and Home & Care.
+func (s *Store) CountRecipes() (int, error) {
+	var n int
+	err := s.DB.Get(&n, `SELECT COUNT(*) FROM recipes`)
+	return n, err
+}

@@ -14,6 +14,7 @@ import (
 	"github.com/zachcurry13/recipebank/internal/push"
 	"github.com/zachcurry13/recipebank/internal/store"
 	"github.com/zachcurry13/recipebank/internal/tunnel"
+	"github.com/zachcurry13/recipebank/internal/updates"
 )
 
 type Server struct {
@@ -27,8 +28,9 @@ type Server struct {
 	Fetch     *http.Client // outside pages and images; tests swap it
 	Products  productBases // Open Food Facts databases; tests point them at a fake
 	Tunnel    *tunnel.Manager
-	Push      *push.Service // phone notifications
-	timers    push.Timers   // cook-mode timers that buzz the phone
+	Push      *push.Service    // phone notifications
+	Updates   *updates.Checker // newer releases on GitHub; tests point it at a fake
+	timers    push.Timers      // cook-mode timers that buzz the phone
 	logins    *loginLimiter
 	etags     sync.Map  // static file name → ETag
 	buildOnce sync.Once // buildID, computed once
@@ -47,6 +49,9 @@ func (s *Server) Router() http.Handler {
 	}
 	if s.Tunnel == nil {
 		s.Tunnel = tunnel.New()
+	}
+	if s.Updates == nil {
+		s.Updates = updates.New()
 	}
 	if s.Products.FoodBases == nil {
 		s.Products = productBases{FoodBases: foodfacts.FoodBases, HomeBases: foodfacts.HomeBases}
@@ -72,6 +77,8 @@ func (s *Server) Router() http.Handler {
 		r.Group(func(r chi.Router) {
 			r.Use(s.Auth.RequireUser)
 			r.Get("/me", s.handleMe)
+			r.Put("/me/seen", s.handleSeen)
+			r.Get("/updates", s.handleUpdates)
 			r.Put("/me/prefs", s.handlePrefs)
 			r.Put("/me/password", s.handleChangePassword)
 			r.Get("/info", s.handleInfo)
@@ -144,6 +151,8 @@ func (s *Server) Router() http.Handler {
 			r.Group(func(r chi.Router) {
 				r.Use(auth.RequireAdmin)
 				r.Get("/admin/settings", s.handleGetSettings)
+				r.Get("/admin/guide", s.handleGuide)
+				r.Put("/admin/guide", s.handleGuideUpdate)
 				r.Put("/admin/settings", s.handlePutSettings)
 				r.Post("/admin/ai/test", s.handleTestAI)
 				r.Get("/admin/hints", s.handleListHints)

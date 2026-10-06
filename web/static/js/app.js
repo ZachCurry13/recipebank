@@ -1,6 +1,6 @@
 // RecipeBank bootstrap: session check, hash router, navigation.
 import { api, get, post, setUnauthorizedHandler, setOffline } from "./api.js";
-import { $, esc } from "./ui.js";
+import { $, esc, canManage } from "./ui.js";
 import { buildNav, markNav } from "./nav.js";
 import { renderStock } from "./stock.js";
 import { renderShopping, flush } from "./shopping.js";
@@ -16,6 +16,9 @@ import { renderFamily } from "./family.js";
 import { renderAdmin } from "./admin.js";
 import { renderProfile } from "./profile.js";
 import { renderMake } from "./make.js";
+import { renderWhatsNew } from "./whatsnew.js";
+import { firstRun } from "./firstrun.js";
+import { checkForUpdates, watchServerVersion } from "./updatebanner.js";
 
 export const state = { user: null, info: null };
 
@@ -37,8 +40,9 @@ const routes = {
   family: renderFamily,
   admin: renderAdmin,
   profile: renderProfile,
+  whatsnew: renderWhatsNew,
 };
-const NAV_OF = { recipe: null, edit: "add", collection: "collections", season: "collections" };
+const NAV_OF = { recipe: null, edit: "add", collection: "collections", season: "collections", whatsnew: "profile" };
 
 function showOnly(id) {
   for (const v of ["#setup-view", "#login-view", "#app-view"]) $(v).classList.toggle("hidden", v !== id);
@@ -59,6 +63,9 @@ async function showApp() {
   $("#version-label").textContent = `Version ${v}`;
   $("#header-version").textContent = v;
   route();
+  firstRun(state).catch(() => {});
+  if (canManage(state.user)) checkForUpdates();
+  watchServerVersion(v);
 }
 
 let leaving = null; // the open page's clean-up (timers, wake lock)

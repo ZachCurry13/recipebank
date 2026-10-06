@@ -33,9 +33,10 @@ type User struct {
 	Username     string `db:"username" json:"username"`
 	PasswordHash string `db:"password_hash" json:"-"`
 	Role         string `db:"role" json:"role"`
-	PersonID     *int64 `db:"person_id" json:"person_id"` // their own eating profile
-	Units        string `db:"units" json:"units"`         // "" = the house default, "us", "metric"
-	Theme        string `db:"theme" json:"theme"`         // "" = match the device, "dark", "light"
+	PersonID     *int64 `db:"person_id" json:"person_id"`       // their own eating profile
+	Units        string `db:"units" json:"units"`               // "" = the house default, "us", "metric"
+	Theme        string `db:"theme" json:"theme"`               // "" = match the device, "dark", "light"
+	SeenVersion  string `db:"seen_version" json:"seen_version"` // "" = hasn't seen the welcome yet
 	CreatedAt    string `db:"created_at" json:"created_at"`
 }
 

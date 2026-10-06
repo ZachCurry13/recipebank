@@ -4,7 +4,8 @@ import { get, post } from "./api.js";
 import { esc, attempt, toast } from "./ui.js";
 
 const KINDS = [["timers", "⏱ Cook-mode timers, even with the screen off"], ["useby", "🥫 Food to use soon (each morning)"],
-  ["low", "🧽 Something running low"], ["tonight", "🌙 Tonight's dinner (each afternoon)"]];
+  ["low", "🧽 Something running low"], ["tonight", "🌙 Tonight's dinner (each afternoon)"],
+  ["updates", "🆕 A new version of RecipeBank (admins)"]];
 
 const isIOS = () => /iPhone|iPad|iPod/.test(navigator.userAgent);
 const installed = () => window.matchMedia?.("(display-mode: standalone)").matches || navigator.standalone === true;
@@ -65,7 +66,7 @@ export async function renderPushCard(host, user) {
     <p class="text-sm text-slate-300">${intro}</p>
     ${why || !reg ? `<p class="rounded-lg bg-slate-800/60 p-3 text-sm text-amber-200">${why || "This browser isn't ready for notifications yet. Reload the page and try again."}</p>` : `
       <p class="text-sm">${mine ? "✅ On for this device." : "Off for this device."}</p>
-      <div class="space-y-1">${KINDS.map(([k, label]) => `<label class="toggle"><input type="checkbox" data-want="${k}"
+      <div class="space-y-1">${KINDS.filter(([k]) => k !== "updates" || user.role === "admin").map(([k, label]) => `<label class="toggle"><input type="checkbox" data-want="${k}"
         ${!here || here.wants.split(",").includes(k) ? "checked" : ""}> ${label}</label>`).join("")}</div>
       <div class="flex flex-wrap gap-2">
         ${mine ? `<button data-push="test" class="btn-secondary">Send a test</button>

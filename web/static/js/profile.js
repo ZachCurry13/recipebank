@@ -4,6 +4,7 @@ import { $, esc, attempt } from "./ui.js";
 import { applyAppearance } from "./appearance.js";
 import { signOut } from "./app.js";
 import { renderPushCard } from "./push.js";
+import { welcome } from "./firstrun.js";
 
 export function renderProfile(view, params, state) {
   const u = state.user;
@@ -28,8 +29,15 @@ export function renderProfile(view, params, state) {
       </form>
     </div>
     <div id="push-card" class="card mt-4 space-y-3"></div>
+    <div class="card mt-4 space-y-3"><h2 class="text-lg font-semibold">❓ Help</h2>
+      <div class="flex flex-wrap gap-2"><button type="button" id="welcome" class="btn-secondary">👋 The welcome tour</button>
+        <a href="#/whatsnew" class="btn-secondary">🆕 What's new</a>
+        ${u.role === "admin" ? `<button type="button" id="setup-guide" class="btn-secondary">🧭 Getting started</button>` : ""}</div></div>
     <button id="out" class="btn-secondary mt-4">Sign out</button>`;
   renderPushCard($("#push-card", view), u).catch(() => {});
+  $("#welcome", view).onclick = () => welcome(state);
+  const guide = $("#setup-guide", view);
+  if (guide) guide.onclick = () => attempt(async () => { await put("/api/admin/guide", { step: "hidden", done: false }); location.hash = "#/tonight"; });
   $("#prefs", view).onsubmit = (e) => {
     e.preventDefault();
     const f = e.target;

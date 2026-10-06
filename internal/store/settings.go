@@ -22,6 +22,9 @@ const (
 	KeyDefaultUnits  = "default_units"  // "us" or "metric"
 	KeyHouseholdPets = "household_pets" // comma-separated: dog, cat, bird, small, fish
 
+	KeyCheckUpdates = "check_updates" // ask GitHub (every few hours) whether a newer RecipeBank is out
+	KeyGuide        = "guide"         // the admin's "Getting started": steps ticked by hand, and "hidden"
+
 	KeyMorningHour = "morning_hour" // "use soon" reminder (0-23, -1 = off)
 	KeyTonightHour = "tonight_hour" // tonight's dinner reminder (0-23, -1 = off)
 
@@ -44,6 +47,7 @@ var Defaults = map[string]string{
 	KeyHouseholdPets:     "",
 	KeyMorningHour:       "9",
 	KeyTonightHour:       "16",
+	KeyCheckUpdates:      "true",
 }
 
 // SecretKeys are never returned to the browser in clear text.

@@ -1,11 +1,12 @@
 // Tonight: the start page. What's planned today and who's eating (with
 // everyone's checks), food to use soon, and ideas when nothing's planned.
 import { get, post } from "./api.js";
-import { $$, esc, attempt, canManage, fmtMin, toast } from "./ui.js";
+import { $, $$, esc, attempt, canManage, fmtMin, toast } from "./ui.js";
 import { verdictList } from "./verdicts.js";
 import { startCooking } from "./cook.js";
 import { useByChip } from "./stock.js";
 import { localDate, dayLabel, MEAL_NAMES } from "./planpick.js";
+import { renderGuide } from "./guide.js";
 
 export async function renderTonight(view, params, state) {
   const date = localDate();
@@ -17,6 +18,7 @@ export async function renderTonight(view, params, state) {
   const photo = (p, cls) => (p ? `<img src="/api/photos/${esc(p)}?w=1200" alt="" class="${cls}">` : "");
 
   view.innerHTML = `
+    <div id="guide"></div>
     <h1 class="text-2xl font-bold">🌙 Tonight</h1>
     <p class="mb-4 text-sm text-slate-400">${esc(dayLabel(date, true))} · Eating: ${data.who.length ? esc(data.who.map((id) => name[id]).filter(Boolean).join(", ")) : "nobody picked"}
       ${manage ? `· <a href="#/plan" class="underline">change</a>` : ""}</p>
@@ -49,6 +51,7 @@ export async function renderTonight(view, params, state) {
     ${data.next ? `<p class="text-sm text-slate-400">Next up: ${esc(dayLabel(data.next.date))}, ${MEAL_NAMES[data.next.meal].toLowerCase()}:
       ${data.next.recipe ? `<a href="#/recipe/${data.next.recipe.id}" class="underline">${esc(data.next.recipe.title)}</a>` : esc(data.next.title)}</p>` : ""}`;
 
+  if (state.user.role === "admin") renderGuide($("#guide", view)).catch(() => {});
   $$("[data-cook]", view).forEach((b) => (b.onclick = () => attempt(async () => {
     const m = data.meals[Number(b.dataset.cook)];
     const full = await get(`/api/recipes/${m.recipe.id}`);
