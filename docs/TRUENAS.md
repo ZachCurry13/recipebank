@@ -147,7 +147,8 @@ is sent). Turn it off under **Admin → House settings**. After an update, every
 To email recipes and the shopping list, add your email account's outgoing mail server under **Admin → Email**
 and press **Send a test**. For Gmail: server `smtp.gmail.com`, port `587`, your Gmail address as the username, and
 an [App Password](https://myaccount.google.com/apppasswords) (Gmail doesn't accept your normal password here). The
-password stays on your server. Each person can send up to 20 emails an hour.
+password stays on your server. Each person can send up to 20 emails an hour. Under **Who can send email**, choose
+parents only (the default) or everyone.
 
 ## Nutrition estimates (optional)
 
@@ -160,6 +161,15 @@ it can't work out are listed, so the estimate says what it leaves out.
 
 - **Config** (`recipebank.db`) and **Photos** are the ones that matter. Protect them with TrueNAS snapshots (**Data Protection → Periodic Snapshot Tasks**) or copy them somewhere safe. The database holds passwords (scrambled) and your AI key.
 - **Cache** never needs a backup.
+- **Admin → Back up** downloads every recipe with its photos, the collections and the bookshelf as one .zip. It's
+  handy for moving recipes to a new install or a relative's RecipeBank (loading it adds what that one doesn't have),
+  but it isn't a full backup: people, accounts, the pantry and the plan aren't in it. Keep the snapshots too.
+
+## Sharing a recipe with a link
+
+**Share link** on a recipe makes a page anyone with the link can open without an account, for 7 days. It only
+works for people outside your home when RecipeBank is reachable from the internet (Step 6). The page shows the
+recipe only: no names, allergies or anything else from your RecipeBank. **Stop sharing** ends it early.
 
 To check where RecipeBank keeps each kind of file, open **Admin → House settings → Where files are kept**. "Own dataset" means that folder is mounted separately.
 

@@ -27,7 +27,12 @@ CHANGELOG 0.3.0 written; every page checked at 360×760 (light and dark).
 - 0.4.0 released 2026-10-06: bug fixes from a review of 0.3 (ingredient lines, metric grams), difficulty, planned
   leftovers, email (SMTP), budget (pantry prices, list and recipe costs, weekly budget), events (menus, who
   brings what, checks for everyone coming).
-- Next: the user tests with a real AI, a USDA key and an email account; fixes go out as 0.4.x. The user's photo model is a 3B vision model; a cloud model (Gemini's free tier) was suggested.
+- 0.5.0 (2026-10-06, built while the user was away; release OK given in advance): Plan my week, scan a receipt,
+  kids can help (word lists), Bookshelf (cookbooks by ISBN via Open Library, recipes by page, card pile), imports
+  from Paprika/Mealie/Tandoor, share links, back up and move recipes, who may email; fixes incl. dish drafts that
+  couldn't be saved (recipes table rebuilt once on upgrade). Checked at 360×760, light and dark.
+- Next: the user tries 0.5 with real exports, receipts and cookbooks (the import formats were built from the apps'
+  documented shapes, not real files); fixes go out as 0.5.x. Ideas for 0.6 to be asked.
 - The user tests 0.2.0 with a real AI; fixes go out as 0.2.x.
 - Later (from the user's list): "what can I make?" from a photo of the fridge, dish photo → ideas, kitchen tablet
   (only if wanted), cookbooks and the card pile, share from the phone and printing, other-app imports, Cast to TV.

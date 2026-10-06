@@ -6,7 +6,7 @@ Runs as one small Docker container (made for TrueNAS SCALE), works on phones, an
 
 ## What it does
 
-- **Add recipes** from a link (most recipe sites include a standard recipe format RecipeBank reads exactly), from **photos** of handwritten cards or cookbook pages (the AI reads them and marks lines it wasn't sure about), from pasted text, or typed in.
+- **Add recipes** from a link (most recipe sites include a standard recipe format RecipeBank reads exactly), from **photos** of handwritten cards or cookbook pages (the AI reads them and marks lines it wasn't sure about), from pasted text, typed in, or brought over from **Paprika, Mealie or Tandoor**.
 - **Who can eat it:** for each person, ✓ OK, ✕ Not for (with the reason and the ingredient), or ⚠ Not sure (check the label). Allergies come in three strengths:
   - **Avoid:** only ingredients that clearly contain it count.
   - **Allergic:** "may contain" and packaged foods are flagged so you check the label.
@@ -26,6 +26,8 @@ Runs as one small Docker container (made for TrueNAS SCALE), works on phones, an
 - **From a dish:** a photo of a meal finds similar recipes, or the AI drafts its best guess.
 - **We cooked it** with each person's 👍/👎, **nutrition estimates** from USDA FoodData Central, **printing** and a **family cookbook** to print or save as a PDF, and sharing links from an Android phone.
 - **Events** (holiday dinners and potlucks, every dish checked for everyone coming), a **budget** from pantry prices, **planned leftovers**, **email** a recipe or the list, and how hard each recipe is.
+- **Plan my week** in one tap (what everyone can eat, liked first, food near its date used up, within the budget), **scan a receipt** into the pantry, and **kids can help** (steps marked by what needs a grown-up).
+- **Bookshelf:** cookbooks by barcode with their recipes by page (searchable), and a list of the cards still to photograph. **Share a recipe with a link** (read-only, 7 days) and **back up** every recipe as one file.
 - **Cook mode voice**, **phone notifications** (timers, use soon, running low, tonight's dinner) and **remote access** through a built-in Cloudflare Tunnel ([docs/REMOTE_ACCESS.md](docs/REMOTE_ACCESS.md)).
 - **Accounts** for parents and kids; people without accounts (guests) still get checked. A short welcome for new people, a setup checklist for the admin, update notices and **What's new** in the app.
 

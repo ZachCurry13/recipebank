@@ -165,7 +165,7 @@ Build in this order, each tested, checked at 360×760 and pushed to `feature/v0.
    photograph": a list of cards and clippings to scan, ticked off when a photo recipe is saved from one.
 8. [x] **Imports from other recipe apps:** files exported from Paprika (.paprikarecipes), Mealie and Tandoor
    (their export .zip), read into drafts/recipes with the usual checks; plain-words help for each.
-9. [ ] Docs, CHANGELOG 0.5.0, phone checks, release 0.5.0.
+9. [x] Docs, CHANGELOG 0.5.0, phone checks (360×760, light and dark), release 0.5.0.
 
 ## 2. Rules
 

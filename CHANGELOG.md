@@ -1,5 +1,48 @@
 # Changelog
 
+## [0.5.0] - 2026-10-06
+
+Plan the week in one tap, scan receipts and cookbooks, bring recipes over from other apps, and let the kids help.
+
+### ✨ Plan my week
+- On the Plan page, **Plan my week** fills the empty dinners with recipes everyone home that day can eat: ones people liked first, food near its date used up, quicker ones on weeknights, nothing from the last week, and within the weekly budget when prices are known.
+- A recipe that makes plenty covers the next night as leftovers. It's a draft: drop any day, **Try again**, or **Add to the plan**.
+
+### 🧾 Scan a receipt
+- **Pantry → Scan a receipt:** photograph a store receipt (up to 3 photos for a long one). The AI reads each line; each is matched to a pantry or supply item, or added as new.
+- You tick what's right and fix names, amounts and prices before anything is saved. Prices are kept for the budget.
+
+### 🧒 Kids can help
+- Every step is marked by what it needs a grown-up for: a knife, a sharp tool, the stove, the oven or hot things, from word lists (never the AI). They lean careful.
+- In cook mode, **Kid helper** shows on each step whether a kid can do it. Recipes with steps for kids say **Kids can help**, and the Kitchen can be filtered by it.
+
+### 📖 Bookshelf
+- **More → Bookshelf:** add your cookbooks by scanning the barcode on the back (title, author and cover from Open Library) or by hand.
+- List each book's recipes with their pages, typed or read by the AI from a photo of the index. Kitchen search shows matches in your cookbooks too ("Lasagna, page 112").
+- **Add it** next to a listed recipe photographs the page and links the saved recipe to the book. Recipes show which cookbook and page they came from, and you can set it on any recipe.
+- **Still to photograph:** a list of the recipe cards and clippings waiting to be scanned, ticked off when a recipe is saved from one.
+
+### 📦 From another app
+- **Add → From another app:** bring all your recipes over from Paprika (.paprikarecipes), Mealie (a backup .zip or recipe .json files) or Tandoor (its export .zip), with their photos. Each recipe is checked for everyone like any other; ones already here are skipped.
+
+### 🔗 Share a recipe with a link
+- **Share link** on a recipe makes a read-only page for someone without an account. It shows no names or allergies, runs out after 7 days, and parents can stop sharing at any time.
+
+### 💾 Back up and move recipes
+- **Admin → Back up:** download every recipe (Kitchen and Home & Care) with its photos, the collections and the bookshelf as one file. Load it into any RecipeBank, yours after a reinstall or a relative's, to add what it doesn't have yet.
+
+### ✉️ Who may send email
+- **Admin → Email → Who can send email:** parents only (the new default) or everyone.
+
+### Fixes
+- Saving a recipe drafted from a photo of a dish (Add → From a dish) failed with an error. It saves now.
+- Email works right after it's set up, without reloading the page.
+- A recipe's cost says how many ingredients had a price in words (phones show no tooltips), and says "No prices yet" instead of "about $0.00".
+- The Events list ignores people taken off the Family page, and an event with nobody listed as coming makes the recipe "as written".
+- Package sizes like "500g", "1.5 L" and "1 dozen" are understood.
+
+Updating: nothing to change in TrueNAS. The first start of 0.5.0 updates the database by itself (it takes a moment with many recipes).
+
 ## [0.4.0] - 2026-10-06
 
 Events, a budget, planned leftovers, email, and how hard a recipe is, plus fixes from going over 0.3.
