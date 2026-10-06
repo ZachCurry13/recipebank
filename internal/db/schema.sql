@@ -127,3 +127,23 @@ CREATE TABLE IF NOT EXISTS shopping (
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
+
+-- The meal plan: a recipe (or just a note, like "Pizza night out") per meal.
+CREATE TABLE IF NOT EXISTS meal_plan (
+    id         INTEGER PRIMARY KEY AUTOINCREMENT,
+    date       TEXT NOT NULL,                        -- YYYY-MM-DD
+    meal       TEXT NOT NULL CHECK (meal IN ('breakfast', 'lunch', 'dinner', 'snack')),
+    recipe_id  INTEGER REFERENCES recipes(id) ON DELETE CASCADE,
+    title      TEXT NOT NULL DEFAULT '',             -- when there's no recipe
+    servings   REAL NOT NULL DEFAULT 0,              -- 0 = the recipe's own
+    note       TEXT NOT NULL DEFAULT '',
+    created_by TEXT NOT NULL DEFAULT '',
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+CREATE INDEX IF NOT EXISTS meal_plan_date ON meal_plan(date);
+
+-- Who's eating at home each day (people ids, guests included); no row = everyone but guests.
+CREATE TABLE IF NOT EXISTS plan_days (
+    date TEXT PRIMARY KEY,
+    who  TEXT NOT NULL DEFAULT '[]'
+);

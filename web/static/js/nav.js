@@ -6,11 +6,13 @@ const all = () => true;
 
 // Pages: [route, label, icon, who may see it, on the phone's bottom bar].
 export const NAV = [
+  ["tonight", "Tonight", "🌙", all, true],
   ["kitchen", "Kitchen", "🍲", all, true],
-  ["home", "Home & Care", "🧴", all, true],
-  ["pantry", "Pantry", "🥫", all, true],
-  ["supplies", "Supplies", "🧽", all, false],
+  ["plan", "Plan", "📅", all, true],
   ["shopping", "Shopping", "🛒", all, true],
+  ["home", "Home & Care", "🧴", all, false],
+  ["pantry", "Pantry", "🥫", all, false],
+  ["supplies", "Supplies", "🧽", all, false],
   ["add", "Add a recipe", "➕", canManage, false],
   ["family", "Family", "👪", all, false],
   ["admin", "Admin", "⚙️", (u) => u.role === "admin", false],

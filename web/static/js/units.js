@@ -64,6 +64,13 @@ function unitLabel(unit, q) {
   return q > 1 && PLURAL[unit] ? PLURAL[unit] : unit;
 }
 
+// singular: "1 large egg", not "1 large eggs" (the last word only).
+function singular(food) {
+  if (/(ss|us|is)$/i.test(food)) return food;
+  if (/(oes|ches|shes)$/i.test(food)) return food.slice(0, -2);
+  return food.replace(/s$/i, "");
+}
+
 // amountLine is how an ingredient reads at a scale (factor) and in a unit
 // system ("us" or "metric"). Unchanged lines keep the author's wording.
 export function amountLine(ing, factor, system) {
@@ -77,7 +84,8 @@ export function amountLine(ing, factor, system) {
   let amount = num(q);
   if (ing.qty_max) amount += "–" + num(conv(ing.qty_max * factor)[0]);
   const note = ing.note ? `, ${ing.note}` : "";
-  return `${amount} ${unitLabel(unit, q)} ${ing.food}${note}`.replace(/\s+/g, " ").trim();
+  const food = !unit && q <= 1 && !ing.qty_max ? singular(ing.food) : ing.food;
+  return `${amount} ${unitLabel(unit, q)} ${food}${note}`.replace(/\s+/g, " ").trim();
 }
 
 // temps rewrites oven temperatures in a step for the unit system.

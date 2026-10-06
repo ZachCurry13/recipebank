@@ -4,6 +4,8 @@ import { $, esc } from "./ui.js";
 import { buildNav, markNav } from "./nav.js";
 import { renderStock } from "./stock.js";
 import { renderShopping, flush } from "./shopping.js";
+import { renderTonight } from "./tonight.js";
+import { renderPlan } from "./plan.js";
 import { applyAppearance } from "./appearance.js";
 import { renderLibrary } from "./library.js";
 import { renderRecipe } from "./recipe.js";
@@ -21,6 +23,8 @@ const routes = {
   pantry: (v, p, s) => renderStock(v, "kitchen", p, s),
   supplies: (v, p, s) => renderStock(v, "home", p, s),
   shopping: renderShopping,
+  tonight: renderTonight,
+  plan: renderPlan,
   recipe: renderRecipe,
   add: renderAdd,
   edit: renderEdit,
@@ -57,7 +61,7 @@ async function route() {
   if (!state.user) return;
   const [path, query = ""] = location.hash.replace(/^#\/?/, "").split("?");
   const [name, id] = path.split("/");
-  const page = routes[name] ? name : "kitchen";
+  const page = routes[name] ? name : "tonight";
   const params = Object.fromEntries(new URLSearchParams(query));
   if (id) params.id = id;
   const lit = page in NAV_OF ? NAV_OF[page] : page;

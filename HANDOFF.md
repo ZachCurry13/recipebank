@@ -22,7 +22,7 @@ Work on `feature/v0.2`, commit and push after each part. Status per part:
    labels help clear "Not sure" ingredients (a parent confirms).
 2. [x] Shopping list: from recipes or a plan week, amounts combined, pantry items under "You probably
    have", low supplies added, store sections, tick, shared, works offline.
-3. [ ] Meal plan (week, who's home, guests) + Tonight page as the start page.
+3. [x] Meal plan (week, who's home, guests) + Tonight page as the start page.
 4. [ ] Collections (by hand or AI-described, parent reviews) + seasons and feasts (NovelCheck's
    `internal/seasons` Easter/Advent).
 5. [ ] Smart search: AI turns a question into filters + words; optional embedding model ranks by meaning.

@@ -77,6 +77,9 @@ func (s *Server) Router() http.Handler {
 			r.Post("/shopping/clear", s.handleClearShopping)
 			r.Put("/shopping/{id}", s.handleUpdateShopping)
 			r.Delete("/shopping/{id}", s.handleDeleteShopping)
+			r.Get("/plan", s.handlePlan)
+			r.Get("/tonight", s.handleTonight)
+			r.Post("/plan/shopping", s.handlePlanShopping)
 
 			// Parents: add and edit recipes and people.
 			r.Group(func(r chi.Router) {
@@ -99,6 +102,10 @@ func (s *Server) Router() http.Handler {
 				r.Post("/stock", s.handleSaveStock)
 				r.Put("/stock/{id}", s.handleSaveStock)
 				r.Delete("/stock/{id}", s.handleDeleteStock)
+				r.Post("/plan", s.handleSavePlan)
+				r.Put("/plan/day/{date}", s.handlePlanDay)
+				r.Put("/plan/{id}", s.handleSavePlan)
+				r.Delete("/plan/{id}", s.handleDeletePlan)
 			})
 
 			// Admins: the AI and accounts.
