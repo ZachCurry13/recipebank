@@ -163,7 +163,7 @@ Build in this order, each tested, checked at 360×760 and pushed to `feature/v0.
 7. [x] **Cookbooks and the card pile:** cookbooks by barcode (Open Library: title, author, cover), their recipes by
    page (typed, or a photo of the index read by the AI), recipes can say "Cookbook, page N"; "Still to
    photograph": a list of cards and clippings to scan, ticked off when a photo recipe is saved from one.
-8. [ ] **Imports from other recipe apps:** files exported from Paprika (.paprikarecipes), Mealie and Tandoor
+8. [x] **Imports from other recipe apps:** files exported from Paprika (.paprikarecipes), Mealie and Tandoor
    (their export .zip), read into drafts/recipes with the usual checks; plain-words help for each.
 9. [ ] Docs, CHANGELOG 0.5.0, phone checks, release 0.5.0.
 

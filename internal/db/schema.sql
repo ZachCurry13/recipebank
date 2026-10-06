@@ -66,7 +66,7 @@ CREATE TABLE IF NOT EXISTS recipes (
     steps        TEXT NOT NULL DEFAULT '[]',
     notes        TEXT NOT NULL DEFAULT '',      -- the family's own notes
     storage      TEXT NOT NULL DEFAULT '',      -- home: how to store it, how long it keeps
-    source_kind  TEXT NOT NULL DEFAULT 'manual' CHECK (source_kind IN ('web', 'photo', 'text', 'manual')),
+    source_kind  TEXT NOT NULL DEFAULT 'manual' CHECK (source_kind IN ('web', 'photo', 'text', 'manual', 'ai', 'app')),
     source_url   TEXT NOT NULL DEFAULT '',
     source_note  TEXT NOT NULL DEFAULT '',      -- "Grandma's card", "cookbook, page 42"
     photo        TEXT NOT NULL DEFAULT '',      -- file name under /data/photos

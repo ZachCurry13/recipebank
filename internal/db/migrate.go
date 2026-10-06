@@ -36,7 +36,7 @@ func migrate(d *sqlx.DB) error {
 			return err
 		}
 	}
-	return nil
+	return widenSourceKinds(d)
 }
 
 // addColumn adds a column unless the table already has it.

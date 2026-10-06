@@ -5,6 +5,7 @@ import { $, $$, esc, attempt, busy } from "./ui.js";
 import { shrinkPhoto, rotatePhoto } from "./photo.js";
 import { editRecipe } from "./editor.js";
 import { renderDish } from "./dish.js";
+import { renderAppImport } from "./appimport.js";
 import { peekPending, clearPending, pendingNote } from "./booklink.js";
 
 const WAYS = [
@@ -12,6 +13,7 @@ const WAYS = [
   ["photo", "📷", "From photos", "A handwritten card, a cookbook page or a clipping (up to 4 photos)."],
   ["text", "📋", "Paste text", "Copy the recipe from anywhere and paste it here."],
   ["dish", "🍽️", "From a dish", "A photo of a meal: similar recipes, or the AI's best guess."],
+  ["app", "📦", "From another app", "Paprika, Mealie or Tandoor: bring all your recipes over."],
   ["type", "✍️", "Type it in", "Start from an empty recipe."],
 ];
 
@@ -32,7 +34,7 @@ export function renderAdd(view, params, state) {
         ${[["kitchen", "🍲 Kitchen"], ["home", "🧴 Home & Care"]].map(([a, l]) =>
           `<a href="#/add?area=${a}&way=${way}" class="pick ${area === a ? "on" : ""}">${l}</a>`).join("")}
       </div>
-      <div class="mb-4 grid gap-2 sm:grid-cols-3 lg:grid-cols-5">${ways.map(([k, ico, label, help]) => `
+      <div class="mb-4 grid gap-2 sm:grid-cols-3 lg:grid-cols-6">${ways.map(([k, ico, label, help]) => `
         <button data-way="${k}" class="card min-w-0 text-left ${way === k ? "ring-2 ring-emerald-600" : ""}">
           <div class="text-2xl">${ico}</div><div class="font-semibold">${label}</div>
           <div class="text-xs text-slate-400">${help}</div></button>`).join("")}</div>
@@ -75,6 +77,8 @@ export function renderAdd(view, params, state) {
       $("#go", box).onclick = (e) => run(e.currentTarget, "The AI is reading it…", "/api/import/photo", { images: photos });
     } else if (way === "dish") {
       renderDish(box, view, ai);
+    } else if (way === "app") {
+      renderAppImport(box, area);
     } else if (way === "text") {
       box.innerHTML = `<form id="f" class="space-y-3"><label class="block"><span class="label">The recipe</span>
         <textarea name="text" rows="12" required class="input" placeholder="Title, ingredients and steps…">${esc(params.text || "")}</textarea></label>

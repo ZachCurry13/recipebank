@@ -153,6 +153,7 @@ func (s *Server) Router() http.Handler {
 				r.Post("/import/dish", s.handleDish)
 				r.Post("/import/dish/draft", s.handleDishDraft)
 				r.Post("/import/text", s.handleImportText)
+				r.Post("/import/app", s.handleImportApp)
 				r.Post("/check", s.handleCheckDraft)
 				r.Post("/recipes", s.handleSaveRecipe)
 				r.Put("/recipes/{id}", s.handleSaveRecipe)

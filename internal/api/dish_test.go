@@ -69,4 +69,9 @@ func TestDishPhoto(t *testing.T) {
 	if code := c.do("POST", "/api/import/dish/draft", map[string]any{"name": "  "}, nil); code != 400 {
 		t.Fatalf("no name: %d", code)
 	}
+	// The draft saves like any recipe (0.3 and 0.4 refused "ai" recipes).
+	var saved struct{ ID int64 }
+	if code := c.do("POST", "/api/recipes", draft.Recipe, &saved); code != 200 || saved.ID == 0 {
+		t.Fatalf("save the draft: %d", code)
+	}
 }

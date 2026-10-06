@@ -93,7 +93,7 @@ func (r *Recipe) Clean() {
 		r.Difficulty = ""
 	}
 	switch r.SourceKind {
-	case "web", "photo", "text", "manual", "ai": // "ai": drafted by the AI from a photo of a dish
+	case "web", "photo", "text", "manual", "ai", "app": // "ai": drafted by the AI from a photo of a dish; "app": another app's export
 	default:
 		r.SourceKind = "manual"
 	}

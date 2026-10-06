@@ -25,7 +25,7 @@ export function renderBackup(box) {
         headers: { "X-RecipeBank": "1", "Content-Type": "application/zip" } });
       const res = await resp.json().catch(() => ({}));
       if (!resp.ok) throw new Error(res.error || "The backup couldn't be loaded.");
-      out.innerHTML = `✓ Added <b>${res.added}</b> recipe${res.added === 1 ? "" : "s"}${res.skipped ? ` (${res.skipped} were already here)` : ""},
+      out.innerHTML = `✓ Added <b>${res.added}</b> recipe${res.added === 1 ? "" : "s"}${res.skipped ? ` (${res.skipped} ${res.skipped === 1 ? "was" : "were"} already here)` : ""},
         ${res.photos} photo${res.photos === 1 ? "" : "s"}${res.collections ? `, ${res.collections} collection${res.collections === 1 ? "" : "s"}` : ""}${res.books ? ` and ${res.books} cookbook${res.books === 1 ? "" : "s"}` : ""}.`;
     } catch (e) {
       out.textContent = "";
