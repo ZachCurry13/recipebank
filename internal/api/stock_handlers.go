@@ -10,6 +10,7 @@ import (
 
 	"github.com/zachcurry13/recipebank/internal/auth"
 	"github.com/zachcurry13/recipebank/internal/foodfacts"
+	"github.com/zachcurry13/recipebank/internal/push"
 	"github.com/zachcurry13/recipebank/internal/recipe"
 	"github.com/zachcurry13/recipebank/internal/safety"
 	"github.com/zachcurry13/recipebank/internal/store"
@@ -98,6 +99,12 @@ func (s *Server) handleAdjustStock(w http.ResponseWriter, r *http.Request) {
 	// Just ran low: it goes on the shopping list by itself.
 	if it.Low() && !before.Low() {
 		_, _ = s.addLow(it, auth.UserFrom(r).Username)
+		page, what := "/#/pantry", "🥫 Running low"
+		if it.Area == "home" {
+			page, what = "/#/supplies", "🧽 Running low"
+		}
+		s.Push.Notify("low", 0, push.Message{Title: what, Body: it.Name + " is running low. It's on the shopping list.", URL: page, Tag: "low"})
+
 	}
 	writeJSON(w, http.StatusOK, it)
 }

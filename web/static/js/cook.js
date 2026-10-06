@@ -1,6 +1,7 @@
 // Cook mode: one step at a time in big text, the step's ingredients, timers
 // that ring, and the screen kept on where the browser allows it.
 import { $, $$, esc } from "./ui.js";
+import { post, del } from "./api.js";
 import { amountLine, temps, timersIn } from "./units.js";
 import { canSpeak, canListen, voiceOn, setVoice, speak, stopSpeaking, listen } from "./cookvoice.js";
 
@@ -52,8 +53,11 @@ export function startCooking(r, v) {
   let stopListening = null;
   const say = () => { spoken = at; speak(`Step ${at + 1}. ${temps(r.steps[at].text, v.system)}`); };
   const startTimer = (t) => {
-    timers.push({ label: t.label, ends: Date.now() + t.secs * 1000, done: false });
+    const timer = { label: t.label, ends: Date.now() + t.secs * 1000, done: false, id: null };
+    timers.push(timer);
     drawTimers();
+    // The server buzzes the cook's phones too, even with the screen off.
+    post("/api/push/timer", { label: t.label, seconds: Math.round(t.secs), recipe: r.title }).then((res) => (timer.id = res.id)).catch(() => {});
   };
   const command = (c) => {
     if (c === "next") move(1);
@@ -94,7 +98,11 @@ export function startCooking(r, v) {
       return `<span class="${left ? "chip-info" : "chip-no motion-safe:animate-pulse"} text-base">⏱ ${esc(t.label)}: ${left ? clock(left) : "Done!"}
         <button data-stop="${i}" class="ml-1" aria-label="Stop timer">✕</button></span>`;
     }).join(" ");
-    $$("[data-stop]", el).forEach((b) => (b.onclick = () => { timers.splice(Number(b.dataset.stop), 1); drawTimers(); }));
+    $$("[data-stop]", el).forEach((b) => (b.onclick = () => {
+      const [t] = timers.splice(Number(b.dataset.stop), 1);
+      if (t?.id && !t.done) del(`/api/push/timer/${t.id}`).catch(() => {});
+      drawTimers();
+    }));
   };
   const draw = () => {
     const step = r.steps[at];

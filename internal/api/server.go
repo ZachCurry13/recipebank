@@ -11,6 +11,7 @@ import (
 	"github.com/zachcurry13/recipebank/internal/auth"
 	"github.com/zachcurry13/recipebank/internal/config"
 	"github.com/zachcurry13/recipebank/internal/foodfacts"
+	"github.com/zachcurry13/recipebank/internal/push"
 	"github.com/zachcurry13/recipebank/internal/store"
 	"github.com/zachcurry13/recipebank/internal/tunnel"
 )
@@ -26,6 +27,8 @@ type Server struct {
 	Fetch     *http.Client // outside pages and images; tests swap it
 	Products  productBases // Open Food Facts databases; tests point them at a fake
 	Tunnel    *tunnel.Manager
+	Push      *push.Service // phone notifications
+	timers    push.Timers   // cook-mode timers that buzz the phone
 	logins    *loginLimiter
 	etags     sync.Map  // static file name → ETag
 	buildOnce sync.Once // buildID, computed once
@@ -38,6 +41,9 @@ func (s *Server) Router() http.Handler {
 	s.logins = newLoginLimiter()
 	if s.Fetch == nil {
 		s.Fetch = newFetchClient()
+	}
+	if s.Push == nil {
+		s.Push = push.New(s.Store)
 	}
 	if s.Tunnel == nil {
 		s.Tunnel = tunnel.New()
@@ -89,6 +95,12 @@ func (s *Server) Router() http.Handler {
 			r.Get("/collections/{id}", s.handleCollection)
 			r.Get("/seasons/{key}", s.handleSeason)
 			r.Post("/search", s.handleSearch)
+			r.Get("/push", s.handlePushStatus)
+			r.Post("/push/subscribe", s.handlePushSubscribe)
+			r.Post("/push/unsubscribe", s.handlePushUnsubscribe)
+			r.Post("/push/test", s.handlePushTest)
+			r.Post("/push/timer", s.handleTimerStart)
+			r.Delete("/push/timer/{id}", s.handleTimerStop)
 
 			// Parents: add and edit recipes and people.
 			r.Group(func(r chi.Router) {

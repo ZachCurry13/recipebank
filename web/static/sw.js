@@ -31,3 +31,32 @@ self.addEventListener("fetch", (e) => {
     }).catch(() => caches.match("/")));
   }
 });
+
+// Phone notifications (see internal/push): show what the server sent.
+self.addEventListener("push", (event) => {
+  let msg = {};
+  try {
+    msg = event.data ? event.data.json() : {};
+  } catch {
+    msg = { body: event.data ? event.data.text() : "" };
+  }
+  event.waitUntil(self.registration.showNotification(msg.title || "RecipeBank", {
+    body: msg.body || "",
+    icon: "/icons/icon-192.png",
+    badge: "/icons/icon-192.png",
+    tag: msg.tag || undefined,
+    renotify: msg.tag === "timer",
+    data: { url: msg.url || "/" },
+  }));
+});
+
+// Tapping a notification opens (or focuses) RecipeBank on the right page.
+self.addEventListener("notificationclick", (event) => {
+  event.notification.close();
+  const url = new URL(event.notification.data?.url || "/", self.location.origin).href;
+  event.waitUntil(self.clients.matchAll({ type: "window", includeUncontrolled: true }).then((wins) => {
+    const win = wins.find((w) => w.url.startsWith(self.location.origin));
+    if (!win) return self.clients.openWindow(url);
+    return win.focus().then((w) => (w && w.navigate ? w.navigate(url) : w)).catch(() => self.clients.openWindow(url));
+  }));
+});

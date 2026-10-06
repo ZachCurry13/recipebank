@@ -40,6 +40,10 @@ export async function renderAdmin(view, params, state) {
           ${opt("us", s.allergen_list, "US: the 9 major allergens")}${opt("eu", s.allergen_list, "EU: 14 (adds gluten, celery, mustard, lupin, molluscs, sulphites)")}</select></label>
         <label class="block"><span class="label">Units</span><select name="default_units" class="input">
           ${opt("us", s.default_units, "US (cups, °F)")}${opt("metric", s.default_units, "Metric (grams, ml, °C)")}</select></label>
+        <div class="grid grid-cols-2 gap-3">
+          <label class="block"><span class="label">"Use soon" reminder</span><select name="morning_hour" class="input">${hours(s.morning_hour)}</select></label>
+          <label class="block"><span class="label">Tonight's dinner reminder</span><select name="tonight_hour" class="input">${hours(s.tonight_hour)}</select></label>
+        </div>
         <label class="block"><span class="label">Stay signed in for (days)</span>
           <input name="session_days" type="number" min="1" max="365" class="input" value="${esc(s.session_days)}"></label>
         <button class="btn-primary">Save</button>
@@ -80,7 +84,8 @@ export async function renderAdmin(view, params, state) {
   house.onsubmit = (e) => {
     e.preventDefault();
     attempt(async () => {
-      await put("/api/admin/settings", { allergen_list: house.allergen_list.value, default_units: house.default_units.value, session_days: house.session_days.value });
+      await put("/api/admin/settings", { allergen_list: house.allergen_list.value, default_units: house.default_units.value, session_days: house.session_days.value,
+        morning_hour: house.morning_hour.value, tonight_hour: house.tonight_hour.value });
       await refreshInfo();
     }, "Saved");
   };
@@ -129,4 +134,11 @@ function folders(f) {
       ${row("Photos", f.photos, f.photos_own, "Dish photos and card scans: back these up.")}
       ${row("Previews", f.cache, f.cache_own, "Smaller copies of photos; safe to delete, made again when needed.")}
     </ul></div>`;
+}
+
+// hours are the choices for a daily reminder (the server's time zone).
+function hours(current) {
+  const opts = [["-1", "Off"]];
+  for (let h = 5; h <= 21; h++) opts.push([String(h), new Date(2000, 0, 1, h).toLocaleTimeString(undefined, { hour: "numeric" })]);
+  return opts.map(([v, l]) => `<option value="${v}" ${String(current) === v ? "selected" : ""}>${l}</option>`).join("");
 }

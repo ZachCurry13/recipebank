@@ -3,6 +3,7 @@ import { put } from "./api.js";
 import { $, esc, attempt } from "./ui.js";
 import { applyAppearance } from "./appearance.js";
 import { signOut } from "./app.js";
+import { renderPushCard } from "./push.js";
 
 export function renderProfile(view, params, state) {
   const u = state.user;
@@ -26,7 +27,9 @@ export function renderProfile(view, params, state) {
         <button class="btn-primary">Change password</button>
       </form>
     </div>
+    <div id="push-card" class="card mt-4 space-y-3"></div>
     <button id="out" class="btn-secondary mt-4">Sign out</button>`;
+  renderPushCard($("#push-card", view), u).catch(() => {});
   $("#prefs", view).onsubmit = (e) => {
     e.preventDefault();
     const f = e.target;

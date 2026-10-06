@@ -19,6 +19,7 @@ var editableKeys = map[string]bool{
 	store.KeyLLMProvider: true, store.KeyLLMBaseURL: true, store.KeyLLMAPIKey: true, store.KeyLLMModel: true,
 	store.KeyLLMFallbackModel: true, store.KeyLLMVisionModel: true, store.KeyLLMJSONMode: true,
 	store.KeyLLMTimeoutSeconds: true, store.KeySessionDays: true, store.KeyAllergenList: true, store.KeyDefaultUnits: true,
+	store.KeyMorningHour: true, store.KeyTonightHour: true,
 }
 
 func (s *Server) handleGetSettings(w http.ResponseWriter, r *http.Request) {

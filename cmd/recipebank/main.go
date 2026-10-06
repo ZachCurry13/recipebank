@@ -70,6 +70,7 @@ func main() {
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
 	go housekeeping(ctx, st, srv)
+	go srv.Reminders(ctx)
 
 	go func() {
 		log.Printf("listening on %s", cfg.Addr)

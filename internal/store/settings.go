@@ -22,6 +22,9 @@ const (
 	KeyDefaultUnits  = "default_units"  // "us" or "metric"
 	KeyHouseholdPets = "household_pets" // comma-separated: dog, cat, bird, small, fish
 
+	KeyMorningHour = "morning_hour" // "use soon" reminder (0-23, -1 = off)
+	KeyTonightHour = "tonight_hour" // tonight's dinner reminder (0-23, -1 = off)
+
 	KeyTunnelEnabled  = "tunnel_enabled"
 	KeyTunnelToken    = "tunnel_token"
 	KeyTunnelHostname = "tunnel_hostname" // the public address, for display and links
@@ -39,6 +42,8 @@ var Defaults = map[string]string{
 	KeyAllergenList:      "us",
 	KeyDefaultUnits:      "us",
 	KeyHouseholdPets:     "",
+	KeyMorningHour:       "9",
+	KeyTonightHour:       "16",
 }
 
 // SecretKeys are never returned to the browser in clear text.

@@ -164,3 +164,16 @@ CREATE TABLE IF NOT EXISTS collection_recipes (
     added_at      DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (collection_id, recipe_id)
 );
+
+-- Phones and browsers that turned on notifications, and what each wants
+-- (comma-separated: timers, useby, low, tonight).
+CREATE TABLE IF NOT EXISTS push_subscriptions (
+    id         INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id    INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    endpoint   TEXT NOT NULL UNIQUE,
+    p256dh     TEXT NOT NULL,
+    auth       TEXT NOT NULL,
+    wants      TEXT NOT NULL DEFAULT 'timers,useby,low,tonight',
+    device     TEXT NOT NULL DEFAULT '',
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
