@@ -12,6 +12,7 @@ import (
 	"github.com/zachcurry13/recipebank/internal/config"
 	"github.com/zachcurry13/recipebank/internal/foodfacts"
 	"github.com/zachcurry13/recipebank/internal/store"
+	"github.com/zachcurry13/recipebank/internal/tunnel"
 )
 
 type Server struct {
@@ -24,6 +25,7 @@ type Server struct {
 	CacheDir  string       // previews (re-creatable)
 	Fetch     *http.Client // outside pages and images; tests swap it
 	Products  productBases // Open Food Facts databases; tests point them at a fake
+	Tunnel    *tunnel.Manager
 	logins    *loginLimiter
 	etags     sync.Map  // static file name → ETag
 	buildOnce sync.Once // buildID, computed once
@@ -36,6 +38,9 @@ func (s *Server) Router() http.Handler {
 	s.logins = newLoginLimiter()
 	if s.Fetch == nil {
 		s.Fetch = newFetchClient()
+	}
+	if s.Tunnel == nil {
+		s.Tunnel = tunnel.New()
 	}
 	if s.Products.FoodBases == nil {
 		s.Products = productBases{FoodBases: foodfacts.FoodBases, HomeBases: foodfacts.HomeBases}
@@ -129,6 +134,8 @@ func (s *Server) Router() http.Handler {
 				r.Put("/admin/users/{id}", s.handleUpdateUser)
 				r.Put("/admin/users/{id}/password", s.handleResetPassword)
 				r.Delete("/admin/users/{id}", s.handleDeleteUser)
+				r.Get("/admin/tunnel", s.handleTunnelStatus)
+				r.Put("/admin/tunnel", s.handleTunnelSave)
 			})
 		})
 	})

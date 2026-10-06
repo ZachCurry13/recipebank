@@ -15,6 +15,9 @@ RUN CGO_ENABLED=0 GOOS=$TARGETOS GOARCH=$TARGETARCH go build -trimpath \
     -ldflags="-s -w -X github.com/zachcurry13/recipebank/internal/version.Version=${VERSION}" \
     -o /out/recipebank ./cmd/recipebank
 
+# ---- Cloudflare Tunnel connector (official image, multi-arch) ----
+FROM cloudflare/cloudflared:2026.9.3 AS cloudflared
+
 # ---- runtime ----
 FROM alpine:3.22
 LABEL org.opencontainers.image.source="https://github.com/ZachCurry13/recipebank" \
@@ -23,6 +26,9 @@ RUN apk add --no-cache ca-certificates tzdata \
  && addgroup -S -g 568 recipebank && adduser -S -u 568 -G recipebank recipebank \
  && mkdir -p /data && chown recipebank:recipebank /data
 COPY --from=build /out/recipebank /usr/local/bin/recipebank
+# Built-in remote access (Admin → Remote access). Fails the build if missing.
+COPY --from=cloudflared /usr/local/bin/cloudflared /usr/local/bin/cloudflared
+RUN ["/usr/local/bin/cloudflared", "--version"]
 USER 568:568
 # The database goes in /config when that's mounted (else /data); photos in
 # /photos and previews in /cache when mounted (else inside the database folder).

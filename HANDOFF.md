@@ -27,7 +27,7 @@ Work on `feature/v0.2`, commit and push after each part. Status per part:
    `internal/seasons` Easter/Advent).
 5. [x] Smart search: a question's rules (diets, time, everyone) are read without the AI; the AI picks by meaning (or words rank them); rules have the last word. Embedding-model ranking not built (the AI pick covers meaning).
 6. [x] Cook mode voice: read steps aloud; "next/back/repeat" where supported.
-7. [ ] Remote access: Cloudflare tunnel from NovelCheck (`internal/tunnel`, cloudflared in the image).
+7. [x] Remote access: Cloudflare tunnel from NovelCheck (`internal/tunnel`, cloudflared in the image).
 8. [ ] Phone notifications: Web Push from NovelCheck (`internal/push`): timers, use-by, low stock, tonight.
 9. [ ] Phone checks, docs (TRUENAS, REMOTE_ACCESS, CHANGELOG), release 0.2.0.
 
@@ -46,7 +46,7 @@ at 360×760. Test logins for the local app live in the session scratchpad, never
 
 Git Bash with `export PATH="/c/Program Files/nodejs:$PATH"`. A Go build once crashed with
 "unsafe.Slice: len out of range"; running it again worked (a toolchain hiccup, not the code). Scripted edits: node scripts in the scratchpad,
-replacement text passed as a function. `.claude/launch.json` paths use forward slashes (backslashes were
+replacement text passed as a function. Backslashes get lost in scripted edits (`\s` became `s` in a regex and a Go string lost one `\`): write code with backslashes using the Edit tool, then grep the result. `.claude/launch.json` paths use forward slashes (backslashes were
 lost once and test data landed in the repo folder).
 
 ## 5. Conventions

@@ -20,6 +20,7 @@ import (
 	"github.com/zachcurry13/recipebank/internal/db"
 	"github.com/zachcurry13/recipebank/internal/files"
 	"github.com/zachcurry13/recipebank/internal/store"
+	"github.com/zachcurry13/recipebank/internal/tunnel"
 	"github.com/zachcurry13/recipebank/internal/version"
 	"github.com/zachcurry13/recipebank/web"
 )
@@ -50,6 +51,15 @@ func main() {
 		CacheDir: cfg.CacheDir,
 	}
 	setUpFolders(cfg, srv)
+
+	// Built-in Cloudflare Tunnel, for using RecipeBank away from home.
+	srv.Tunnel = tunnel.New()
+	if st.SettingBool(store.KeyTunnelEnabled) {
+		if err := srv.Tunnel.Apply(true, st.Setting(store.KeyTunnelToken)); err != nil {
+			log.Printf("remote access not started: %v", err)
+		}
+	}
+	defer srv.Tunnel.Stop()
 	httpSrv := &http.Server{
 		Addr:              cfg.Addr,
 		Handler:           srv.Router(),

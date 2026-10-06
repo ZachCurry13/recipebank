@@ -21,6 +21,10 @@ const (
 	KeyAllergenList  = "allergen_list"  // "us" (the 9 major US allergens) or "eu" (the EU's 14)
 	KeyDefaultUnits  = "default_units"  // "us" or "metric"
 	KeyHouseholdPets = "household_pets" // comma-separated: dog, cat, bird, small, fish
+
+	KeyTunnelEnabled  = "tunnel_enabled"
+	KeyTunnelToken    = "tunnel_token"
+	KeyTunnelHostname = "tunnel_hostname" // the public address, for display and links
 )
 
 var Defaults = map[string]string{
@@ -38,7 +42,7 @@ var Defaults = map[string]string{
 }
 
 // SecretKeys are never returned to the browser in clear text.
-var SecretKeys = map[string]bool{KeyLLMAPIKey: true}
+var SecretKeys = map[string]bool{KeyLLMAPIKey: true, KeyTunnelToken: true}
 
 // AllSettings returns stored values merged over defaults.
 func (s *Store) AllSettings() (map[string]string, error) {
