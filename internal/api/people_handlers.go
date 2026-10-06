@@ -17,7 +17,7 @@ func (s *Server) handleInfo(w http.ResponseWriter, r *http.Request) {
 		"allergen_list": list,
 		"diets":         safety.Diets,
 		"pets":          s.Store.Pets(),
-		"ai_ready":      s.Store.AIConfig().Ready(),
+		"ai_ready":      s.Store.AnyAI(),
 		"email_ready":   s.emailReady(),
 		"email_who":     s.Store.Setting(store.KeyEmailWho),
 		"currency":      s.Store.Setting(store.KeyCurrency),

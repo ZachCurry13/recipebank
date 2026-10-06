@@ -6,6 +6,7 @@ import { renderRemote } from "./remoteaccess.js";
 import { renderHints } from "./readinghints.js";
 import { renderEmailAdmin } from "./email.js";
 import { renderBackup } from "./backup.js";
+import { photoAI, wirePhotoAI, photoSettings } from "./photoai.js";
 
 const ROLES = [["admin", "Admin (everything)"], ["editor", "Parent (recipes and people)"], ["kid", "Kid (reads and cooks)"]];
 
@@ -34,8 +35,10 @@ export async function renderAdmin(view, params, state) {
           <label class="toggle mt-2"><input type="checkbox" name="llm_json_mode" ${s.llm_json_mode === "true" ? "checked" : ""}> Ask for JSON answers (turn off if the server rejects it)</label>
           <label class="mt-2 block"><span class="label">Wait for an answer (seconds, 0 = automatic)</span>
             <input name="llm_timeout_seconds" type="number" min="0" class="input" value="${esc(s.llm_timeout_seconds)}"></label></details>
+        ${photoAI(s, opt)}
         <p class="text-xs text-slate-500">Used this month: ${Number(s.tokens_this_month || 0).toLocaleString()} tokens.</p>
-        <div class="flex flex-wrap gap-2"><button class="btn-primary">Save</button><button type="button" id="test" class="btn-secondary">Test the AI</button></div>
+        <div class="flex flex-wrap gap-2"><button class="btn-primary">Save</button><button type="button" id="test" class="btn-secondary">Test the AI</button>
+          <button type="button" id="test-photo" class="btn-secondary ${s.photo_provider ? "" : "hidden"}">Test the photo AI</button></div>
       </form>
       <form id="house" class="card space-y-3">
         <h2 class="font-semibold">House settings</h2>
@@ -89,16 +92,27 @@ export async function renderAdmin(view, params, state) {
   const showURL = () => $("[data-openai]", ai).classList.toggle("hidden", ai.llm_provider.value === "anthropic");
   ai.llm_provider.onchange = showURL;
   showURL();
+  wirePhotoAI(ai);
   ai.onsubmit = (e) => {
     e.preventDefault();
     const body = Object.fromEntries(["llm_provider", "llm_base_url", "llm_api_key", "llm_model", "llm_fallback_model",
       "llm_vision_model", "llm_timeout_seconds"].map((k) => [k, ai[k].value]));
     body.llm_json_mode = ai.llm_json_mode.checked ? "true" : "false";
-    attempt(async () => { await put("/api/admin/settings", body); await refreshInfo(); ai.llm_api_key.value = ""; }, "Saved");
+    Object.assign(body, photoSettings(ai));
+    attempt(async () => {
+      await put("/api/admin/settings", body);
+      await refreshInfo();
+      ai.llm_api_key.value = ai.photo_api_key.value = "";
+      $("#test-photo", view).classList.toggle("hidden", !body.photo_provider);
+    }, "Saved");
   };
   $("#test", view).onclick = (e) => attempt(() => busy(e.currentTarget, "Asking…", async () => {
     const r = await post("/api/admin/ai/test");
     toast(`The AI answered in ${r.seconds.toFixed(1)} seconds.`);
+  }));
+  $("#test-photo", view).onclick = (e) => attempt(() => busy(e.currentTarget, "Asking…", async () => {
+    const r = await post("/api/admin/ai/test?which=photo");
+    toast(`The photo AI (${r.model}) answered in ${r.seconds.toFixed(1)} seconds.`);
   }));
   const house = $("#house", view);
   house.onsubmit = (e) => {

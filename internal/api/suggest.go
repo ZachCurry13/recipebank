@@ -59,7 +59,7 @@ func (s *Server) suggest(ctx context.Context, r *http.Request, area, request str
 	byID := map[int64]*recipe.Recipe{}
 	var ids []int64
 	why := map[int64]string{}
-	if s.Store.AIConfig().Ready() {
+	if s.Store.AnyAI() {
 		allowed := map[int64]bool{}
 		var lines []string
 		for i, c := range cands {

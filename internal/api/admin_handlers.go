@@ -22,6 +22,8 @@ var editableKeys = map[string]bool{
 	store.KeyMorningHour: true, store.KeyTonightHour: true, store.KeyCheckUpdates: true,
 	store.KeyUSDAKey: true, store.KeySMTPHost: true, store.KeySMTPPort: true, store.KeySMTPUser: true,
 	store.KeySMTPPassword: true, store.KeySMTPFrom: true, store.KeyCurrency: true, store.KeyBudgetWeekly: true, store.KeyEmailWho: true,
+	store.KeyPhotoProvider: true, store.KeyPhotoBaseURL: true, store.KeyPhotoAPIKey: true, store.KeyPhotoModel: true,
+	store.KeyPhotoJSONMode: true,
 }
 
 func (s *Server) handleGetSettings(w http.ResponseWriter, r *http.Request) {
@@ -58,7 +60,11 @@ func (s *Server) handlePutSettings(w http.ResponseWriter, r *http.Request) {
 		if store.SecretKeys[k] && v == "" {
 			continue // blank keeps the saved secret
 		}
-		if k == store.KeyLLMBaseURL {
+		if k == store.KeyPhotoProvider && v != "" && v != "openai" && v != "anthropic" {
+			writeErr(w, http.StatusBadRequest, "the photo AI is OpenAI-compatible, Anthropic, or none")
+			return
+		}
+		if k == store.KeyLLMBaseURL || k == store.KeyPhotoBaseURL {
 			v = llm.NormalizeBaseURL(v)
 		}
 		if err := s.Store.SetSetting(k, v); err != nil {
@@ -69,12 +75,20 @@ func (s *Server) handlePutSettings(w http.ResponseWriter, r *http.Request) {
 	s.handleGetSettings(w, r)
 }
 
-// handleTestAI asks the AI a tiny question to prove the settings work.
+// handleTestAI asks the AI (?which=photo: the photo AI) a tiny question to
+// prove the settings work.
 func (s *Server) handleTestAI(w http.ResponseWriter, r *http.Request) {
 	ctx, cancel := context.WithTimeout(r.Context(), 3*time.Minute)
 	defer cancel()
+	ai := s.Store.AIConfig()
+	if r.URL.Query().Get("which") == "photo" {
+		if ai = s.Store.PhotoAIConfig(); !ai.Ready() {
+			writeErr(w, http.StatusBadRequest, "no photo AI is set up: choose its kind, address and model, then Save")
+			return
+		}
+	}
 	start := time.Now()
-	err := llm.Ask(ctx, s.Store, "You are a test. Reply with JSON only.", `Reply exactly {"ok": true}`, func(out string) error {
+	model, err := llm.AskWith(ctx, s.Store, ai, "You are a test. Reply with JSON only.", `Reply exactly {"ok": true}`, func(out string) error {
 		var v struct {
 			OK bool `json:"ok"`
 		}
@@ -87,7 +101,7 @@ func (s *Server) handleTestAI(w http.ResponseWriter, r *http.Request) {
 		writeErr(w, http.StatusBadGateway, err.Error())
 		return
 	}
-	writeJSON(w, http.StatusOK, map[string]any{"ok": true, "seconds": time.Since(start).Seconds()})
+	writeJSON(w, http.StatusOK, map[string]any{"ok": true, "seconds": time.Since(start).Seconds(), "model": model})
 }
 
 func (s *Server) handleListUsers(w http.ResponseWriter, r *http.Request) {

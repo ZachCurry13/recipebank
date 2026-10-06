@@ -108,7 +108,7 @@ func (s *Server) handleImportText(w http.ResponseWriter, r *http.Request) {
 	// With the AI set up it reads the text; without it, a simple reader
 	// handles recipes with "Ingredients" and "Directions" headings.
 	rc, ok := recipe.FromText(body.Text)
-	if s.Store.AIConfig().Ready() {
+	if s.Store.AnyAI() {
 		ai, err := s.askText(r.Context(), body.Text)
 		if err == nil {
 			rc, ok = ai, true

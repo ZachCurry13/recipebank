@@ -96,7 +96,7 @@ func (s *Server) handleSubstitute(w http.ResponseWriter, r *http.Request) {
 	}
 	sort.SliceStable(out, func(a, b int) bool { return out[a].Have && !out[b].Have })
 	writeJSON(w, http.StatusOK, map[string]any{"food": food, "ideas": out, "skipped": skipped,
-		"ai_error": aiErr, "ai_ready": s.Store.AIConfig().Ready()})
+		"ai_error": aiErr, "ai_ready": s.Store.AnyAI()})
 }
 
 // haveAll: every food an idea needs ("milk and lemon juice") is on hand or a staple.

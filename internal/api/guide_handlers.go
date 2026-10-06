@@ -40,7 +40,7 @@ func (s *Server) handleGuide(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	auto := map[string]bool{"admin": true, "family": len(people) > 0, "recipe": recipes > 0,
-		"ai": s.Store.AIConfig().Ready(), "users": users > 1}
+		"ai": s.Store.AnyAI(), "users": users > 1}
 	steps := []guideStep{}
 	for _, k := range guideSteps {
 		steps = append(steps, guideStep{Key: k, Done: auto[k] || slices.Contains(manual, k)})
