@@ -5,6 +5,7 @@ import { $, $$, esc, attempt, busy, fmtMin, peppers, levelChip, money, canManage
 import { verdictList } from "./verdicts.js";
 import { startCooking } from "./cook.js";
 import { kidsChip } from "./kids.js";
+import { bookLine, wireBookLink } from "./booklink.js";
 import { ingredientList, stepList } from "./recipeparts.js";
 import { cardBox } from "./cardcheck.js";
 import { readAgain } from "./readagain.js";
@@ -48,6 +49,7 @@ export async function renderRecipe(view, params, state) {
             <h1 class="break-words text-2xl font-bold leading-tight">${esc(r.title)}</h1>
             ${r.summary ? `<p class="mt-1 text-slate-300">${esc(r.summary)}</p>` : ""}
             ${data.original ? `<p class="mt-1 text-sm text-slate-400">Our version of <a class="underline" href="#/recipe/${data.original.id}">${esc(data.original.title)}</a></p>` : ""}
+            ${home ? "" : bookLine(data.book, state.user)}
             <div class="mt-2 flex flex-wrap items-center gap-1">
               ${r.total_min ? `<span class="chip-info">⏱ ${fmtMin(r.total_min)}${r.prep_min ? ` (prep ${fmtMin(r.prep_min)})` : ""}</span>` : ""}
               ${home ? "" : peppers(data.heat) + levelChip(data.level) + kidsChip(data.kids)}
@@ -163,6 +165,7 @@ export async function renderRecipe(view, params, state) {
     wireSubstitute(view, r, view_.sub, () => view_.who.join(",") || "0", draw);
     const cook = $("#cook", view);
     if (cook) cook.onclick = () => startCooking(r, { ...view_, needs: data.needs });
+    wireBookLink(view, r, data.book, () => attempt(load));
     const version = $("#version", view);
     if (version) version.onclick = () => attempt(async () => {
       const { id } = await post(`/api/recipes/${r.id}/version`);

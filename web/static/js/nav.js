@@ -15,6 +15,7 @@ export const NAV = [
   ["pantry", "Pantry", "🥫", all, false],
   ["supplies", "Supplies", "🧽", all, false],
   ["collections", "Collections", "📚", all, false],
+  ["books", "Bookshelf", "📖", all, false],
   ["events", "Events", "🎉", all, false],
   ["add", "Add a recipe", "➕", canManage, false],
   ["family", "Family", "👪", all, false],

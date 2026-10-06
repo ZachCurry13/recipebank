@@ -25,6 +25,14 @@ func TestBackupAndRestore(t *testing.T) {
 	var col struct{ ID int64 }
 	src.do("POST", "/api/collections", map[string]string{"name": "Winter"}, &col)
 	src.do("POST", fmt.Sprintf("/api/collections/%d/recipes", col.ID), map[string]any{"ids": []int64{soup.ID}}, nil)
+	var book struct{ ID int64 }
+	src.do("POST", "/api/books", map[string]string{"title": "Soups of the World", "image": "data:image/jpeg;base64," + base64.StdEncoding.EncodeToString(jpegBytes(20, 30))}, &book)
+	src.do("POST", fmt.Sprintf("/api/books/%d/entries", book.ID), map[string]any{"entries": []map[string]string{{"title": "Onion soup", "page": "12"}, {"title": "Borscht", "page": "40"}}}, nil)
+	src.do("PUT", fmt.Sprintf("/api/recipes/%d/book", soup.ID), map[string]any{"book_id": book.ID, "page": "12"}, nil)
+	var card struct{ ID int64 }
+	src.do("POST", "/api/pile", map[string]string{"title": "Soup card"}, &card)
+	src.do("PUT", fmt.Sprintf("/api/pile/%d", card.ID), map[string]any{"title": "Soup card", "done": true, "recipe_id": soup.ID}, nil)
+	src.do("POST", "/api/pile", map[string]string{"title": "Pie card", "note": "in the tin"}, nil)
 
 	resp, err := src.http.Get(src.base + "/api/admin/backup")
 	if err != nil || resp.StatusCode != 200 || resp.Header.Get("Content-Type") != "application/zip" {
@@ -47,7 +55,7 @@ func TestBackupAndRestore(t *testing.T) {
 		_ = json.NewDecoder(resp.Body).Decode(&res)
 		return res
 	}
-	if res := load(); res.Added != 3 || res.Skipped != 0 || res.Photos != 1 || res.Collections != 1 {
+	if res := load(); res.Added != 3 || res.Skipped != 0 || res.Photos != 2 || res.Collections != 1 || res.Books != 1 {
 		t.Fatalf("first load: %+v", res)
 	}
 	var kitchen struct {
@@ -93,8 +101,36 @@ func TestBackupAndRestore(t *testing.T) {
 	if len(cl.Collections) != 1 || cl.Collections[0].Name != "Winter" || cl.Collections[0].Count != 1 {
 		t.Fatalf("collections: %+v", cl)
 	}
-	if res := load(); res.Added != 0 || res.Skipped != 3 || res.Collections != 0 {
+	var shelf struct {
+		Books []struct {
+			ID      int64
+			Cover   string
+			Entries int
+			Saved   int
+		}
+	}
+	dst.do("GET", "/api/books", nil, &shelf)
+	if len(shelf.Books) != 1 || shelf.Books[0].Entries != 2 || shelf.Books[0].Saved != 1 || shelf.Books[0].Cover == "" {
+		t.Fatalf("books: %+v", shelf)
+	}
+	var pile struct {
+		Pile []struct {
+			Title    string
+			RecipeID *int64 `json:"recipe_id"`
+			DoneAt   string `json:"done_at"`
+		}
+	}
+	dst.do("GET", "/api/pile", nil, &pile)
+	if len(pile.Pile) != 2 || pile.Pile[1].Title != "Soup card" || pile.Pile[1].DoneAt == "" || pile.Pile[1].RecipeID == nil {
+		t.Fatalf("pile: %+v", pile)
+	}
+	if res := load(); res.Added != 0 || res.Skipped != 3 || res.Collections != 0 || res.Books != 0 {
 		t.Fatalf("second load: %+v", res)
+	}
+	dst.do("GET", "/api/books", nil, &shelf)
+	dst.do("GET", "/api/pile", nil, &pile)
+	if len(shelf.Books) != 1 || shelf.Books[0].Entries != 2 || len(pile.Pile) != 2 {
+		t.Fatalf("nothing twice: %+v %+v", shelf, pile)
 	}
 
 	req, _ := http.NewRequest("POST", dst.base+"/api/admin/backup", bytes.NewReader([]byte("not a zip")))

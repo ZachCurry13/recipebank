@@ -10,6 +10,7 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/zachcurry13/recipebank/internal/auth"
+	"github.com/zachcurry13/recipebank/internal/books"
 	"github.com/zachcurry13/recipebank/internal/config"
 	"github.com/zachcurry13/recipebank/internal/foodfacts"
 	"github.com/zachcurry13/recipebank/internal/mail"
@@ -34,6 +35,7 @@ type Server struct {
 	Push      *push.Service                         // phone notifications
 	Updates   *updates.Checker                      // newer releases on GitHub; tests point it at a fake
 	Nutrition string                                // USDA FoodData Central's address; tests point it at a fake
+	BookBase  string                                // Open Library's address; tests point it at a fake
 	SendMail  func(mail.Config, mail.Message) error // tests catch emails here; nil = mail.Send
 	mails     mailLimiter
 	shareOnce sync.Once // the shared-recipe page's template, parsed once
@@ -63,6 +65,9 @@ func (s *Server) Router() http.Handler {
 	}
 	if s.Nutrition == "" {
 		s.Nutrition = nutrition.DefaultBase
+	}
+	if s.BookBase == "" {
+		s.BookBase = books.DefaultBase
 	}
 	if s.Products.FoodBases == nil {
 		s.Products = productBases{FoodBases: foodfacts.FoodBases, HomeBases: foodfacts.HomeBases}
@@ -104,6 +109,10 @@ func (s *Server) Router() http.Handler {
 			r.Get("/recipes/{id}/cooks", s.handleListCooks)
 			r.Get("/recipes/{id}/nutrition", s.handleNutrition)
 			r.Get("/cookbook", s.handleCookbook)
+			r.Get("/books", s.handleListBooks)
+			r.Get("/books/search", s.handleSearchBooks)
+			r.Get("/books/{id}", s.handleGetBook)
+			r.Get("/pile", s.handleListPile)
 			r.Get("/events", s.handleListEvents)
 			r.Get("/events/{id}", s.handleGetEvent)
 			r.Post("/events/{id}/shopping", s.handleEventShopping)
@@ -155,6 +164,17 @@ func (s *Server) Router() http.Handler {
 				r.Post("/recipes/{id}/share", s.handleShareRecipe)
 				r.Delete("/recipes/{id}/share", s.handleStopSharing)
 				r.Post("/plan/suggest", s.handlePlanSuggest)
+				r.Put("/recipes/{id}/book", s.handleRecipeBook)
+				r.Get("/books/lookup", s.handleLookupBook)
+				r.Post("/books", s.handleSaveBook)
+				r.Put("/books/{id}", s.handleSaveBook)
+				r.Delete("/books/{id}", s.handleDeleteBook)
+				r.Post("/books/{id}/entries", s.handleAddBookEntries)
+				r.Post("/books/index", s.handleBookIndex)
+				r.Delete("/books/entries/{id}", s.handleDeleteBookEntry)
+				r.Post("/pile", s.handleAddPile)
+				r.Put("/pile/{id}", s.handleUpdatePile)
+				r.Delete("/pile/{id}", s.handleDeletePile)
 				r.Post("/events", s.handleSaveEvent)
 				r.Put("/events/{id}", s.handleSaveEvent)
 				r.Delete("/events/{id}", s.handleDeleteEvent)

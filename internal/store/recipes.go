@@ -127,6 +127,14 @@ func (s *Store) PhotosInUse() (map[string]bool, error) {
 			used[p] = true
 		}
 	}
+	// Cookbook covers are photos too.
+	var covers []string
+	if err := s.DB.Select(&covers, `SELECT cover FROM books WHERE cover != ''`); err != nil {
+		return nil, err
+	}
+	for _, c := range covers {
+		used[c] = true
+	}
 	return used, nil
 }
 

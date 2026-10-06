@@ -18,7 +18,8 @@ import (
 )
 
 // A backup is one .zip: manifest.json, recipes.json (every recipe, its id
-// as written in this file), collections.json (by those ids) and photos/.
+// as written in this file), collections.json (by those ids), books.json and
+// pile.json (the bookshelf, see backup_books.go) and photos/.
 // Loading it into any RecipeBank adds what that one doesn't have yet.
 
 type backupManifest struct {
@@ -59,6 +60,11 @@ func (s *Server) handleBackup(w http.ResponseWriter, r *http.Request) {
 		}
 		outCols = append(outCols, backupCollection{c.Name, c.Description, c.Icon, c.Area, ids})
 	}
+	shelf, cards, err := s.backupShelf()
+	if err != nil {
+		writeStoreErr(w, err)
+		return
+	}
 	w.Header().Set("Content-Type", "application/zip")
 	w.Header().Set("Content-Disposition", fmt.Sprintf(`attachment; filename="recipebank-backup-%s.zip"`, time.Now().Format(day)))
 	zw := zip.NewWriter(w)
@@ -71,18 +77,25 @@ func (s *Server) handleBackup(w http.ResponseWriter, r *http.Request) {
 	put("manifest.json", backupManifest{"RecipeBank", version.Version, time.Now().UTC().Format(time.RFC3339), len(all)})
 	put("recipes.json", all)
 	put("collections.json", outCols)
-	seen := map[string]bool{}
+	put("books.json", shelf)
+	put("pile.json", cards)
+	var names []string
 	for _, rc := range all {
-		for _, name := range append([]string{rc.Photo}, rc.SourcePhotos...) {
-			if name == "" || seen[name] {
-				continue
-			}
-			seen[name] = true
-			if p, ok := s.photoPath(name); ok {
-				if data, err := os.ReadFile(p); err == nil {
-					if f, err := zw.Create("photos/" + name); err == nil {
-						_, _ = f.Write(data)
-					}
+		names = append(append(names, rc.Photo), rc.SourcePhotos...)
+	}
+	for _, b := range shelf {
+		names = append(names, b.Cover)
+	}
+	seen := map[string]bool{}
+	for _, name := range names {
+		if name == "" || seen[name] {
+			continue
+		}
+		seen[name] = true
+		if p, ok := s.photoPath(name); ok {
+			if data, err := os.ReadFile(p); err == nil {
+				if f, err := zw.Create("photos/" + name); err == nil {
+					_, _ = f.Write(data)
 				}
 			}
 		}
@@ -120,6 +133,7 @@ type restoreResult struct {
 	Skipped     int `json:"skipped"`
 	Photos      int `json:"photos"`
 	Collections int `json:"collections"`
+	Books       int `json:"books"`
 }
 
 func (s *Server) restore(path, by string) (restoreResult, error) {
@@ -141,6 +155,10 @@ func (s *Server) restore(path, by string) (restoreResult, error) {
 		return res, errors.New("that isn't a RecipeBank backup")
 	}
 	_ = readZipJSON(files["collections.json"], 16<<20, &cols)
+	var shelf []backupBook
+	var cards []backupCard
+	_ = readZipJSON(files["books.json"], 64<<20, &shelf)
+	_ = readZipJSON(files["pile.json"], 4<<20, &cards)
 
 	existing, err := s.Store.ListRecipes("")
 	if err != nil {
@@ -242,6 +260,9 @@ func (s *Server) restore(path, by string) (restoreResult, error) {
 				return res, err
 			}
 		}
+	}
+	if res.Books, err = s.restoreShelf(shelf, cards, newID, photo); err != nil {
+		return res, err
 	}
 	if res.Photos > 0 || res.Added > 0 {
 		s.cleanPhotos()

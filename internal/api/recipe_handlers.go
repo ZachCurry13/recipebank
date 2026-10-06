@@ -49,6 +49,7 @@ func (s *Server) writeChecked(w http.ResponseWriter, r *http.Request, rc *recipe
 	}
 	if rc.ID > 0 {
 		out["cooks"], _ = s.Store.CooksFor(rc.ID)
+		out["book"], _ = s.Store.EntryForRecipe(rc.ID)
 	}
 	if stock, err := s.Store.ListStock(rc.Area); err == nil {
 		if c := budget.Recipe(rc, stock, 1); c.Priced > 0 {

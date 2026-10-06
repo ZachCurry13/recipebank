@@ -246,3 +246,33 @@ CREATE TABLE IF NOT EXISTS shares (
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 CREATE INDEX IF NOT EXISTS shares_recipe ON shares (recipe_id);
+
+-- Cookbooks on the family's shelf (by barcode from Open Library, or typed).
+CREATE TABLE IF NOT EXISTS books (
+    id         INTEGER PRIMARY KEY AUTOINCREMENT,
+    title      TEXT NOT NULL,
+    author     TEXT NOT NULL DEFAULT '',
+    isbn       TEXT NOT NULL DEFAULT '',
+    cover      TEXT NOT NULL DEFAULT '',
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+-- A cookbook's recipes by page; recipe_id when one is saved in RecipeBank too.
+CREATE TABLE IF NOT EXISTS book_entries (
+    id        INTEGER PRIMARY KEY AUTOINCREMENT,
+    book_id   INTEGER NOT NULL REFERENCES books(id) ON DELETE CASCADE,
+    title     TEXT NOT NULL,
+    page      TEXT NOT NULL DEFAULT '',
+    recipe_id INTEGER REFERENCES recipes(id) ON DELETE SET NULL
+);
+CREATE INDEX IF NOT EXISTS book_entries_book ON book_entries (book_id);
+CREATE INDEX IF NOT EXISTS book_entries_recipe ON book_entries (recipe_id);
+
+-- "Still to photograph": recipe cards and clippings waiting to be scanned.
+CREATE TABLE IF NOT EXISTS pile (
+    id         INTEGER PRIMARY KEY AUTOINCREMENT,
+    title      TEXT NOT NULL,
+    note       TEXT NOT NULL DEFAULT '',
+    recipe_id  INTEGER REFERENCES recipes(id) ON DELETE SET NULL,
+    done_at    TEXT NOT NULL DEFAULT '',
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+);

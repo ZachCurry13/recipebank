@@ -20,6 +20,8 @@ import { renderWhatsNew } from "./whatsnew.js";
 import { renderCookbook } from "./cookbook.js";
 import { renderEvents } from "./events.js";
 import { renderEvent } from "./event.js";
+import { renderBooks } from "./books.js";
+import { renderBook } from "./book.js";
 import { firstRun } from "./firstrun.js";
 import { checkForUpdates, watchServerVersion } from "./updatebanner.js";
 
@@ -47,8 +49,10 @@ const routes = {
   cookbook: renderCookbook,
   events: renderEvents,
   event: renderEvent,
+  books: renderBooks,
+  book: renderBook,
 };
-const NAV_OF = { recipe: null, edit: "add", collection: "collections", season: "collections", whatsnew: "profile", cookbook: "collections", event: "events" };
+const NAV_OF = { recipe: null, edit: "add", collection: "collections", season: "collections", whatsnew: "profile", cookbook: "collections", event: "events", book: "books" };
 
 function showOnly(id) {
   for (const v of ["#setup-view", "#login-view", "#app-view"]) $(v).classList.toggle("hidden", v !== id);

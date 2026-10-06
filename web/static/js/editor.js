@@ -7,6 +7,7 @@ import { verdictList } from "./verdicts.js";
 import { shrinkPhoto } from "./photo.js";
 import { cardBox } from "./cardcheck.js";
 import { go } from "./app.js";
+import { afterSave, peekPending, pendingNote, clearPending } from "./booklink.js";
 
 export async function renderEdit(view, params) {
   const data = await get(`/api/recipes/${params.id}`);
@@ -51,6 +52,7 @@ export function editRecipe(view, r, preview, cardCheck) {
   view.innerHTML = `
     <a href="${isNew ? "#/add" : `#/recipe/${r.id}`}" class="text-sm text-slate-400 hover:text-slate-200">‹ ${isNew ? "Add a recipe" : "Back to the recipe"}</a>
     <h1 class="mb-4 mt-2 text-2xl font-bold">${isNew ? "Check it, then save" : "Edit recipe"}</h1>
+    ${isNew ? pendingNote(peekPending()) : ""}
     ${r.needs_review ? `<div class="mb-4">${cardBox(r, preview?.card_check || cardCheck, "edit")}</div>` : ""}
     ${preview ? `<div class="card mb-4 space-y-3"><h2 class="font-semibold">Who can ${r.area === "home" ? "use" : "eat"} it</h2>
       ${verdictList(preview.verdicts, r.ingredients)}
@@ -104,6 +106,8 @@ export function editRecipe(view, r, preview, cardCheck) {
     </form>`;
 
   const form = $("#edit", view);
+  const notFrom = $("#pending-clear", view);
+  if (notFrom) notFrom.onclick = () => { clearPending(); notFrom.closest("p").remove(); };
   const drawPhoto = () => {
     $("#photo-box", view).innerHTML = `${photo ? `<img src="/api/photos/${esc(photo)}?w=480" alt="" class="h-24 w-32 rounded-lg object-cover">` : ""}
       <label class="btn-secondary cursor-pointer">📷 ${photo ? "Change" : "Add a photo"}<input type="file" accept="image/*" class="sr-only" id="photo-in"></label>
@@ -144,6 +148,7 @@ export function editRecipe(view, r, preview, cardCheck) {
     const btn = form.querySelector("button.btn-primary");
     attempt(() => busy(btn, "Saving…", async () => {
       const { id } = isNew ? await post("/api/recipes", out) : await put(`/api/recipes/${r.id}`, out);
+      if (isNew) await afterSave(id);
       go(`#/recipe/${id}`);
     }));
   };

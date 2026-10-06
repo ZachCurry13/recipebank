@@ -160,7 +160,7 @@ Build in this order, each tested, checked at 360×760 and pushed to `feature/v0.
    person ticks what's right; matched to pantry items (amount added, price kept) or added as new ones.
 6. [x] **Kids can help:** each step marked by what it needs (knife, stove, oven, hot liquid) from word lists;
    a kid view in cook mode shows which steps a kid can do and which need a grown-up; "kids can help" filter.
-7. [ ] **Cookbooks and the card pile:** cookbooks by barcode (Open Library: title, author, cover), their recipes by
+7. [x] **Cookbooks and the card pile:** cookbooks by barcode (Open Library: title, author, cover), their recipes by
    page (typed, or a photo of the index read by the AI), recipes can say "Cookbook, page N"; "Still to
    photograph": a list of cards and clippings to scan, ticked off when a photo recipe is saved from one.
 8. [ ] **Imports from other recipe apps:** files exported from Paprika (.paprikarecipes), Mealie and Tandoor

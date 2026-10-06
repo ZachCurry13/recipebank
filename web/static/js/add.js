@@ -5,6 +5,7 @@ import { $, $$, esc, attempt, busy } from "./ui.js";
 import { shrinkPhoto, rotatePhoto } from "./photo.js";
 import { editRecipe } from "./editor.js";
 import { renderDish } from "./dish.js";
+import { peekPending, clearPending, pendingNote } from "./booklink.js";
 
 const WAYS = [
   ["link", "🔗", "From a link", "Paste the address of a recipe page."],
@@ -21,10 +22,12 @@ export function renderAdd(view, params, state) {
   if (way === "dish" && area === "home") way = "link";
   const ways = WAYS.filter(([k]) => k !== "dish" || area === "kitchen");
   let photos = []; // data: URLs
+  if (!params.from) clearPending(); // only a cookbook page or a card from the pile sets one
   const draw = () => {
     view.innerHTML = `
       <h1 class="text-2xl font-bold">➕ Add a recipe</h1>
       <p class="mb-4 text-sm text-slate-400">It's checked for everyone before you save it.</p>
+      ${pendingNote(peekPending())}
       <div class="mb-4 flex flex-wrap gap-2" role="radiogroup" aria-label="Goes in">
         ${[["kitchen", "🍲 Kitchen"], ["home", "🧴 Home & Care"]].map(([a, l]) =>
           `<a href="#/add?area=${a}&way=${way}" class="pick ${area === a ? "on" : ""}">${l}</a>`).join("")}
@@ -35,6 +38,8 @@ export function renderAdd(view, params, state) {
           <div class="text-xs text-slate-400">${help}</div></button>`).join("")}</div>
       <div id="way" class="card space-y-3"></div>`;
     $$("[data-way]", view).forEach((b) => (b.onclick = () => { way = b.dataset.way; draw(); }));
+    const notFrom = $("#pending-clear", view);
+    if (notFrom) notFrom.onclick = () => { clearPending(); draw(); };
     const box = $("#way", view);
     const needAI = !ai ? `<p class="box-caution">This needs the AI, and none is set up yet. An admin can add one under Admin → AI.</p>` : "";
     if (way === "link") {

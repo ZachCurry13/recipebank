@@ -4,6 +4,7 @@ import { $, $$, esc, fmtMin, peppers, stars, canManage, cap, HOME_CATS, LEVELS, 
 import { verdictChips } from "./verdicts.js";
 import { localDate } from "./planpick.js";
 import { askRecipes } from "./ask.js";
+import { bookHits } from "./booklink.js";
 
 // Filters are kept per area while the app is open.
 const filters = { kitchen: { who: null, ok: "" }, home: { who: null, ok: "" } };
@@ -57,7 +58,7 @@ export async function renderLibrary(view, area, params, state) {
       <div id="facets" class="mt-3 grid gap-3 sm:grid-cols-3"></div>
       </details>
     </div>
-    <div id="results"></div>`;
+    <div id="results"></div><div id="bookhits"></div>`;
 
   let timer;
   const load = async () => {
@@ -66,6 +67,9 @@ export async function renderLibrary(view, area, params, state) {
       diet: f.diet, heat: f.heat, level: f.level, kids: f.kids, course: f.course, cuisine: f.cuisine, protein: f.protein }));
     if (!home) renderFacets(data.facets, f, load);
     renderCards(data.recipes, area, f);
+    const hits = $("#bookhits");
+    const words = (q || "").trim();
+    if (hits) hits.innerHTML = words && !home ? bookHits((await get("/api/books/search" + qs({ q: words }))).entries) : "";
   };
   // Three words or more is a question: answered by Ask (or Enter), not word search.
   const ask = () => askRecipes($("#results"), area, f.q.trim(), f.who, state.info?.diets, () => { f.q = ""; $("#q").value = ""; $("#ask").classList.add("hidden"); load(); });
