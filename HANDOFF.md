@@ -145,6 +145,28 @@ a reload; a recipe's cost says "N of M priced" in words (phones show no tooltips
 7. **Kids can help:** steps marked for kids (stir, measure) and a simple kid view. Declined for 0.3.
 8. **Who may send email:** today every signed-in person can email recipes and the list; maybe parents only.
 
+## 1f. 0.5 plan (2026-10-06; the user: "love them all"; one 0.5.0 at the end, released without asking again)
+
+Build in this order, each tested, checked at 360×760 and pushed to `feature/v0.5`:
+1. [ ] **Who may send email:** Admin → Email "Who can send": parents only (default) or everyone.
+2. [ ] **Back up and move recipes:** Admin → Back up: download every recipe (Kitchen and Home & Care, photos,
+   cooks, collections) as one .zip; import such a file into any RecipeBank (skips recipes it already has).
+3. [ ] **Share a recipe by link:** a read-only page for someone without an account, expiring after 7 days, which
+   parents can stop sharing; no names or allergies on it.
+4. [ ] **Plan my week:** fills the empty dinners of a week from recipes everyone home can eat: liked first, food
+   near its date used up, not repeated, within the weekly budget when prices are known, with leftovers for big
+   recipes; shown as a draft to keep or change.
+5. [ ] **Scan a receipt:** a photo of a store receipt → lines with names, amounts and prices (vision AI); the
+   person ticks what's right; matched to pantry items (amount added, price kept) or added as new ones.
+6. [ ] **Kids can help:** each step marked by what it needs (knife, stove, oven, hot liquid) from word lists;
+   a kid view in cook mode shows which steps a kid can do and which need a grown-up; "kids can help" filter.
+7. [ ] **Cookbooks and the card pile:** cookbooks by barcode (Open Library: title, author, cover), their recipes by
+   page (typed, or a photo of the index read by the AI), recipes can say "Cookbook, page N"; "Still to
+   photograph": a list of cards and clippings to scan, ticked off when a photo recipe is saved from one.
+8. [ ] **Imports from other recipe apps:** files exported from Paprika (.paprikarecipes), Mealie and Tandoor
+   (their export .zip), read into drafts/recipes with the usual checks; plain-words help for each.
+9. [ ] Docs, CHANGELOG 0.5.0, phone checks, release 0.5.0.
+
 ## 2. Rules
 
 See `CLAUDE.md` (hard rules) and the local-only `concepts/working-rules.md` (how we work: plan first,
