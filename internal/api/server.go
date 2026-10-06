@@ -154,6 +154,7 @@ func (s *Server) Router() http.Handler {
 				r.Get("/recipes/{id}/share", s.handleGetShare)
 				r.Post("/recipes/{id}/share", s.handleShareRecipe)
 				r.Delete("/recipes/{id}/share", s.handleStopSharing)
+				r.Post("/plan/suggest", s.handlePlanSuggest)
 				r.Post("/events", s.handleSaveEvent)
 				r.Put("/events/{id}", s.handleSaveEvent)
 				r.Delete("/events/{id}", s.handleDeleteEvent)

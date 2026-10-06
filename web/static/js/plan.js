@@ -1,8 +1,9 @@
 // The meal plan: a week of meals, who's eating each day, and the week's shopping.
 import { get, post, del } from "./api.js";
-import { $, $$, esc, attempt, canManage, toast, money } from "./ui.js";
+import { $, $$, esc, attempt, busy, canManage, toast, money } from "./ui.js";
 import { verdictChips } from "./verdicts.js";
 import { pickMeal, pickWho, localDate, dayLabel, MEAL_NAMES, mealName } from "./planpick.js";
+import { planWeek } from "./planweek.js";
 
 const MEALS = ["breakfast", "lunch", "dinner"];
 
@@ -43,7 +44,8 @@ export async function renderPlan(view, params, state) {
         ${data.cost?.priced ? `<p class="text-sm text-slate-400">These recipes: about ${money(data.cost.total, state.info?.currency)} from the pantry's prices
           (${data.cost.priced} of ${data.cost.lines} ingredients priced).</p>` : ""}
         <p class="text-sm text-slate-400">Plan the week; every meal is checked for who's eating that day.</p></div>
-      ${manage ? `<button id="shop" class="btn-primary">🛒 Add this week to the shopping list</button>` : ""}
+      ${manage ? `<button id="week" class="btn-primary">✨ Plan my week</button>
+        <button id="shop" class="btn-secondary">🛒 Add this week to the shopping list</button>` : ""}
     </div>
     <div class="mb-4 flex flex-wrap items-center gap-2">
       <a href="#/plan?from=${shift(-7)}" class="btn-secondary">‹ Earlier</a>
@@ -69,6 +71,8 @@ export async function renderPlan(view, params, state) {
     pickWho(d.date, data.people, d.who, reload);
   }));
   $$("[data-rm]", view).forEach((b) => (b.onclick = () => attempt(async () => { await del(`/api/plan/${b.dataset.rm}`); reload(); })));
+  const week = $("#week", view);
+  if (week) week.onclick = () => attempt(() => busy(week, "Thinking…", () => planWeek(start, state, reload)));
   const shop = $("#shop", view);
   if (shop) shop.onclick = () => attempt(async () => {
     const r = await post("/api/plan/shopping", { from: start, days: 7 });

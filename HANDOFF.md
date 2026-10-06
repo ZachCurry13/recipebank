@@ -153,7 +153,7 @@ Build in this order, each tested, checked at 360×760 and pushed to `feature/v0.
    cooks, collections) as one .zip; import such a file into any RecipeBank (skips recipes it already has).
 3. [x] **Share a recipe by link:** a read-only page for someone without an account, expiring after 7 days, which
    parents can stop sharing; no names or allergies on it.
-4. [ ] **Plan my week:** fills the empty dinners of a week from recipes everyone home can eat: liked first, food
+4. [x] **Plan my week:** fills the empty dinners of a week from recipes everyone home can eat: liked first, food
    near its date used up, not repeated, within the weekly budget when prices are known, with leftovers for big
    recipes; shown as a draft to keep or change.
 5. [ ] **Scan a receipt:** a photo of a store receipt → lines with names, amounts and prices (vision AI); the
