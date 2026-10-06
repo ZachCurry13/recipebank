@@ -167,6 +167,14 @@ Build in this order, each tested, checked at 360×760 and pushed to `feature/v0.
    (their export .zip), read into drafts/recipes with the usual checks; plain-words help for each.
 9. [x] Docs, CHANGELOG 0.5.0, phone checks (360×760, light and dark), release 0.5.0.
 
+## 1g. After 0.5.0 (released 2026-10-06; `:0.5.0` = `:latest`)
+
+On `feature/v0.6`, not released (a 0.5.1 only with the user's OK): the computer's top bar no longer scrolls
+sideways. It shows the main pages (more of them on wider screens) and a ☰ More menu with the rest (`nav.js`).
+
+Asked and waiting for an answer: a second AI just for photos (handwriting, receipts, the fridge, index pages) on
+another machine or an online API, with the main AI for text, falling back to it when the other one is off.
+
 ## 2. Rules
 
 See `CLAUDE.md` (hard rules) and the local-only `concepts/working-rules.md` (how we work: plan first,

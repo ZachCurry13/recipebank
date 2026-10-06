@@ -16,6 +16,9 @@
   .btn-ghost { @apply btn text-slate-300 hover:bg-slate-800; }
   .nav-link { @apply whitespace-nowrap rounded-md px-3 py-1.5 text-slate-300 hover:bg-slate-800 hover:text-white; }
   .nav-link.active { @apply bg-slate-800 text-white; }
+  .nav-menu { @apply absolute right-0 top-full z-30 mt-2 grid w-[26rem] grid-cols-2 gap-1 rounded-xl border border-slate-800 bg-slate-900 p-2 shadow-xl; }
+  .nav-menu-link { @apply flex items-center gap-2 rounded-lg px-3 py-2 text-slate-300 hover:bg-slate-800 hover:text-white; }
+  .nav-menu-link.active { @apply bg-slate-800 text-white; }
   .card { @apply rounded-xl bg-slate-900 p-4 ring-1 ring-slate-800; }
   .label { @apply mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-400; }
   .chip { @apply inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium; }
@@ -50,7 +53,7 @@ html.light { color-scheme: light; --slate-50:2 6 23;--slate-100:15 23 42;--slate
    the light theme; on a colored button it stays white. */
 /* (Attribute selectors, so Tailwind doesn't copy this into components that @apply text-white.) */
 html.light [class~="text-white"]:not([class*="bg-indigo"]):not([class*="bg-rose"]):not([class*="bg-teal"]):not([class*="bg-emerald"]),
-html.light [class~="hover:text-white"]:hover, html.light .nav-link:hover, html.light .nav-link.active { color: rgb(var(--slate-100)); }
+html.light [class~="hover:text-white"]:hover, html.light .nav-link:hover, html.light .nav-link.active, html.light .nav-menu-link:hover, html.light .nav-menu-link.active { color: rgb(var(--slate-100)); }
 html.light .dialog::backdrop { background: rgb(15 23 42 / 0.45); }
 
 /* Reduce motion (the device's own setting). */
