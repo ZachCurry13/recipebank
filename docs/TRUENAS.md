@@ -142,6 +142,13 @@ when a new version is out: a note at the top of the app and, if they turned on p
 notification. To do that it asks GitHub's public release list every few hours (only the version number of RecipeBank
 is sent). Turn it off under **Admin → House settings**. After an update, everyone sees the new version's notes once.
 
+## Email (optional)
+
+To email recipes and the shopping list, add your email account's outgoing mail server under **Admin → Email**
+and press **Send a test**. For Gmail: server `smtp.gmail.com`, port `587`, your Gmail address as the username, and
+an [App Password](https://myaccount.google.com/apppasswords) (Gmail doesn't accept your normal password here). The
+password stays on your server. Each person can send up to 20 emails an hour.
+
 ## Nutrition estimates (optional)
 
 Recipes can show calories, protein, carbohydrates, fat, fiber and sodium per serving, estimated from USDA FoodData

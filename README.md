@@ -25,6 +25,7 @@ Runs as one small Docker container (made for TrueNAS SCALE), works on phones, an
 - **Card photos read carefully:** a word-for-word copy first, a check for missed or misread lines (a recipe stays "not sure" for allergies until someone checks it against the card), **read again**, and reading hints learned from the family's corrections.
 - **From a dish:** a photo of a meal finds similar recipes, or the AI drafts its best guess.
 - **We cooked it** with each person's 👍/👎, **nutrition estimates** from USDA FoodData Central, **printing** and a **family cookbook** to print or save as a PDF, and sharing links from an Android phone.
+- **Events** (holiday dinners and potlucks, every dish checked for everyone coming), a **budget** from pantry prices, **planned leftovers**, **email** a recipe or the list, and how hard each recipe is.
 - **Cook mode voice**, **phone notifications** (timers, use soon, running low, tonight's dinner) and **remote access** through a built-in Cloudflare Tunnel ([docs/REMOTE_ACCESS.md](docs/REMOTE_ACCESS.md)).
 - **Accounts** for parents and kids; people without accounts (guests) still get checked. A short welcome for new people, a setup checklist for the admin, update notices and **What's new** in the app.
 

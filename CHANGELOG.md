@@ -1,5 +1,34 @@
 # Changelog
 
+## [0.4.0] - 2026-10-06
+
+Events, a budget, planned leftovers, email, and how hard a recipe is, plus fixes from going over 0.3.
+
+### 🎉 Events
+- **More → Events** for holiday dinners and potlucks: who's coming (family and guests, plus a number of others), the menu, and who brings each dish.
+- Every recipe on the menu is checked for everyone coming, and each person sees how many dishes they can eat, with a warning when it's none.
+- **Our dishes to the list** buys your own dishes for everyone coming. Print the menu; Tonight mentions an event happening today.
+
+### 💲 Budget
+- Give pantry and supply items a price and package size ("$4.50 for 1 lb"); a scanned product's size is filled in from its label.
+- The shopping list shows what each priced line costs and how much of your weekly budget is left (**Admin → House settings**: currency and weekly budget).
+- Recipes show "about $X to make" from the share of each package they use, and the meal plan shows the week. Both say how many ingredients had a price.
+
+### 🍱 Planned leftovers
+- When planning a meal, **Leftovers from…** picks a recipe planned in the last few days. The earlier meal is cooked and bought for both, and the leftovers meal buys nothing. Tonight says "make extra" and "just reheat".
+
+### ✉️ Email
+- Email a recipe (with a message) or the shopping list to one address, through your own email account (**Admin → Email**, with a test button and Gmail help).
+
+### 🟢 How hard it is
+- Recipes are easy, medium or hard, worked out from active time, steps, ingredients and techniques like kneading or tempering, or set in the editor. Filter the Kitchen by it, or ask smart search for something "easy".
+
+### Fixes
+- Metric shows grams for flour, sugar, butter and other things metric cooks weigh (liquids stay in ml, spoons stay spoons).
+- Ingredient lines read better: "2 x 400g tins tomatoes", "1 tablespoon + 1 teaspoon sugar", "pinch of salt", "a dash of hot sauce", "can of beans"; "to taste" and "for serving" are notes, not part of the food.
+
+Updating: nothing to change in TrueNAS. RecipeBank adds what it needs to its database by itself.
+
 ## [0.3.0] - 2026-10-06
 
 Cooking from what you have, better reading of recipe cards, and a guide for new people.

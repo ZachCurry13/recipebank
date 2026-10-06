@@ -120,7 +120,7 @@ Build in this order (each with tests, phone checks, a commit):
 5. [x] **Events:** holiday menus and potlucks: name, date, who's coming (people and guests), the menu (recipes or
    "store-bought" lines) with who brings what, every dish checked for everyone coming, "everyone has N dishes
    they can eat", and my dishes to the shopping list scaled to the guest count. In More.
-6. [ ] Docs, CHANGELOG 0.4.0, phone checks, release (the user gave the OK on 2026-10-06).
+6. [x] Docs, CHANGELOG 0.4.0, phone checks (every page at 360×760, no failed requests), release (the user gave the OK on 2026-10-06).
 
 ## 2. Rules
 

@@ -24,8 +24,10 @@ We cooked it with 👍/👎; nutrition estimates (USDA FoodData Central); share 
 CHANGELOG 0.3.0 written; every page checked at 360×760 (light and dark).
 
 ## Next
-- The user updates to 0.3.0 and tests with a real AI; fixes go out as 0.3.x.
-- Then 0.4 on `feature/v0.4`: budget, difficulty, planned leftovers, email a recipe or the list, events. The user's photo model is a 3B vision model; a cloud model (Gemini's free tier) was suggested.
+- 0.4.0 (2026-10-06): bug fixes from a review of 0.3 (ingredient lines, metric grams), difficulty, planned
+  leftovers, email (SMTP), budget (pantry prices, list and recipe costs, weekly budget), events (menus, who
+  brings what, checks for everyone coming).
+- Next: the user tests with a real AI, a USDA key and an email account; fixes go out as 0.4.x. The user's photo model is a 3B vision model; a cloud model (Gemini's free tier) was suggested.
 - The user tests 0.2.0 with a real AI; fixes go out as 0.2.x.
 - Later (from the user's list): "what can I make?" from a photo of the fridge, dish photo → ideas, kitchen tablet
   (only if wanted), cookbooks and the card pile, share from the phone and printing, other-app imports, Cast to TV.
