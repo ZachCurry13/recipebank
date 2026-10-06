@@ -101,6 +101,27 @@ email a recipe or the list, events (holiday menus, potlucks, guests per meal).
 Not chosen (2026-10-06): keto diet, cross-contact note, kids can help, kitchen tablet, cookbooks + card pile,
 other-app imports, Cast.
 
+## 1d. 0.4 plan (2026-10-06; the user is away and asked to fix bugs, then build and release the next version)
+
+Bugs fixed first (0.3.0 review): ingredient lines "2 x 400g tins", "1 tbsp + 1 tsp", "a pinch of", trailing
+"to taste" now a note; metric shows grams for flour/sugar/butter… (js/cupweights.js). Checked: lint (eslint
+no-undef), every page at 360×760, bad input on new endpoints, Kitchen list speed with 400 recipes (45 ms).
+
+Build in this order (each with tests, phone checks, a commit):
+1. [ ] **Difficulty:** recipes.difficulty ('' = worked out from time, steps, ingredients and techniques); chip on
+   cards and the recipe page; editor choice; Library filter; "easy" in smart search.
+2. [ ] **Planned leftovers:** a plan meal can be "Leftovers from" an earlier planned recipe; the earlier meal's
+   servings grow to cover it, the shopping list skips the leftovers meal, Tonight says what to reheat.
+3. [ ] **Email a recipe or the list:** Admin → Email (SMTP, from NovelCheck's delivery/smtp.go, password kept
+   secret, test button); ✉️ on the recipe page and the shopping list; one address at a time, rate-limited.
+4. [ ] **Budget:** price and package size on pantry/supply items; the shopping list estimates each priced line and
+   the total against an optional weekly budget (Admin → House settings, currency); recipes show "about $X to
+   make" from priced pantry items (share of the package used), saying how many lines were priced.
+5. [ ] **Events:** holiday menus and potlucks: name, date, who's coming (people and guests), the menu (recipes or
+   "store-bought" lines) with who brings what, every dish checked for everyone coming, "everyone has N dishes
+   they can eat", and my dishes to the shopping list scaled to the guest count. In More.
+6. [ ] Docs, CHANGELOG 0.4.0, phone checks, release (the user gave the OK on 2026-10-06).
+
 ## 2. Rules
 
 See `CLAUDE.md` (hard rules) and the local-only `concepts/working-rules.md` (how we work: plan first,
