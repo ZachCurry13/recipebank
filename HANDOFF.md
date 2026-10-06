@@ -167,13 +167,24 @@ Build in this order, each tested, checked at 360×760 and pushed to `feature/v0.
    (their export .zip), read into drafts/recipes with the usual checks; plain-words help for each.
 9. [x] Docs, CHANGELOG 0.5.0, phone checks (360×760, light and dark), release 0.5.0.
 
-## 1g. After 0.5.0 (released 2026-10-06; `:0.5.0` = `:latest`)
+## 1g. 0.6 plan (2026-10-06; on `feature/v0.6`; one release at the end, ASK the user before releasing)
 
-On `feature/v0.6`, not released (a 0.5.1 only with the user's OK): the computer's top bar no longer scrolls
-sideways. It shows the main pages (more of them on wider screens) and a ☰ More menu with the rest (`nav.js`).
-
-Asked and waiting for an answer: a second AI just for photos (handwriting, receipts, the fridge, index pages) on
-another machine or an online API, with the main AI for text, falling back to it when the other one is off.
+0.5.0 released 2026-10-06 (`:0.5.0` = `:latest`). The user chose "all together later": nothing ships until
+everything below is built and checked.
+1. [x] **Desktop menu:** the top bar shows the main pages (more on wider screens) and ☰ More for the rest (`nav.js`).
+2. [x] **A second AI for photos** (Admin → AI): photos go there first (cards, receipts, fridge, indexes), e.g. a big
+   model on a PC or an online API; when it can't be reached it's skipped for 2 minutes and the main AI reads them.
+   Text stays on the main AI unless the photo AI is the only one (`store/photoai.go`, `llm/chain.go`).
+3. [ ] **Ollama tools** ported from NovelCheck (`internal/ollama` copied; MIT, same author): find Ollama on the
+   network, installed models (delete unused), download with progress, use a model for text or photos.
+4. [ ] **GPU picks:** measure the card, label text models and photo models (best / most powerful / fits / too big).
+5. [ ] **Speed test:** time each AI on a made-up sample card photo and a text job.
+6. [ ] **Model updates, presets, health:** daily check for newer Ollama model versions (Update button), one-click
+   presets (Gemini, OpenAI, Claude, Ollama, LM Studio), "is it answering", cost for online APIs.
+7. [ ] **Features on and off** (asked for by the user's wife: the app felt overwhelming): Admin turns features off
+   for the whole house (hidden, data kept); each person can simplify their own view on Me: which meals the plan
+   shows (all by default; e.g. just dinner) and pages hidden from their menu.
+8. [ ] Docs, CHANGELOG, phone checks (360×760, light and dark; desktop widths for the menu), then ASK to release.
 
 ## 2. Rules
 
