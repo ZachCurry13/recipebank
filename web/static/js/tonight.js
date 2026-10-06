@@ -24,6 +24,7 @@ export async function renderTonight(view, params, state) {
 
   view.innerHTML = `
     <div id="guide"></div>
+    ${(data.events || []).map((e) => `<a href="#/event/${e.id}" class="box-info mb-4 block break-words">🎉 Today: <b>${esc(e.name)}</b>. Open the menu ›</a>`).join("")}
     <h1 class="text-2xl font-bold">🌙 Tonight</h1>
     <p class="mb-4 text-sm text-slate-400">${esc(dayLabel(date, true))} · Eating: ${data.who.length ? esc(data.who.map((id) => name[id]).filter(Boolean).join(", ")) : "nobody picked"}
       ${manage ? `· <a href="#/plan" class="underline">change</a>` : ""}</p>

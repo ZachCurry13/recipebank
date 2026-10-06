@@ -213,3 +213,26 @@ CREATE TABLE IF NOT EXISTS nutrition_foods (
     data       TEXT NOT NULL,
     fetched_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
+
+-- Events: holiday dinners and potlucks. who is the people coming (JSON ids,
+-- guests included); extra counts more guests without a profile.
+CREATE TABLE IF NOT EXISTS events (
+    id         INTEGER PRIMARY KEY AUTOINCREMENT,
+    name       TEXT NOT NULL,
+    date       TEXT NOT NULL DEFAULT '',
+    who        TEXT NOT NULL DEFAULT '[]',
+    extra      INTEGER NOT NULL DEFAULT 0,
+    notes      TEXT NOT NULL DEFAULT '',
+    created_by TEXT NOT NULL DEFAULT '',
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+-- An event's menu: a recipe, or a dish without one ("store-bought pie"), and
+-- who brings it ('' = the family).
+CREATE TABLE IF NOT EXISTS event_dishes (
+    id        INTEGER PRIMARY KEY AUTOINCREMENT,
+    event_id  INTEGER NOT NULL REFERENCES events(id) ON DELETE CASCADE,
+    recipe_id INTEGER REFERENCES recipes(id) ON DELETE SET NULL,
+    title     TEXT NOT NULL DEFAULT '',
+    brings    TEXT NOT NULL DEFAULT ''
+);
+CREATE INDEX IF NOT EXISTS event_dishes_event ON event_dishes (event_id);

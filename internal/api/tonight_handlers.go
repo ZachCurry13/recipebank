@@ -62,7 +62,7 @@ func (s *Server) handleTonight(w http.ResponseWriter, r *http.Request) {
 		meals = append(meals, m)
 	}
 	out := map[string]any{"date": date, "who": ids, "who_set": set, "people": pc.people, "meals": meals,
-		"next": next, "use_soon": s.useSoon(today), "ideas": []planRecipe{}}
+		"next": next, "use_soon": s.useSoon(today), "ideas": []planRecipe{}, "events": s.eventsOn(date)}
 	if !dinner {
 		out["ideas"] = s.ideas(date, diners, 4)
 	}
