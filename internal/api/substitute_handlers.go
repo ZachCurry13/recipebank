@@ -24,10 +24,11 @@ type substituteIdea struct {
 func (s *Server) handleSubstitute(w http.ResponseWriter, r *http.Request) {
 	id, ok := pathID(r, "id")
 	var body struct {
-		Line int  `json:"line"`
-		AI   bool `json:"ai"`
+		Line int      `json:"line"`
+		AI   bool     `json:"ai"`
+		Have []string `json:"have"` // foods ticked or typed on "What can I make?"
 	}
-	if !ok || !readJSON(w, r, &body, 1<<10) {
+	if !ok || !readJSON(w, r, &body, 32<<10) {
 		return
 	}
 	rc, err := s.Store.Recipe(id)
@@ -54,7 +55,7 @@ func (s *Server) handleSubstitute(w http.ResponseWriter, r *http.Request) {
 		writeStoreErr(w, err)
 		return
 	}
-	var onHand []string
+	onHand := cleanHave(body.Have)
 	for _, it := range stock {
 		if it.Qty > 0 {
 			onHand = append(onHand, it.Name)

@@ -6,6 +6,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/zachcurry13/recipebank/internal/llm"
 	"github.com/zachcurry13/recipebank/internal/recipe"
 	"github.com/zachcurry13/recipebank/internal/safety"
 	"github.com/zachcurry13/recipebank/internal/shopping"
@@ -18,7 +19,8 @@ type makeResult struct {
 	Have     int            `json:"have"`
 	Total    int            `json:"total"`
 	Missing  []string       `json:"missing"`
-	UsesSoon []string       `json:"uses_soon"` // pantry food near its use-by date this recipe uses up
+	Lines    []int          `json:"missing_lines"` // which ingredient lines are missing, for "Substitute"
+	UsesSoon []string       `json:"uses_soon"`     // pantry food near its use-by date this recipe uses up
 	Swaps    []missingSwaps `json:"swaps"`
 }
 
@@ -39,12 +41,7 @@ func (s *Server) handleMake(w http.ResponseWriter, r *http.Request) {
 	if !readJSON(w, r, &body, 32<<10) {
 		return
 	}
-	onHand := []string{}
-	for _, h := range body.Have {
-		if h = strings.TrimSpace(h); h != "" && len(h) <= 80 {
-			onHand = append(onHand, h)
-		}
-	}
+	onHand := cleanHave(body.Have)
 	stock, err := s.Store.ListStock("kitchen")
 	if err != nil {
 		writeStoreErr(w, err)
@@ -102,9 +99,9 @@ func (s *Server) handleMake(w http.ResponseWriter, r *http.Request) {
 // makeOne measures one recipe against what's on hand; ok is false when none
 // of its (non-staple) ingredients are.
 func (s *Server) makeOne(rc *recipe.Recipe, onHand []string, soon []store.StockItem, diners []safety.Person) (makeResult, bool) {
-	res := makeResult{Missing: []string{}, UsesSoon: []string{}, Swaps: []missingSwaps{}}
+	res := makeResult{Missing: []string{}, Lines: []int{}, UsesSoon: []string{}, Swaps: []missingSwaps{}}
 	matched := 0
-	for _, in := range rc.Ingredients {
+	for line, in := range rc.Ingredients {
 		food := in.Food
 		if food == "" || strings.Contains(strings.ToLower(in.Note+" "+in.Line), "optional") {
 			continue
@@ -126,6 +123,7 @@ func (s *Server) makeOne(rc *recipe.Recipe, onHand []string, soon []store.StockI
 		}
 		name := shopping.CleanName(food)
 		res.Missing = append(res.Missing, name)
+		res.Lines = append(res.Lines, line)
 		var use []safety.SwapIdea
 		for _, idea := range safety.Substitutes(food) {
 			if covered(onHand, strings.SplitN(idea.To, " (", 2)[0]) && safety.OKForAll(rc.Area, idea.To, diners) {
@@ -141,6 +139,41 @@ func (s *Server) makeOne(rc *recipe.Recipe, onHand []string, soon []store.StockI
 	}
 	res.Card, _ = cardFor(rc, diners)
 	return res, true
+}
+
+// handleMakePhoto lists the foods a photo of the fridge or pantry shows
+// ({"images": [data: URLs]}); the person ticks off what's really there.
+func (s *Server) handleMakePhoto(w http.ResponseWriter, r *http.Request) {
+	var body struct {
+		Images []string `json:"images"`
+	}
+	if !readJSON(w, r, &body, 40<<20) {
+		return
+	}
+	images, ok := readImages(w, body.Images, 4)
+	if !ok {
+		return
+	}
+	var foods []string
+	if _, err := s.askPhotos(r.Context(), llm.FridgePrompt, images, func(out string) (perr error) {
+		foods, perr = llm.ParseFoods(out)
+		return perr
+	}); err != nil {
+		writeErr(w, http.StatusBadGateway, importErr(err))
+		return
+	}
+	writeJSON(w, http.StatusOK, map[string]any{"foods": foods})
+}
+
+// cleanHave keeps the typed or ticked foods that look like food names.
+func cleanHave(list []string) []string {
+	out := []string{}
+	for _, h := range list {
+		if h = strings.TrimSpace(h); h != "" && len(h) <= 80 && len(out) < 200 {
+			out = append(out, h)
+		}
+	}
+	return out
 }
 
 func covered(onHand []string, food string) bool {

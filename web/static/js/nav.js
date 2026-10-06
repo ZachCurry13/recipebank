@@ -10,6 +10,7 @@ export const NAV = [
   ["kitchen", "Kitchen", "🍲", all, true],
   ["plan", "Plan", "📅", all, true],
   ["shopping", "Shopping", "🛒", all, true],
+  ["make", "What can I make?", "🥕", all, false],
   ["home", "Home & Care", "🧴", all, false],
   ["pantry", "Pantry", "🥫", all, false],
   ["supplies", "Supplies", "🧽", all, false],

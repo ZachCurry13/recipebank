@@ -10,7 +10,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/zachcurry13/recipebank/internal/files"
 	"github.com/zachcurry13/recipebank/internal/llm"
 	"github.com/zachcurry13/recipebank/internal/recipe"
 	"github.com/zachcurry13/recipebank/internal/safety"
@@ -145,27 +144,21 @@ func (s *Server) importPhotos(w http.ResponseWriter, r *http.Request, keep bool)
 	if !readJSON(w, r, &body, 40<<20) {
 		return
 	}
-	if len(body.Images) == 0 || len(body.Images) > 4 {
-		writeErr(w, http.StatusBadRequest, "add 1 to 4 photos")
+	originals, ok := readImages(w, body.Images, 4)
+	if !ok {
 		return
 	}
-	var originals []llm.Image
 	var names []string
-	for _, d := range body.Images {
-		data, mt, err := decodeDataURL(d)
+	for _, im := range originals {
+		if !keep {
+			break
+		}
+		name, err := s.savePhoto(im.Data) // the full photo stays with the recipe
 		if err != nil {
 			writeErr(w, http.StatusBadRequest, err.Error())
 			return
 		}
-		if keep {
-			name, err := s.savePhoto(data) // the full photo stays with the recipe
-			if err != nil {
-				writeErr(w, http.StatusBadRequest, err.Error())
-				return
-			}
-			names = append(names, name)
-		}
-		originals = append(originals, llm.Image{Data: data, MediaType: mt})
+		names = append(names, name)
 	}
 	rc, err := s.readPhotos(r.Context(), originals)
 	if err != nil {
@@ -179,39 +172,20 @@ func (s *Server) importPhotos(w http.ResponseWriter, r *http.Request, keep bool)
 	s.finishDraft(w, r, &rc, body.Area)
 }
 
-// aiPhotoSides: the AI gets a copy of each photo this long on its long side,
-// smaller again each time the AI answers that it doesn't fit (a home AI
-// server often has room for only about 4,000 tokens, photos included).
-var aiPhotoSides = []int{1280, 896, 640}
-
 // readPhotos reads a recipe from photos in two steps: the vision model copies
 // the card as plain text, then organize turns the copy into a recipe.
 func (s *Server) readPhotos(ctx context.Context, originals []llm.Image) (recipe.Recipe, error) {
-	var copied, model string
-	var err error
-	prompt := llm.TranscribePrompt(s.readingHints())
-	for _, side := range aiPhotoSides {
-		images := make([]llm.Image, len(originals))
-		for i, im := range originals {
-			images[i] = im
-			if small, ferr := files.Fit(im.Data, side); ferr == nil && len(small) != len(im.Data) {
-				images[i] = llm.Image{Data: small, MediaType: "image/jpeg"}
-			}
-		}
-		model, err = llm.AskImages(ctx, s.Store, prompt, images, func(out string) (perr error) {
-			copied, perr = llm.ParseTranscript(out)
-			return perr
-		})
-		if err == nil {
-			rc, oerr := s.organize(ctx, copied)
-			rc.ReadBy, rc.AIReading = model, copied
-			return rc, oerr
-		}
-		if !llm.TooLong(err) {
-			return recipe.Recipe{}, err
-		}
+	var copied string
+	model, err := s.askPhotos(ctx, llm.TranscribePrompt(s.readingHints()), originals, func(out string) (perr error) {
+		copied, perr = llm.ParseTranscript(out)
+		return perr
+	})
+	if err != nil {
+		return recipe.Recipe{}, err
 	}
-	return recipe.Recipe{}, errPhotoTooBig
+	rc, err := s.organize(ctx, copied)
+	rc.ReadBy, rc.AIReading = model, copied
+	return rc, err
 }
 
 // organize turns a card's plain-text copy into a recipe: the AI fills in the

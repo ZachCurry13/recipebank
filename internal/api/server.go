@@ -80,6 +80,8 @@ func (s *Server) Router() http.Handler {
 			r.Get("/recipes/{id}", s.handleGetRecipe)
 			r.Put("/recipes/{id}/rating", s.handleRating)
 			r.Post("/recipes/{id}/substitute", s.handleSubstitute)
+			r.Post("/make", s.handleMake)
+			r.Post("/make/photo", s.handleMakePhoto)
 			r.Get("/photos/{name}", s.handlePhoto)
 			r.Get("/stock", s.handleListStock)
 			r.Post("/stock/{id}/adjust", s.handleAdjustStock)

@@ -80,6 +80,10 @@ func FoodKey(food string) string { return strings.Join(core(food), " ") }
 
 // cutWords are parts of an animal or plant that are still that food
 // ("chicken" covers "chicken thighs").
+// kindWords may follow a food's own name: "cheddar" is "cheddar cheese",
+// "jalapeno" a "jalapeno pepper".
+var kindWords = map[string]bool{"cheese": true, "lettuce": true, "pepper": true, "rice": true}
+
 var cutWords = map[string]bool{"breast": true, "thigh": true, "wing": true, "drumstick": true, "leg": true,
 	"fillet": true, "filet": true, "tenderloin": true, "chop": true, "loin": true, "steak": true, "rib": true,
 	"shoulder": true, "clove": true, "leaf": true, "stalk": true, "head": true, "floret": true, "yolk": true, "white": true}
@@ -104,7 +108,7 @@ func Covers(have, food string) bool {
 			continue // "coconut milk" isn't milk
 		}
 		rest := f[i+len(h):]
-		if len(rest) == 0 || (len(rest) == 1 && cutWords[rest[0]]) {
+		if len(rest) == 0 || (len(rest) == 1 && (cutWords[rest[0]] || kindWords[rest[0]])) {
 			return true
 		}
 	}

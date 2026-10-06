@@ -222,8 +222,10 @@ func TestBrothSwapIsABroth(t *testing.T) {
 
 func TestCovers(t *testing.T) {
 	yes := [][2]string{{"chicken", "boneless skinless chicken breasts"}, {"eggs", "2 large eggs"}, {"milk", "whole milk"},
-		{"Brand Chicken Broth", "chicken broth"}, {"garlic", "garlic cloves, minced"}, {"flour", "all-purpose flour"}}
-	no := [][2]string{{"chicken", "chicken broth"}, {"milk", "coconut milk"}, {"butter", "peanut butter"}, {"flour", "almond flour"}}
+		{"Brand Chicken Broth", "chicken broth"}, {"garlic", "garlic cloves, minced"}, {"flour", "all-purpose flour"},
+		{"cheddar", "1/4 cup cheddar cheese"}, {"jalapeno", "2 jalapeno peppers"}, {"basmati", "1 cup basmati rice"}}
+	no := [][2]string{{"chicken", "chicken broth"}, {"milk", "coconut milk"}, {"butter", "peanut butter"}, {"flour", "almond flour"},
+		{"soy", "2 tbsp soy sauce"}, {"cheese", "cream cheese"}, {"rice", "rice vinegar"}}
 	for _, c := range yes {
 		if !Covers(c[0], recipe.ParseLine(c[1]).Food) {
 			t.Errorf("%q should cover %q", c[0], c[1])

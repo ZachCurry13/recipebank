@@ -41,7 +41,8 @@ export async function renderTonight(view, params, state) {
             ${r.total_min ? `<div class="text-xs text-slate-400">${fmtMin(r.total_min)}</div>` : ""}</div>
           ${manage ? `<button data-plan="${r.id}" class="btn-secondary min-h-0 py-1">Plan it</button>` : ""}</div>`).join("")}</div>`
         : `<p class="text-sm text-slate-400">No saved recipe suits everyone eating yet.</p>`}
-      ${manage ? `<a href="#/plan" class="btn-ghost">📅 Plan the week</a>` : ""}</div>`}
+      <div class="flex flex-wrap gap-2"><a href="#/make" class="btn-secondary">🥕 What can I make?</a>
+        ${manage ? `<a href="#/plan" class="btn-ghost">📅 Plan the week</a>` : ""}</div></div>`}
     ${data.use_soon.length ? `<div class="card mb-4"><h2 class="mb-2 font-semibold">Use soon</h2>
       <ul class="space-y-1">${data.use_soon.map((it) => `<li class="flex flex-wrap items-center gap-2"><span class="min-w-0 break-words">${esc(it.name)}</span>${useByChip(it.use_by)}</li>`).join("")}</ul>
       <a href="#/pantry" class="mt-2 inline-block text-sm underline">Open the pantry</a></div>` : ""}

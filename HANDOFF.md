@@ -61,7 +61,8 @@ the catch-ups and new ideas below. Build in this order:
 0d. [x] **Scan confirmation** (the user asked 2026-10-06): a scanned product shows "Is this what you scanned?" with
    the package photo (fetched by the server from the database's own image host, sent as a data: URL because of
    the CSP), name, brand, size and the digits; something already in the house asks "Is this it?" before +1.
-1. [ ] **What can I make?** (backend started) Tick what's on hand (pantry items pre-ticked, extras typed) or photograph the
+1. [x] **What can I make?** (#/make, js/make.js + makeresults.js, POST /api/make and /api/make/photo; in More and on
+   Tonight; "Substitute" per missing item uses the ticked foods too; "kindWords" lets "cheddar" cover "cheddar cheese") Tick what's on hand (pantry items pre-ticked, extras typed) or photograph the
    fridge/pantry (vision AI lists foods; the person confirms). Recipes ranked by coverage; **food near its
    use-by date first ("use it up")**; what's missing, with swaps from the table and **AI swap ideas from what's
    on hand, checked against everyone's rules**; "only what I have"; "add missing to shopping".
@@ -74,7 +75,14 @@ the catch-ups and new ideas below. Build in this order:
 5. [ ] **Nutrition estimates:** per serving from USDA FoodData Central (a free key the user signs up for,
    Admin → Nutrition), labelled an estimate; cached per food.
 6. [ ] **Share + print:** share target (Android), print layout + Print button, family cookbook to print/PDF.
+6b. [ ] **First-time guide** (chosen 2026-10-06: both): a "Getting started" checklist for the admin on Tonight that
+   ticks itself off (admin account, family + allergies, first recipe, AI or skip, sign-ins for everyone, on the
+   phones) with "Hide this guide"; a short welcome for each person on first sign-in (what ✓/✕/⚠ mean, where
+   things are, put it on your phone). Both reopen from Me.
 7. [ ] Phone checks, docs, CHANGELOG 0.3.0, release with the user's OK.
+
+0.4 first (chosen 2026-10-06): budget (prices, weekly estimate, cost per recipe), difficulty, planned leftovers,
+email a recipe or the list, events (holiday menus, potlucks, guests per meal).
 
 Not chosen (2026-10-06): keto diet, cross-contact note, kids can help, kitchen tablet, cookbooks + card pile,
 other-app imports, Cast.

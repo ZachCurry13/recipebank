@@ -15,11 +15,13 @@ import { renderEdit } from "./editor.js";
 import { renderFamily } from "./family.js";
 import { renderAdmin } from "./admin.js";
 import { renderProfile } from "./profile.js";
+import { renderMake } from "./make.js";
 
 export const state = { user: null, info: null };
 
 const routes = {
   kitchen: (v, p, s) => renderLibrary(v, "kitchen", p, s),
+  make: renderMake,
   home: (v, p, s) => renderLibrary(v, "home", p, s),
   pantry: (v, p, s) => renderStock(v, "kitchen", p, s),
   supplies: (v, p, s) => renderStock(v, "home", p, s),
