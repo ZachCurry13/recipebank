@@ -43,11 +43,12 @@ the catch-ups and new ideas below. Build in this order:
    back with every amount dropped, 6 of 20 ingredients missing from the right column, "red pepper flakes" read as
    "bell pepper flakes", and invented "Filling"/"Topping" sections copied from the prompt's examples; the photo was
    also uploaded rotated). Build first, in this order:
-   1. Photos the right way up: decode through an <img> (honours the phone's rotation info) and ⟳ buttons.
-   2. Smarter reading: no example sections in the prompt; "two columns: left column first, then right"; keep every
+   1. DONE Photos the right way up: decode through an <img> (honours the phone's rotation info) and ⟳ buttons.
+   2. DONE (llm/cardread.go, api readPhotos + organize) Smarter reading: no example sections in the prompt; "two columns: left column first, then right"; keep every
       amount and abbreviation; read in two steps (vision copies the card as plain text, then a text step
       organizes it); record which model read each card.
-   3. Automatic cross-check (no AI): foods the steps mention that the list lacks, lines without amounts, odd
+   3. DONE (safety/crosscheck.go, POST /recipes/{id}/card-checked, js/cardcheck.js; also: steps naming an
+      allergen no line has → "not sure"; Staple no longer counts bell pepper/garlic salt) Automatic cross-check (no AI): foods the steps mention that the list lacks, lines without amounts, odd
       amounts; while unchecked, verdicts for allergic/severe people say "not sure"; "Checked against the card" clears it.
    4. Read again: re-read the saved photos (optionally another model), show line-by-line changes, keep either.
    5. Teach it: corrections become short reading hints (abbreviations, misreads) sent with the next cards;

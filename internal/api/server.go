@@ -114,6 +114,7 @@ func (s *Server) Router() http.Handler {
 				r.Delete("/recipes/{id}", s.handleDeleteRecipe)
 				r.Post("/recipes/{id}/version", s.handleVersion)
 				r.Put("/recipes/{id}/label", s.handleLabelChecked)
+				r.Post("/recipes/{id}/card-checked", s.handleCardChecked)
 				r.Post("/photos", s.handleUploadPhoto)
 				r.Post("/people", s.handleSavePerson)
 				r.Put("/people/{id}", s.handleSavePerson)

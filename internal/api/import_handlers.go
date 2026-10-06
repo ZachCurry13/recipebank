@@ -13,6 +13,7 @@ import (
 	"github.com/zachcurry13/recipebank/internal/files"
 	"github.com/zachcurry13/recipebank/internal/llm"
 	"github.com/zachcurry13/recipebank/internal/recipe"
+	"github.com/zachcurry13/recipebank/internal/safety"
 )
 
 // userAgent says honestly who is asking. Some publishers block apps on
@@ -161,6 +162,9 @@ func (s *Server) handleImportPhoto(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	rc.SourceKind, rc.SourcePhotos = "photo", names
+	if len(safety.CrossCheck(&rc)) > 0 {
+		rc.NeedsReview = true
+	}
 	s.finishDraft(w, r, &rc, body.Area)
 }
 

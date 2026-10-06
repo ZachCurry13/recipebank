@@ -5,11 +5,12 @@ import { get, post, put } from "./api.js";
 import { $, $$, esc, attempt, busy, COURSES, HOME_CATS } from "./ui.js";
 import { verdictList } from "./verdicts.js";
 import { shrinkPhoto } from "./photo.js";
+import { cardBox } from "./cardcheck.js";
 import { go } from "./app.js";
 
 export async function renderEdit(view, params) {
   const data = await get(`/api/recipes/${params.id}`);
-  editRecipe(view, data.recipe, null);
+  editRecipe(view, data.recipe, null, data.card_check);
 }
 
 function toText(list, key) {
@@ -42,7 +43,7 @@ function fromText(text, key) {
 }
 
 // editRecipe shows the form for r; preview is the import's check (or null).
-export function editRecipe(view, r, preview) {
+export function editRecipe(view, r, preview, cardCheck) {
   const isNew = !r.id;
   let photo = r.photo || "";
   const field = (name, label, value, attrs = "") =>
@@ -50,10 +51,10 @@ export function editRecipe(view, r, preview) {
   view.innerHTML = `
     <a href="${isNew ? "#/add" : `#/recipe/${r.id}`}" class="text-sm text-slate-400 hover:text-slate-200">‹ ${isNew ? "Add a recipe" : "Back to the recipe"}</a>
     <h1 class="mb-4 mt-2 text-2xl font-bold">${isNew ? "Check it, then save" : "Edit recipe"}</h1>
+    ${r.needs_review ? `<div class="mb-4">${cardBox(r, preview?.card_check || cardCheck, "edit")}</div>` : ""}
     ${preview ? `<div class="card mb-4 space-y-3"><h2 class="font-semibold">Who can ${r.area === "home" ? "use" : "eat"} it</h2>
       ${verdictList(preview.verdicts, r.ingredients)}
-      ${(preview.hazards || []).filter((h) => h.level !== "info").map((h) => `<div class="${h.level === "danger" ? "box-danger" : "box-caution"}">${esc(h.text)}</div>`).join("")}
-      ${r.needs_review ? `<p class="box-caution">The AI wasn't sure about lines marked <b>(?)</b> below. Compare them with the original and fix them.</p>` : ""}</div>` : ""}
+      ${(preview.hazards || []).filter((h) => h.level !== "info").map((h) => `<div class="${h.level === "danger" ? "box-danger" : "box-caution"}">${esc(h.text)}</div>`).join("")}</div>` : ""}
     <form id="edit" class="grid gap-4 lg:grid-cols-2">
       <div class="space-y-4">
         <div class="flex flex-wrap gap-2" role="radiogroup" aria-label="Where it goes">
@@ -123,6 +124,8 @@ export function editRecipe(view, r, preview) {
     const checked = Object.fromEntries(r.ingredients.filter((i) => i.checked?.length).map((i) => [i.line, i.checked]));
     const ingredients = fromText(f.ingredients.value, "line").map((i) => ({ ...i, checked: checked[i.line] }));
     const steps = fromText(f.steps.value, "text");
+    const cardOK = $('input[name="card_checked"]', view)?.checked;
+    if (cardOK) [...ingredients, ...steps].forEach((x) => (x.unsure = false));
     const num = (n) => Number(f[n].value) || 0;
     const out = {
       ...r, area: form.querySelector('input[name="area"]:checked')?.value || "kitchen", title: f.title.value, summary: f.summary.value,
@@ -130,7 +133,9 @@ export function editRecipe(view, r, preview) {
       yield_text: f.yield_text.value, course: f.course.value.trim().toLowerCase(), cuisine: f.cuisine.value.trim(),
       protein: f.protein.value.trim().toLowerCase(), heat: Number(f.heat.value), ingredients, steps, notes: f.notes.value,
       storage: f.storage.value, source_url: f.source_url.value.trim(), source_note: f.source_note.value,
-      needs_review: ingredients.some((i) => i.unsure) || steps.some((s) => s.unsure),
+      // A photo recipe stays "check it" until someone ticks that they did.
+      needs_review: !cardOK && (ingredients.some((i) => i.unsure) || steps.some((s) => s.unsure) ||
+        (r.needs_review && r.source_kind === "photo")),
     };
     const btn = form.querySelector("button.btn-primary");
     attempt(() => busy(btn, "Saving…", async () => {

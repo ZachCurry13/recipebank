@@ -130,6 +130,25 @@ func Check(r *recipe.Recipe, p Person) Verdict {
 			rs.add(No, "Heat", fmt.Sprintf("too spicy (%d of 5, likes up to %d)", heat, p.HeatMax), "", at)
 		}
 	}
+	// "Stir in the butter" with no butter line: a line may be missing.
+	for key, sev := range p.Allergies {
+		if sev == Avoid {
+			continue
+		}
+		if w := StepsMention(r, key); w != "" {
+			a, _ := AllergenByKey(key)
+			rs.add(Unsure, a.Label+" allergy", "the steps mention "+w+", but no ingredient line has it", "", -1)
+		}
+	}
+	// A line read wrong (or missed) could hide anything: until someone checks
+	// the recipe against the card, a real allergy can't be OK.
+	if r.NeedsReview && realAllergy(p) {
+		why := "the AI wasn't sure about some lines"
+		if r.SourceKind == "photo" {
+			why = "read from a photo; check it against the card first"
+		}
+		rs.add(Unsure, "Not checked yet", why, "", -1)
+	}
 	v := Verdict{PersonID: p.ID, Name: p.Name, Status: OK, Reasons: rs.list}
 	for _, x := range rs.list {
 		if x.Status == No {
@@ -236,6 +255,16 @@ func lines(r *recipe.Recipe) []string {
 func slicesHas(list []string, s string) bool {
 	for _, x := range list {
 		if x == s {
+			return true
+		}
+	}
+	return false
+}
+
+// realAllergy: p has an allergy that isn't just a preference.
+func realAllergy(p Person) bool {
+	for _, sev := range p.Allergies {
+		if sev == Allergic || sev == Severe {
 			return true
 		}
 	}

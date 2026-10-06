@@ -41,6 +41,9 @@ func (s *Server) writeChecked(w http.ResponseWriter, r *http.Request, rc *recipe
 	if rc.Area == recipe.AreaHome {
 		out["hazards"] = safety.Hazards(rc, s.Store.Pets())
 	}
+	if rc.NeedsReview && rc.SourceKind == "photo" {
+		out["card_check"] = safety.CrossCheck(rc)
+	}
 	if rc.VersionOf != nil {
 		if orig, err := s.Store.Recipe(*rc.VersionOf); err == nil {
 			out["original"] = map[string]any{"id": orig.ID, "title": orig.Title}
@@ -170,6 +173,33 @@ func (s *Server) handleLabelChecked(w http.ResponseWriter, r *http.Request) {
 		kept = append(kept, body.Allergen)
 	}
 	in.Checked = kept
+	if _, err := s.Store.SaveRecipe(rc); err != nil {
+		writeStoreErr(w, err)
+		return
+	}
+	s.writeChecked(w, r, rc)
+}
+
+// handleCardChecked records that someone compared a photo recipe with its
+// card: the "not sure" lines and the caution for allergies go away.
+func (s *Server) handleCardChecked(w http.ResponseWriter, r *http.Request) {
+	id, ok := pathID(r, "id")
+	if !ok {
+		writeErr(w, http.StatusBadRequest, "bad id")
+		return
+	}
+	rc, err := s.Store.Recipe(id)
+	if err != nil {
+		writeStoreErr(w, err)
+		return
+	}
+	rc.NeedsReview = false
+	for i := range rc.Ingredients {
+		rc.Ingredients[i].Unsure = false
+	}
+	for i := range rc.Steps {
+		rc.Steps[i].Unsure = false
+	}
 	if _, err := s.Store.SaveRecipe(rc); err != nil {
 		writeStoreErr(w, err)
 		return

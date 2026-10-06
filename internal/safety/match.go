@@ -124,10 +124,20 @@ func Staple(food string) bool {
 		return false
 	}
 	for _, p := range parts {
-		w := strings.Join(p, " ")
-		if w != "salt" && w != "pepper" && w != "black pepper" && !strings.HasSuffix(w, "salt") && !strings.HasSuffix(w, "pepper") {
+		if last := p[len(p)-1]; last != "salt" && last != "pepper" {
 			return false
+		}
+		for _, w := range p[:len(p)-1] {
+			if !plainSeasoning[w] {
+				return false // "bell pepper", "garlic salt"
+			}
 		}
 	}
 	return true
 }
+
+// plainSeasoning words still mean everyday salt or pepper: "kosher salt",
+// "freshly ground black pepper".
+var plainSeasoning = map[string]bool{"kosher": true, "sea": true, "table": true, "fine": true, "flaky": true,
+	"coarse": true, "iodized": true, "black": true, "white": true, "ground": true, "freshly": true, "fresh": true,
+	"cracked": true, "salt": true}

@@ -234,7 +234,8 @@ func TestCovers(t *testing.T) {
 			t.Errorf("%q should not cover %q", c[0], c[1])
 		}
 	}
-	if !Staple("salt and pepper to taste") || !Staple("kosher salt") || Staple("chicken") {
+	if !Staple("salt and pepper to taste") || !Staple("kosher salt") || !Staple("freshly ground black pepper") ||
+		Staple("chicken") || Staple("bell pepper") || Staple("garlic salt") || Staple("2 jalapeno peppers") {
 		t.Error("staples")
 	}
 }

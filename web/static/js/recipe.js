@@ -1,10 +1,11 @@
 // A recipe's page: who can eat it and why, swaps, Home & Care warnings,
 // servings and units, steps, and the parents' tools.
 import { get, post, put, del, qs } from "./api.js";
-import { $, $$, esc, attempt, fmtMin, peppers, canManage, cap, toast, sheet } from "./ui.js";
+import { $, $$, esc, attempt, busy, fmtMin, peppers, canManage, cap, toast, sheet } from "./ui.js";
 import { verdictList } from "./verdicts.js";
 import { startCooking } from "./cook.js";
 import { ingredientList, stepList } from "./recipeparts.js";
+import { cardBox } from "./cardcheck.js";
 import { go } from "./app.js";
 import { addToCollection } from "./collections.js";
 
@@ -75,7 +76,7 @@ export async function renderRecipe(view, params, state) {
                 ${["us", "metric"].map((s) => `<button data-sys="${s}" class="px-3 py-1.5 text-sm ${view_.system === s ? "rounded-lg bg-slate-700 text-white" : "text-slate-400"}">${s === "us" ? "US" : "Metric"}</button>`).join("")}
               </div>
             </div>
-            ${r.needs_review ? `<p class="box-caution mb-3">The AI wasn't sure about lines marked <b>?</b>. Check them against the card${manage ? " and fix them with Edit" : ""}.</p>` : ""}
+            ${r.needs_review ? `<div class="mb-3">${cardBox(r, data.card_check, manage ? "page" : "")}</div>` : ""}
             <ul class="space-y-0.5">${ingredientList(r, data, manage, view_, nm)}</ul>
           </div>
           <div class="card">
@@ -98,6 +99,12 @@ export async function renderRecipe(view, params, state) {
       attempt(load);
     }));
     $$("[data-sys]", view).forEach((b) => (b.onclick = () => { view_.system = b.dataset.sys; draw(); }));
+    const cardOK = $("[data-cardok]", view);
+    if (cardOK) cardOK.onclick = () => attempt(() => busy(cardOK, "Saving…", async () => {
+      await post(`/api/recipes/${r.id}/card-checked`, {});
+      await load();
+      toast("Marked as checked");
+    }));
     $$("[data-serv]", view).forEach((b) => (b.onclick = () => {
       const base = r.servings || 1;
       if (r.servings) {
