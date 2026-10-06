@@ -4,11 +4,13 @@ import { post } from "./api.js";
 import { $, $$, attempt, busy } from "./ui.js";
 import { shrinkPhoto, rotatePhoto } from "./photo.js";
 import { editRecipe } from "./editor.js";
+import { renderDish } from "./dish.js";
 
 const WAYS = [
   ["link", "🔗", "From a link", "Paste the address of a recipe page."],
   ["photo", "📷", "From photos", "A handwritten card, a cookbook page or a clipping (up to 4 photos)."],
   ["text", "📋", "Paste text", "Copy the recipe from anywhere and paste it here."],
+  ["dish", "🍽️", "From a dish", "A photo of a meal: similar recipes, or the AI's best guess."],
   ["type", "✍️", "Type it in", "Start from an empty recipe."],
 ];
 
@@ -16,6 +18,8 @@ export function renderAdd(view, params, state) {
   const area = params.area === "home" ? "home" : "kitchen";
   const ai = state.info?.ai_ready;
   let way = params.way || "link";
+  if (way === "dish" && area === "home") way = "link";
+  const ways = WAYS.filter(([k]) => k !== "dish" || area === "kitchen");
   let photos = []; // data: URLs
   const draw = () => {
     view.innerHTML = `
@@ -25,7 +29,7 @@ export function renderAdd(view, params, state) {
         ${[["kitchen", "🍲 Kitchen"], ["home", "🧴 Home & Care"]].map(([a, l]) =>
           `<a href="#/add?area=${a}&way=${way}" class="pick ${area === a ? "on" : ""}">${l}</a>`).join("")}
       </div>
-      <div class="mb-4 grid gap-2 sm:grid-cols-4">${WAYS.map(([k, ico, label, help]) => `
+      <div class="mb-4 grid gap-2 sm:grid-cols-3 lg:grid-cols-5">${ways.map(([k, ico, label, help]) => `
         <button data-way="${k}" class="card min-w-0 text-left ${way === k ? "ring-2 ring-emerald-600" : ""}">
           <div class="text-2xl">${ico}</div><div class="font-semibold">${label}</div>
           <div class="text-xs text-slate-400">${help}</div></button>`).join("")}</div>
@@ -64,6 +68,8 @@ export function renderAdd(view, params, state) {
         draw();
       })));
       $("#go", box).onclick = (e) => run(e.currentTarget, "The AI is reading it…", "/api/import/photo", { images: photos });
+    } else if (way === "dish") {
+      renderDish(box, view, ai);
     } else if (way === "text") {
       box.innerHTML = `<form id="f" class="space-y-3"><label class="block"><span class="label">The recipe</span>
         <textarea name="text" rows="12" required class="input" placeholder="Title, ingredients and steps…"></textarea></label>

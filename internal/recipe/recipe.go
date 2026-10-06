@@ -87,7 +87,7 @@ func (r *Recipe) Clean() {
 		r.TotalMin = r.PrepMin + r.CookMin
 	}
 	switch r.SourceKind {
-	case "web", "photo", "text", "manual":
+	case "web", "photo", "text", "manual", "ai": // "ai": drafted by the AI from a photo of a dish
 	default:
 		r.SourceKind = "manual"
 	}

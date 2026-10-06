@@ -118,6 +118,8 @@ func (s *Server) Router() http.Handler {
 				r.Post("/import/url", s.handleImportURL)
 				r.Post("/import/photo", s.handleImportPhoto)
 				r.Post("/import/photo/again", s.handleReadAgain)
+				r.Post("/import/dish", s.handleDish)
+				r.Post("/import/dish/draft", s.handleDishDraft)
 				r.Post("/import/text", s.handleImportText)
 				r.Post("/check", s.handleCheckDraft)
 				r.Post("/recipes", s.handleSaveRecipe)

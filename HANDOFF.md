@@ -66,7 +66,7 @@ the catch-ups and new ideas below. Build in this order:
    fridge/pantry (vision AI lists foods; the person confirms). Recipes ranked by coverage; **food near its
    use-by date first ("use it up")**; what's missing, with swaps from the table and **AI swap ideas from what's
    on hand, checked against everyone's rules**; "only what I have"; "add missing to shopping".
-2. [ ] **Dish photo → ideas:** vision AI describes a meal; matching recipes already in RecipeBank, plus an
+2. [x] (Add → "From a dish", js/dish.js, POST /api/import/dish and /dish/draft, source_kind "ai") **Dish photo → ideas:** vision AI describes a meal; matching recipes already in RecipeBank, plus an
    AI-drafted recipe (labelled a best guess) through the normal draft and checks.
 3. [ ] **Photo double-check:** (folded into 0b) a second AI pass on card/page photos fixes spelling and flags odd amounts
    ("1 cup salt" in cookies) as lines to check; never changes amounts silently.
