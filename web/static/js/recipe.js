@@ -7,6 +7,7 @@ import { startCooking } from "./cook.js";
 import { ingredientList, stepList } from "./recipeparts.js";
 import { cardBox } from "./cardcheck.js";
 import { readAgain } from "./readagain.js";
+import { cookedSheet, cookHistory, wireHistory } from "./cooked.js";
 import { subButton, wireSubstitute } from "./substitute.js";
 import { go } from "./app.js";
 import { addToCollection } from "./collections.js";
@@ -63,6 +64,7 @@ export async function renderRecipe(view, params, state) {
             `<div class="${HAZARD_BOX[h.level]}">${HAZARD_ICON[h.level]} ${esc(h.text)}</div>`).join("")}</div>` : ""}
           <div class="flex flex-wrap gap-2">
             ${r.steps.length ? `<button id="cook" class="btn-primary">▶ ${home ? "Step by step" : "Start cooking"}</button>` : ""}
+            ${home ? "" : `<button id="cooked" class="btn-secondary">🍳 We cooked it</button>`}
             ${r.ingredients.length ? `<button id="shop" class="btn-secondary">🛒 Add to shopping list</button>` : ""}
             ${manage ? `<a href="#/edit/${r.id}" class="btn-secondary">✎ Edit</a>
               <button id="version" class="btn-secondary" title="A copy to change, keeping this one">⎘ Make our version</button>
@@ -88,6 +90,7 @@ export async function renderRecipe(view, params, state) {
             ${view_.factor !== 1 ? `<p class="mb-2 text-xs text-slate-500">Amounts in the steps are for the recipe as written (${r.servings ? `${+r.servings} servings` : "×1"}).</p>` : ""}
             <ol class="space-y-3">${stepList(r, view_)}</ol>
           </div>
+          ${cookHistory(data.cooks, people, manage)}
           ${r.notes ? `<div class="card"><h2 class="mb-1 font-semibold">Our notes</h2><p class="whitespace-pre-line text-sm text-slate-300">${esc(r.notes)}</p></div>` : ""}
           ${r.storage ? `<div class="card"><h2 class="mb-1 font-semibold">Storage</h2><p class="whitespace-pre-line text-sm text-slate-300">${esc(r.storage)}</p></div>` : ""}
           ${source(r, manage)}
@@ -103,6 +106,9 @@ export async function renderRecipe(view, params, state) {
       attempt(load);
     }));
     $$("[data-sys]", view).forEach((b) => (b.onclick = () => { view_.system = b.dataset.sys; draw(); }));
+    const cooked = $("#cooked", view);
+    if (cooked) cooked.onclick = () => attempt(() => cookedSheet(r, load));
+    wireHistory(view, load);
     const reread = $("[data-reread]", view);
     if (reread) reread.onclick = () => attempt(() => readAgain(r, load));
     const cardOK = $("[data-cardok]", view);

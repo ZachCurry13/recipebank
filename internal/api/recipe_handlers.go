@@ -44,6 +44,9 @@ func (s *Server) writeChecked(w http.ResponseWriter, r *http.Request, rc *recipe
 	if rc.NeedsReview && rc.SourceKind == "photo" {
 		out["card_check"] = safety.CrossCheck(rc)
 	}
+	if rc.ID > 0 {
+		out["cooks"], _ = s.Store.CooksFor(rc.ID)
+	}
 	if rc.VersionOf != nil {
 		if orig, err := s.Store.Recipe(*rc.VersionOf); err == nil {
 			out["original"] = map[string]any{"id": orig.ID, "title": orig.Title}

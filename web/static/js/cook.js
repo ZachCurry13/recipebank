@@ -5,6 +5,7 @@ import { post, del } from "./api.js";
 import { temps, timersIn } from "./units.js";
 import { parts, stepText } from "./ingredients.js";
 import { canSpeak, canListen, voiceOn, setVoice, speak, stopSpeaking, listen } from "./cookvoice.js";
+import { cookedSheet } from "./cooked.js";
 
 let wake = null;
 const timers = []; // {label, ends, done}
@@ -138,7 +139,11 @@ export function startCooking(r, v) {
     const next = $("#cook-next", box);
     if (next) next.onclick = () => move(1);
     const done = $("#cook-done", box);
-    if (done) done.onclick = close;
+    if (done) done.onclick = () => {
+      close();
+      // How was it? (Kitchen recipes; the page shows it after saving.)
+      if (r.id && r.area !== "home") cookedSheet(r, () => window.dispatchEvent(new HashChangeEvent("hashchange"))).catch(() => {});
+    };
     $$("[data-timer]", box).forEach((b) => (b.onclick = () => startTimer(found[Number(b.dataset.timer)])));
     const voice = $("#cook-voice", box);
     if (voice) voice.onclick = () => { setVoice(!voiceOn()); if (voiceOn()) say(); draw(); };

@@ -27,6 +27,7 @@ type planRecipe struct {
 	Photo    string  `json:"photo"`
 	TotalMin int     `json:"total_min"`
 	Servings float64 `json:"servings"`
+	Liked    bool    `json:"liked,omitempty"` // the people eating liked it before
 }
 
 type planDay struct {

@@ -188,3 +188,20 @@ CREATE TABLE IF NOT EXISTS reading_hints (
     updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     UNIQUE (wrong, right_text)
 );
+
+-- Each time a recipe was cooked, and how each person liked it (1 or -1).
+CREATE TABLE IF NOT EXISTS cooks (
+    id         INTEGER PRIMARY KEY AUTOINCREMENT,
+    recipe_id  INTEGER NOT NULL REFERENCES recipes(id) ON DELETE CASCADE,
+    cooked_on  TEXT NOT NULL,
+    note       TEXT NOT NULL DEFAULT '',
+    added_by   TEXT NOT NULL DEFAULT '',
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+CREATE INDEX IF NOT EXISTS cooks_recipe ON cooks (recipe_id);
+CREATE TABLE IF NOT EXISTS cook_thumbs (
+    cook_id   INTEGER NOT NULL REFERENCES cooks(id) ON DELETE CASCADE,
+    person_id INTEGER NOT NULL REFERENCES people(id) ON DELETE CASCADE,
+    thumb     INTEGER NOT NULL CHECK (thumb IN (-1, 1)),
+    PRIMARY KEY (cook_id, person_id)
+);

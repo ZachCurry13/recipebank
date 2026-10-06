@@ -4,6 +4,7 @@ import (
 	"hash/fnv"
 	"math/rand"
 	"net/http"
+	"sort"
 	"time"
 
 	"github.com/zachcurry13/recipebank/internal/safety"
@@ -109,6 +110,19 @@ func (s *Server) ideas(date string, diners []safety.Person, n int) []planRecipe 
 	h := fnv.New64a()
 	h.Write([]byte(date))
 	rand.New(rand.NewSource(int64(h.Sum64()))).Shuffle(len(ok), func(i, j int) { ok[i], ok[j] = ok[j], ok[i] })
+	// Within the day's shuffle, what the people eating liked comes first.
+	if likes, err := s.Store.Likes(); err == nil {
+		cutoff := date
+		if d, err := time.Parse(day, date); err == nil {
+			cutoff = d.AddDate(0, 0, -6).Format(day)
+		}
+		tier := map[int64]int{}
+		for i := range ok {
+			tier[ok[i].ID] = likeTier(likes, ok[i].ID, diners, cutoff)
+			ok[i].Liked = tier[ok[i].ID] == 0
+		}
+		sort.SliceStable(ok, func(i, j int) bool { return tier[ok[i].ID] < tier[ok[j].ID] })
+	}
 	if len(ok) > n {
 		ok = ok[:n]
 	}

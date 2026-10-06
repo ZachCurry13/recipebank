@@ -40,7 +40,7 @@ export async function renderTonight(view, params, state) {
         <div class="grid gap-2 sm:grid-cols-2">${data.ideas.map((r) => `<div class="flex min-w-0 items-center gap-3 rounded-lg p-2 ring-1 ring-slate-800">
           ${r.photo ? `<img src="/api/photos/${esc(r.photo)}?w=480" alt="" class="h-14 w-14 shrink-0 rounded-lg object-cover">` : `<span class="text-3xl">🍲</span>`}
           <div class="min-w-0 flex-1"><a href="#/recipe/${r.id}" class="break-words font-medium hover:underline">${esc(r.title)}</a>
-            ${r.total_min ? `<div class="text-xs text-slate-400">${fmtMin(r.total_min)}</div>` : ""}</div>
+            <div class="text-xs text-slate-400">${r.total_min ? fmtMin(r.total_min) : ""}${r.liked ? `${r.total_min ? " · " : ""}👍 liked before` : ""}</div></div>
           ${manage ? `<button data-plan="${r.id}" class="btn-secondary min-h-0 py-1">Plan it</button>` : ""}</div>`).join("")}</div>`
         : `<p class="text-sm text-slate-400">No saved recipe suits everyone eating yet.</p>`}
       <div class="flex flex-wrap gap-2"><a href="#/make" class="btn-secondary">🥕 What can I make?</a>

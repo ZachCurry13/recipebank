@@ -70,7 +70,7 @@ the catch-ups and new ideas below. Build in this order:
    AI-drafted recipe (labelled a best guess) through the normal draft and checks.
 3. [ ] **Photo double-check:** (folded into 0b) a second AI pass on card/page photos fixes spelling and flags odd amounts
    ("1 cup salt" in cookies) as lines to check; never changes amounts silently.
-4. [ ] **Cooked it + 👍/👎:** log a cook with each person's thumbs; Tonight's ideas and suggestions favor what
+4. [x] (cooks + cook_thumbs tables, js/cooked.js, /api/recipes/{id}/cooks, likeTier in Tonight ideas) **Cooked it + 👍/👎:** log a cook with each person's thumbs; Tonight's ideas and suggestions favor what
    the family liked; the recipe page shows the history.
 5. [ ] **Nutrition estimates:** per serving from USDA FoodData Central (a free key the user signs up for,
    Admin → Nutrition), labelled an estimate; cached per food.
