@@ -2,8 +2,10 @@ package api
 
 import (
 	"context"
+	"encoding/base64"
 	"errors"
 	"net/http"
+	"net/url"
 	"regexp"
 	"strings"
 	"time"
@@ -153,7 +155,40 @@ func (s *Server) handleLookupBarcode(w http.ResponseWriter, r *http.Request) {
 		writeErr(w, http.StatusBadGateway, err.Error())
 		return
 	}
+	p.Photo = s.productPhoto(ctx, p)
 	writeJSON(w, http.StatusOK, map[string]any{"product": p})
+}
+
+// productPhoto fetches the database's small front-of-package photo as a
+// data: URL, so the person can see the scan found the right thing (the page
+// shows only its own images). Any failure just means no photo.
+func (s *Server) productPhoto(ctx context.Context, p foodfacts.Product) string {
+	img, err := url.Parse(p.ImageURL)
+	base, berr := url.Parse(p.Source)
+	if p.ImageURL == "" || err != nil || berr != nil || !sameSite(img.Hostname(), base.Hostname()) {
+		return ""
+	}
+	data, _, err := s.fetch(ctx, p.ImageURL, 300<<10)
+	if err != nil {
+		return ""
+	}
+	switch mt := http.DetectContentType(data); mt {
+	case "image/jpeg", "image/png", "image/webp", "image/gif":
+		return "data:" + mt + ";base64," + base64.StdEncoding.EncodeToString(data)
+	}
+	return ""
+}
+
+// sameSite: images.openfoodfacts.org belongs with world.openfoodfacts.org.
+func sameSite(a, b string) bool {
+	site := func(h string) string {
+		parts := strings.Split(h, ".")
+		if len(parts) > 2 {
+			parts = parts[len(parts)-2:]
+		}
+		return strings.Join(parts, ".")
+	}
+	return a != "" && site(a) == site(b)
 }
 
 // pantryHint is a pantry product whose label can settle a "not sure" line.

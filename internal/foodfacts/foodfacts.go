@@ -25,7 +25,9 @@ type Product struct {
 	Allergens       []string `json:"allergens"`
 	Traces          []string `json:"traces"`
 	IngredientsText string   `json:"ingredients_text"`
-	Source          string   `json:"source"` // which database answered
+	Source          string   `json:"source"`          // which database answered
+	ImageURL        string   `json:"-"`               // the database's small front-of-package photo
+	Photo           string   `json:"photo,omitempty"` // that photo as a data: URL, filled in by the server
 }
 
 // Client looks products up. Bases are tried in order; tests point them at a fake.
@@ -77,7 +79,7 @@ func (c Client) Lookup(ctx context.Context, barcode string) (Product, error) {
 }
 
 func (c Client) one(ctx context.Context, base, barcode string) (Product, error) {
-	url := fmt.Sprintf("%s/api/v2/product/%s.json?fields=product_name,brands,quantity,allergens_tags,traces_tags,ingredients_text", strings.TrimRight(base, "/"), barcode)
+	url := fmt.Sprintf("%s/api/v2/product/%s.json?fields=product_name,brands,quantity,allergens_tags,traces_tags,ingredients_text,image_front_small_url", strings.TrimRight(base, "/"), barcode)
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
 	if err != nil {
 		return Product{}, err
@@ -107,6 +109,7 @@ func (c Client) one(ctx context.Context, base, barcode string) (Product, error) 
 			Allergens   []string `json:"allergens_tags"`
 			Traces      []string `json:"traces_tags"`
 			Ingredients string   `json:"ingredients_text"`
+			Image       string   `json:"image_front_small_url"`
 		} `json:"product"`
 	}
 	if err := json.NewDecoder(io.LimitReader(resp.Body, 2<<20)).Decode(&body); err != nil {
@@ -118,7 +121,8 @@ func (c Client) one(ctx context.Context, base, barcode string) (Product, error) 
 	brand, _, _ := strings.Cut(body.Product.Brands, ",")
 	return Product{Barcode: barcode, Name: strings.TrimSpace(body.Product.Name), Brand: strings.TrimSpace(brand),
 		Quantity: strings.TrimSpace(body.Product.Quantity), Allergens: Keys(body.Product.Allergens),
-		Traces: Keys(body.Product.Traces), IngredientsText: strings.TrimSpace(body.Product.Ingredients), Source: base}, nil
+		Traces: Keys(body.Product.Traces), IngredientsText: strings.TrimSpace(body.Product.Ingredients), Source: base,
+		ImageURL: strings.TrimSpace(body.Product.Image)}, nil
 }
 
 // tagKeys turns Open Food Facts allergen tags into RecipeBank's allergen

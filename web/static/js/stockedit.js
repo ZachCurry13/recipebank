@@ -20,6 +20,12 @@ export function editStock(area, item, state, done, prefill = {}) {
       <div class="flex items-center"><h2 class="text-lg font-semibold">${it.id ? "Edit" : "Add"} ${area === "home" ? "a supply" : "to the pantry"}</h2>
         <button type="button" data-close class="btn-ghost ml-auto">✕</button></div>
       ${prefill.note ? `<p class="box-info">${esc(prefill.note)}</p>` : ""}
+      ${prefill.scanned ? `<div class="box-info flex items-center gap-3">
+        ${prefill.photo ? `<img src="${esc(prefill.photo)}" alt="The package, from the product database" class="h-20 w-16 shrink-0 rounded bg-white object-contain">` : ""}
+        <div class="min-w-0 flex-1 text-sm"><p class="font-semibold">Is this what you scanned?</p>
+          <p class="break-words">${esc(it.name)}${it.brand ? ` · ${esc(it.brand)}` : ""}${prefill.size ? ` · ${esc(prefill.size)}` : ""}</p>
+          <p class="text-xs text-slate-500">Barcode ${esc(prefill.scanned)}</p>
+          <button type="button" id="rescan" class="btn-ghost mt-1 min-h-0 py-1">✕ Not it: scan again</button></div></div>` : ""}
       <label class="block"><span class="label">Name</span><input name="name" required maxlength="120" class="input" value="${esc(it.name)}"></label>
       <label class="block"><span class="label">Brand</span><input name="brand" class="input" value="${esc(it.brand)}"></label>
       <div class="grid grid-cols-2 gap-3">
@@ -53,12 +59,17 @@ export function editStock(area, item, state, done, prefill = {}) {
       barcode: f.barcode.value.trim(), allergens: picked("has"), traces: picked("may"),
       label_source: f.read.checked ? (labelChanged || !it.label_source ? "parent" : it.label_source) : "" };
     delete body.note;
+    delete body.photo;
+    delete body.scanned;
+    delete body.size;
     attempt(async () => {
       await (it.id ? put(`/api/stock/${it.id}`, body) : post("/api/stock", body));
       d.close();
       done();
     }, "Saved");
   };
+  const rescan = $("#rescan", d);
+  if (rescan) rescan.onclick = () => { d.close(); scanStock(area, state, done); };
   const rm = $("#rm", d);
   if (rm) rm.onclick = () => {
     if (confirm(`Remove ${it.name}?`)) attempt(async () => { await del(`/api/stock/${it.id}`); d.close(); done(); });
@@ -91,18 +102,14 @@ export function scanStock(area, state, done) {
     } catch (e) {
       if (e.status !== 404) return say(e.message, true);
       d.close();
-      return editStock(area, null, state, done, { barcode: code, note: "That barcode isn't in the open product databases yet. Type the name, and tick what the label lists." });
+      return editStock(area, null, state, done, { barcode: code, note: `Barcode ${code} isn't in the open product databases yet. Type the name, and tick what the label lists.` });
     }
-    if (res.existing) {
-      const it = await post(`/api/stock/${res.existing.id}/adjust`, { delta: 1 });
-      d.close();
-      toast(`${it.name}: now ${+it.qty.toFixed(2)}`);
-      return done();
-    }
+    if (res.existing) return confirmOneMore(res.existing, code, area, state, done);
     const p = res.product;
     d.close();
     editStock(area, null, state, done, { name: p.name, brand: p.brand, barcode: code, allergens: p.allergens, traces: p.traces,
-      ingredients_text: p.ingredients_text, label_source: "off", note: p.quantity ? `Package: ${p.quantity}` : "" });
+      ingredients_text: p.ingredients_text, label_source: "off", size: p.quantity || "",
+      photo: p.photo || "", scanned: code });
   };
   $("#ph", d).onchange = (e) => attempt(async () => {
     const f = e.target.files[0];
@@ -116,4 +123,22 @@ export function scanStock(area, state, done) {
     if (code) await look(code);
   });
   $("#typed", d).onsubmit = (e) => { e.preventDefault(); attempt(() => look(e.target.code.value.trim())); };
+}
+
+// confirmOneMore asks before counting one more of something already in the
+// house, so a misread barcode never quietly changes the wrong item.
+function confirmOneMore(ex, code, area, state, done) {
+  const d = sheet(`<div class="space-y-3">
+    <div class="flex items-center"><h2 class="text-lg font-semibold">Is this it?</h2><button type="button" data-close class="btn-ghost ml-auto">✕</button></div>
+    <p class="break-words text-lg">${esc(ex.name)}${ex.brand ? ` <span class="text-slate-400">· ${esc(ex.brand)}</span>` : ""}</p>
+    <p class="text-sm text-slate-400">In the house: ${+ex.qty.toFixed(2)}${ex.unit ? " " + esc(ex.unit) : ""} · barcode ${esc(code)}</p>
+    <div class="flex flex-wrap gap-2"><button type="button" id="one" class="btn-primary">✓ Yes, add one</button>
+      <button type="button" id="again" class="btn-secondary">✕ Not it: scan again</button></div></div>`);
+  $("#one", d).onclick = () => attempt(async () => {
+    const it = await post(`/api/stock/${ex.id}/adjust`, { delta: 1 });
+    d.close();
+    toast(`${it.name}: now ${+it.qty.toFixed(2)}`);
+    done();
+  });
+  $("#again", d).onclick = () => { d.close(); scanStock(area, state, done); };
 }

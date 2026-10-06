@@ -58,6 +58,9 @@ the catch-ups and new ideas below. Build in this order:
    what you don't have → ideas from the substitution table, the allergy swaps and (on request) the AI, only
    ones that suit everyone eating (OKForAll), pantry items first ("✓ You have it"), "+ List" adds to shopping.
    POST /api/recipes/{id}/substitute, js/substitute.js. The AI sees only the title, the line and the pantry.
+0d. [x] **Scan confirmation** (the user asked 2026-10-06): a scanned product shows "Is this what you scanned?" with
+   the package photo (fetched by the server from the database's own image host, sent as a data: URL because of
+   the CSP), name, brand, size and the digits; something already in the house asks "Is this it?" before +1.
 1. [ ] **What can I make?** (backend started) Tick what's on hand (pantry items pre-ticked, extras typed) or photograph the
    fridge/pantry (vision AI lists foods; the person confirms). Recipes ranked by coverage; **food near its
    use-by date first ("use it up")**; what's missing, with swaps from the table and **AI swap ideas from what's
@@ -108,8 +111,11 @@ lost once and test data landed in the repo folder).
 
 ## 6. Not built yet
 
-"What can I make?" (photo of the fridge or ticked items), dish photo → recipe ideas, cookbooks and the
-to-digitize pile, share from phone and printing / family cookbook PDF, kitchen tablet with PINs (only if
+From the original notes (checked again 2026-10-06), not built or planned yet: budget (prices per item, a
+weekly estimate, cost per recipe), difficulty, planned leftovers ("Monday's roast into Tuesday's tacos"; only
+free-text plan entries now), emailing a recipe or the list, events (holiday menus, potlucks, guests per meal),
+kid skills (declined for now). Also: "What can I make?" (photo of the fridge or ticked items), dish photo →
+recipe ideas, cookbooks and the to-digitize pile, share from phone and printing / family cookbook PDF, kitchen tablet with PINs (only if
 wanted), Mealie/Tandoor/Paprika imports (to review with the user), Google Cast, update banner, embedding-model
 search ranking.
 

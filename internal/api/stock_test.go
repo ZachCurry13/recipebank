@@ -12,9 +12,19 @@ import (
 
 func TestStockAndPantryHints(t *testing.T) {
 	c, srv := setup(t)
-	off := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	var off *httptest.Server
+	off = httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path == "/front.jpg" {
+			w.Write(jpegBytes(40, 60))
+			return
+		}
 		if strings.Contains(r.URL.Path, "0051000012616") {
-			w.Write([]byte(`{"status":1,"product":{"product_name":"Chicken Broth","brands":"Brand A","allergens_tags":["en:celery"],"traces_tags":[]}}`))
+			w.Write([]byte(`{"status":1,"product":{"product_name":"Chicken Broth","brands":"Brand A","allergens_tags":["en:celery"],"traces_tags":[],
+				"image_front_small_url":"` + off.URL + `/front.jpg"}}`))
+			return
+		}
+		if strings.Contains(r.URL.Path, "0012000001536") {
+			w.Write([]byte(`{"status":1,"product":{"product_name":"Cola","image_front_small_url":"https://elsewhere.example/x.jpg"}}`))
 			return
 		}
 		w.Write([]byte(`{"status":0}`))
@@ -27,10 +37,24 @@ func TestStockAndPantryHints(t *testing.T) {
 		Product struct {
 			Name      string   `json:"name"`
 			Allergens []string `json:"allergens"`
+			Photo     string   `json:"photo"`
 		} `json:"product"`
 	}
 	if code := c.do("GET", "/api/stock/lookup?barcode=0051000012616&area=kitchen", nil, &found); code != 200 || found.Product.Name != "Chicken Broth" {
 		t.Fatalf("lookup: %d %+v", code, found)
+	}
+	// The package photo comes along so the person can see it's the right thing.
+	if !strings.HasPrefix(found.Product.Photo, "data:image/jpeg;base64,") {
+		t.Fatalf("no package photo: %.40q", found.Product.Photo)
+	}
+	var cola struct {
+		Product struct {
+			Name  string `json:"name"`
+			Photo string `json:"photo"`
+		} `json:"product"`
+	}
+	if code := c.do("GET", "/api/stock/lookup?barcode=0012000001536&area=kitchen", nil, &cola); code != 200 || cola.Product.Name != "Cola" || cola.Product.Photo != "" {
+		t.Fatalf("a photo from a site that isn't the database's: %d %+v", code, cola)
 	}
 	if code := c.do("GET", "/api/stock/lookup?barcode=4006381333931&area=kitchen", nil, nil); code != 404 {
 		t.Fatalf("unknown barcode: %d", code)
