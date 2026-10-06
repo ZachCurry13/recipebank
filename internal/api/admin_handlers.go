@@ -21,7 +21,7 @@ var editableKeys = map[string]bool{
 	store.KeyLLMTimeoutSeconds: true, store.KeySessionDays: true, store.KeyAllergenList: true, store.KeyDefaultUnits: true,
 	store.KeyMorningHour: true, store.KeyTonightHour: true, store.KeyCheckUpdates: true,
 	store.KeyUSDAKey: true, store.KeySMTPHost: true, store.KeySMTPPort: true, store.KeySMTPUser: true,
-	store.KeySMTPPassword: true, store.KeySMTPFrom: true, store.KeyCurrency: true, store.KeyBudgetWeekly: true,
+	store.KeySMTPPassword: true, store.KeySMTPFrom: true, store.KeyCurrency: true, store.KeyBudgetWeekly: true, store.KeyEmailWho: true,
 }
 
 func (s *Server) handleGetSettings(w http.ResponseWriter, r *http.Request) {

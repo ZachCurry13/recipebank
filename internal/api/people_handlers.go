@@ -19,6 +19,7 @@ func (s *Server) handleInfo(w http.ResponseWriter, r *http.Request) {
 		"pets":          s.Store.Pets(),
 		"ai_ready":      s.Store.AIConfig().Ready(),
 		"email_ready":   s.emailReady(),
+		"email_who":     s.Store.Setting(store.KeyEmailWho),
 		"currency":      s.Store.Setting(store.KeyCurrency),
 		"default_units": s.Store.Setting(store.KeyDefaultUnits),
 	})

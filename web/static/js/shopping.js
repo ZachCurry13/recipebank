@@ -1,7 +1,7 @@
 // The shopping list: shared by the family, grouped by store section, and
 // usable in the store without signal (ticks are sent once back online).
 import { get, post, put, del } from "./api.js";
-import { $, $$, esc, attempt, toast, money } from "./ui.js";
+import { $, $$, esc, attempt, toast, money, canEmail } from "./ui.js";
 
 // budgetCard: about what the list costs, from the pantry's prices, against
 // the weekly budget if one is set.
@@ -91,7 +91,7 @@ export async function renderShopping(view, params, state) {
     view.innerHTML = `
       <h1 class="text-2xl font-bold">🛒 Shopping list</h1>
       <p class="mb-4 text-sm text-slate-400">One list for the whole family. Add recipes from their page, or type things here.</p>
-      ${!offline && open.length ? `<button id="mail-list" class="btn-ghost mb-3 min-h-0 py-1">✉️ Email the list</button>` : ""}
+      ${!offline && open.length && canEmail(state) ? `<button id="mail-list" class="btn-ghost mb-3 min-h-0 py-1">✉️ Email the list</button>` : ""}
       ${!offline ? budgetCard(data.budget, currency) : ""}
       ${offline ? `<p class="box-caution mb-4">Offline: showing the list saved on this phone. Ticks are kept and sent when you're back online.</p>` : ""}
       ${offline ? "" : `<form id="add" class="mb-4 flex flex-wrap gap-2"><input name="text" class="input min-w-0 flex-1 basis-48" placeholder="Add something: 2 lb apples, milk" autocomplete="off">

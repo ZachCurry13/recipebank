@@ -51,9 +51,18 @@ func (s *Server) mailConfig() mail.Config {
 
 func (s *Server) emailReady() bool { return s.mailConfig().Validate() == nil }
 
+// mayEmail: parents always; everyone else when Admin → Email allows it.
+func (s *Server) mayEmail(u *store.User) bool {
+	return u != nil && (u.CanManage() || s.Store.Setting(store.KeyEmailWho) == "everyone")
+}
+
 // sendMail sends m for the signed-in person, within their hourly limit.
 func (s *Server) sendMail(w http.ResponseWriter, r *http.Request, m mail.Message) {
 	u := auth.UserFrom(r)
+	if !s.mayEmail(u) {
+		writeErr(w, http.StatusForbidden, "only parents can send email (Admin → Email)")
+		return
+	}
 	if _, err := mail.Address(m.To); err != nil {
 		writeErr(w, http.StatusBadRequest, err.Error())
 		return

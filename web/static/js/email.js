@@ -49,13 +49,16 @@ export function renderEmailAdmin(box, s) {
     <label class="block"><span class="label">Password ${s.smtp_password_set ? "(saved; leave blank to keep it)" : ""}</span>
       <input name="smtp_password" type="password" autocomplete="new-password" class="input"></label>
     <label class="block"><span class="label">Send from</span><input name="smtp_from" type="email" class="input" value="${esc(s.smtp_from || "")}" placeholder="you@gmail.com"></label>
+    <label class="block"><span class="label">Who can send email</span><select name="email_who" class="input">
+      <option value="parents" ${s.email_who !== "everyone" ? "selected" : ""}>Parents only</option>
+      <option value="everyone" ${s.email_who === "everyone" ? "selected" : ""}>Everyone, kids too</option></select></label>
     <div class="flex flex-wrap gap-2"><button class="btn-primary">Save</button>
       <input id="mail-test-to" type="email" class="input min-w-0 flex-1 basis-40" placeholder="Send a test to…" aria-label="Test address">
       <button type="button" id="mail-test" class="btn-secondary">Send a test</button></div></form>`;
   const f = $("#mail-admin", box);
   f.onsubmit = (e) => {
     e.preventDefault();
-    const body = Object.fromEntries(["smtp_host", "smtp_port", "smtp_username", "smtp_password", "smtp_from"].map((k) => [k, f[k].value.trim()]));
+    const body = Object.fromEntries(["smtp_host", "smtp_port", "smtp_username", "smtp_password", "smtp_from", "email_who"].map((k) => [k, f[k].value.trim()]));
     attempt(async () => { await put("/api/admin/settings", body); f.smtp_password.value = ""; await refreshInfo(); }, "Saved");
   };
   $("#mail-test", box).onclick = (e) => attempt(() => busy(e.currentTarget, "Sending…", async () => {

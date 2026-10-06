@@ -2,6 +2,8 @@ package api
 
 import (
 	"fmt"
+	"net/http"
+	"net/http/cookiejar"
 	"strings"
 	"testing"
 
@@ -59,6 +61,19 @@ func TestEmailRecipeAndList(t *testing.T) {
 	if code := c.do("POST", path, map[string]string{"to": "mom@example.com"}, nil); code != 429 {
 		t.Fatalf("over the hourly limit: %d", code)
 	}
+	// Kids can send only when Admin → Email allows everyone.
+	c.do("POST", "/api/admin/users", map[string]string{"username": "kid", "password": "password123", "role": "kid"}, nil)
+	jar, _ := cookiejar.New(nil)
+	kid := &client{t: t, base: c.base, http: &http.Client{Jar: jar}}
+	kid.do("POST", "/api/auth/login", map[string]string{"username": "kid", "password": "password123"}, nil)
+	if code := kid.do("POST", "/api/shopping/email", map[string]string{"to": "dad@example.com"}, nil); code != 403 {
+		t.Fatalf("a kid emailed with parents only: %d", code)
+	}
+	_ = srv.Store.SetSetting(store.KeyEmailWho, "everyone")
+	if code := kid.do("POST", "/api/shopping/email", map[string]string{"to": "dad@example.com"}, nil); code == 403 {
+		t.Fatal("a kid can't email when everyone may")
+	}
+
 	var settings map[string]any
 	_ = srv.Store.SetSetting(store.KeySMTPPassword, "hunter2")
 	c.do("GET", "/api/admin/settings", nil, &settings)

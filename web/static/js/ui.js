@@ -58,6 +58,8 @@ export async function busy(btn, label, fn) {
 }
 
 export const canManage = (user) => user?.role === "admin" || user?.role === "editor";
+// canEmail: parents, or everyone when Admin → Email allows it.
+export const canEmail = (state) => canManage(state.user) || state.info?.email_who === "everyone";
 
 export function fmtMin(m) {
   if (!m) return "";
