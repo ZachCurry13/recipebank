@@ -14,9 +14,17 @@ import (
 
 // size reads a package size: "16 oz" → 16 oz, "12 count" or "12" → 12 (a count).
 func size(s string) (qty float64, unit string, ok bool) {
-	in := recipe.ParseLine(s)
+	s = strings.TrimSpace(s)
+	if s == "" {
+		return 0, "", false
+	}
+	// " pack" after it lets a one-letter unit count ("500 g", "1.5 L").
+	in := recipe.ParseLine(s + " pack")
 	if in.Qty == nil || *in.Qty <= 0 {
 		return 0, "", false
+	}
+	if in.Unit == "" && strings.Contains(strings.ToLower(s), "dozen") {
+		return *in.Qty * 12, "", true
 	}
 	return *in.Qty, in.Unit, true
 }

@@ -67,3 +67,19 @@ func TestRecipeAndShopping(t *testing.T) {
 		t.Fatalf("shopping: %+v %v", sc, costs)
 	}
 }
+
+func TestPackageSizes(t *testing.T) {
+	for _, c := range []struct {
+		in   string
+		qty  float64
+		unit string
+	}{{"500g", 500, "g"}, {"500 g", 500, "g"}, {"16oz", 16, "oz"}, {"1.5 L", 1.5, "l"}, {"1 dozen", 12, ""},
+		{"12 count", 12, ""}, {"6", 6, ""}, {"2 lb", 2, "lb"}, {"750ml", 750, "ml"}} {
+		if q, u, ok := size(c.in); !ok || !near(q, c.qty) || u != c.unit {
+			t.Errorf("%q: %v %q %v", c.in, q, u, ok)
+		}
+	}
+	if _, _, ok := size(""); ok {
+		t.Error("no size")
+	}
+}
