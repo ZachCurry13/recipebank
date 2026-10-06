@@ -108,7 +108,7 @@ Bugs fixed first (0.3.0 review): ingredient lines "2 x 400g tins", "1 tbsp + 1 t
 no-undef), every page at 360×760, bad input on new endpoints, Kitchen list speed with 400 recipes (45 ms).
 
 Build in this order (each with tests, phone checks, a commit):
-1. [ ] **Difficulty:** recipes.difficulty ('' = worked out from time, steps, ingredients and techniques); chip on
+1. [x] **Difficulty:** recipes.difficulty ('' = worked out from time, steps, ingredients and techniques); chip on
    cards and the recipe page; editor choice; Library filter; "easy" in smart search.
 2. [ ] **Planned leftovers:** a plan meal can be "Leftovers from" an earlier planned recipe; the earlier meal's
    servings grow to cover it, the shopping list skips the leftovers meal, Tonight says what to reheat.

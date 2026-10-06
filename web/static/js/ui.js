@@ -68,6 +68,10 @@ export function fmtMin(m) {
 
 export const HEAT = ["No heat", "Mild", "Warm", "Hot", "Very hot", "Extreme"];
 
+// levelChip shows a recipe's difficulty.
+export const LEVELS = { easy: "🟢 Easy", medium: "🟡 Medium", hard: "🔴 Hard" };
+export const levelChip = (level) => (LEVELS[level] ? `<span class="chip-info" title="How hard it is to make">${LEVELS[level]}</span>` : "");
+
 export function peppers(level) {
   if (level === undefined || level === null || level < 0) return "";
   if (level === 0) return `<span class="chip-info" title="No heat">No heat</span>`;

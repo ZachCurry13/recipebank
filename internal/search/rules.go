@@ -14,6 +14,7 @@ type Rules struct {
 	MaxMin   int      `json:"max_min"`  // 0 = any time
 	Everyone bool     `json:"everyone"` // OK for everyone eating
 	Quick    bool     `json:"quick"`    // "quick", "fast", "easy weeknight": 30 minutes unless a time is given
+	Easy     bool     `json:"easy"`     // "easy", "simple", "beginner": nothing hard to make
 }
 
 var dietWords = []struct {
@@ -34,6 +35,7 @@ var dietWords = []struct {
 var (
 	minutesRE = regexp.MustCompile(`(?i)(?:under|less than|within|in|max(?:imum)?|no more than)\s+(\d{1,3})\s*(?:minutes|mins?|m\b)|(\d{1,3})\s*(?:minutes|mins?)\s*(?:or less|max)`)
 	hoursRE   = regexp.MustCompile(`(?i)(?:under|less than|within|in)\s+(?:an?|one|1)\s+hour`)
+	easyRE    = regexp.MustCompile(`(?i)\b(easy|simple|beginners?|no[- ]fuss)\b`)
 	quickRE   = regexp.MustCompile(`(?i)\b(quick|fast|speedy|weeknight|busy night|in a hurry)\b`)
 	everyRE   = regexp.MustCompile(`(?i)\b(everyone|everybody|whole family|all of us|the family) (can|could) (eat|have)|\bsafe for (everyone|all)\b|\bfor everyone\b`)
 )
@@ -66,6 +68,7 @@ func Parse(text string) Rules {
 		}
 	}
 	r.Everyone = everyRE.MatchString(text)
+	r.Easy = easyRE.MatchString(text)
 	if r.Diets == nil {
 		r.Diets = []string{}
 	}

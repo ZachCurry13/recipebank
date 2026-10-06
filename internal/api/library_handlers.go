@@ -23,6 +23,7 @@ type recipeCard struct {
 	Protein     string   `json:"protein"`
 	Rating      int      `json:"rating"`
 	NeedsReview bool     `json:"needs_review"`
+	Level       string   `json:"level"` // easy, medium or hard (chosen or worked out)
 	Verdicts    []status `json:"verdicts"`
 }
 
@@ -59,7 +60,8 @@ func (s *Server) handleListRecipes(w http.ResponseWriter, r *http.Request) {
 		if search != "" && !strings.Contains(rc.Text(), search) ||
 			maxMin > 0 && (rc.TotalMin == 0 || rc.TotalMin > maxMin) ||
 			heatErr == nil && heat > maxHeat ||
-			!matches(q.Get("course"), rc.Course) || !matches(q.Get("cuisine"), rc.Cuisine) || !matches(q.Get("protein"), rc.Protein) {
+			!matches(q.Get("course"), rc.Course) || !matches(q.Get("cuisine"), rc.Cuisine) || !matches(q.Get("protein"), rc.Protein) ||
+			q.Get("level") != "" && rc.Level() != q.Get("level") {
 			continue
 		}
 		if diet != "" && safety.Check(rc, safety.Person{HeatMax: -1, Diets: []string{diet}}).Status != safety.OK {
@@ -82,7 +84,7 @@ func (s *Server) handleListRecipes(w http.ResponseWriter, r *http.Request) {
 // cardFor is a recipe's Library card, and the worst verdict among diners.
 func cardFor(rc *recipe.Recipe, diners []safety.Person) (recipeCard, string) {
 	card := recipeCard{ID: rc.ID, Area: rc.Area, Title: rc.Title, Photo: rc.Photo, TotalMin: rc.TotalMin, Heat: heatOf(rc),
-		Course: rc.Course, Cuisine: rc.Cuisine, Protein: rc.Protein, Rating: rc.Rating, NeedsReview: rc.NeedsReview,
+		Course: rc.Course, Cuisine: rc.Cuisine, Protein: rc.Protein, Rating: rc.Rating, NeedsReview: rc.NeedsReview, Level: rc.Level(),
 		Verdicts: []status{}}
 	worst := safety.OK
 	for _, p := range diners {

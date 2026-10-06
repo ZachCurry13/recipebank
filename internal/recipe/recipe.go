@@ -38,6 +38,7 @@ type Recipe struct {
 	NeedsReview  bool         `db:"needs_review" json:"needs_review"`
 	ReadBy       string       `db:"read_by" json:"read_by"`       // the AI model that read the photos
 	AIReading    string       `db:"ai_reading" json:"ai_reading"` // what it copied from them, as plain text
+	Difficulty   string       `db:"difficulty" json:"difficulty"` // easy, medium, hard; "" = worked out (Level)
 	Rating       int          `db:"rating" json:"rating"`
 	VersionOf    *int64       `db:"version_of" json:"version_of"`
 	CreatedBy    string       `db:"created_by" json:"created_by"`
@@ -85,6 +86,11 @@ func (r *Recipe) Clean() {
 	}
 	if r.TotalMin == 0 && (r.PrepMin > 0 || r.CookMin > 0) {
 		r.TotalMin = r.PrepMin + r.CookMin
+	}
+	switch r.Difficulty {
+	case Easy, Medium, Hard:
+	default:
+		r.Difficulty = ""
 	}
 	switch r.SourceKind {
 	case "web", "photo", "text", "manual", "ai": // "ai": drafted by the AI from a photo of a dish

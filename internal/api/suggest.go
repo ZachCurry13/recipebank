@@ -84,7 +84,7 @@ func (s *Server) suggest(ctx context.Context, r *http.Request, area, request str
 	if !out.UsedAI {
 		// Recipes sharing the request's words; when none do but the request
 		// has rules ("quick dairy-free"), the rules alone choose.
-		rules := len(out.Rules.Diets) > 0 || out.Rules.MaxMin > 0 || out.Rules.Everyone
+		rules := len(out.Rules.Diets) > 0 || out.Rules.MaxMin > 0 || out.Rules.Everyone || out.Rules.Easy
 		for _, c := range cands {
 			byID[c.rc.ID] = c.rc
 			if c.score > 0 {
@@ -113,7 +113,11 @@ func (s *Server) suggest(ctx context.Context, r *http.Request, area, request str
 			break
 		}
 		rc := byID[id]
-		if ok, reason := keepIf(rc, out.Rules.Diets, out.Rules.MaxMin, everyone); !ok {
+		ok, reason := keepIf(rc, out.Rules.Diets, out.Rules.MaxMin, everyone)
+		if ok && out.Rules.Easy && rc.Level() == recipe.Hard {
+			ok, reason = false, "harder to make"
+		}
+		if !ok {
 			out.LeftOut = append(out.LeftOut, leftOut{rc.ID, rc.Title, reason})
 			continue
 		}

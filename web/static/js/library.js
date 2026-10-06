@@ -1,6 +1,6 @@
 // The Library: Kitchen or Home & Care recipes, filtered, with each diner's verdict.
 import { get, qs } from "./api.js";
-import { $, $$, esc, fmtMin, peppers, stars, canManage, cap, HOME_CATS } from "./ui.js";
+import { $, $$, esc, fmtMin, peppers, stars, canManage, cap, HOME_CATS, LEVELS, levelChip } from "./ui.js";
 import { verdictChips } from "./verdicts.js";
 import { localDate } from "./planpick.js";
 import { askRecipes } from "./ask.js";
@@ -48,7 +48,9 @@ export async function renderLibrary(view, area, params, state) {
         <label><span class="label">Diet</span><select id="diet" class="input"><option value="">Any</option>${(state.info?.diets || []).map((d) =>
           `<option value="${d.key}" ${f.diet === d.key ? "selected" : ""}>${esc(d.label)}</option>`).join("")}</select></label>
         <label><span class="label">Heat</span><select id="heat" class="input"><option value="">Any</option>${[0, 1, 2, 3, 4].map((h) =>
-          `<option value="${h}" ${f.heat === String(h) ? "selected" : ""}>${h ? "Up to " + "🌶️".repeat(h) : "No heat"}</option>`).join("")}</select></label>`}
+          `<option value="${h}" ${f.heat === String(h) ? "selected" : ""}>${h ? "Up to " + "🌶️".repeat(h) : "No heat"}</option>`).join("")}</select></label>
+        <label><span class="label">How hard</span><select id="level" class="input"><option value="">Any</option>${Object.entries(LEVELS).map(([k, l]) =>
+          `<option value="${k}" ${f.level === k ? "selected" : ""}>${l}</option>`).join("")}</select></label>`}
       </div>
       <div id="facets" class="mt-3 grid gap-3 sm:grid-cols-3"></div>
       </details>
@@ -59,7 +61,7 @@ export async function renderLibrary(view, area, params, state) {
   const load = async () => {
     const q = isQuestion(f.q) ? "" : f.q;
     const data = await get("/api/recipes" + qs({ area, who: f.who.join(",") || "0", q, ok: f.ok, max_min: f.max_min,
-      diet: f.diet, heat: f.heat, course: f.course, cuisine: f.cuisine, protein: f.protein }));
+      diet: f.diet, heat: f.heat, level: f.level, course: f.course, cuisine: f.cuisine, protein: f.protein }));
     if (!home) renderFacets(data.facets, f, load);
     renderCards(data.recipes, area, f);
   };
@@ -83,7 +85,7 @@ export async function renderLibrary(view, area, params, state) {
     b.classList.toggle("on");
     load();
   }));
-  for (const key of ["ok", "course", "max_min", "diet", "heat"]) {
+  for (const key of ["ok", "course", "max_min", "diet", "heat", "level"]) {
     const el = $("#" + key);
     if (el) el.onchange = () => { f[key] = el.value; load(); };
   }
@@ -127,7 +129,7 @@ export function cardGrid(list, area, remove = false) {
           <h2 class="break-words font-semibold leading-snug">${esc(r.title)}</h2>
           <div class="flex flex-wrap items-center gap-1 text-xs text-slate-400">
             ${r.total_min ? `<span class="chip-info">⏱ ${fmtMin(r.total_min)}</span>` : ""}
-            ${area === "kitchen" ? peppers(r.heat) : ""}
+            ${area === "kitchen" ? peppers(r.heat) + levelChip(r.level) : ""}
             ${r.course ? `<span class="chip-cat">${esc(cap(r.course))}</span>` : ""}
             ${r.needs_review ? `<span class="chip-unsure" title="The AI wasn't sure about some lines">? Check lines</span>` : ""}
             ${stars(r.rating)}
@@ -139,7 +141,7 @@ export function cardGrid(list, area, remove = false) {
 
 // filtered: any filter beyond search and who's eating is on.
 function filtered(f) {
-  return Boolean(f.ok || f.max_min || f.diet || f.heat || f.course || f.cuisine || f.protein);
+  return Boolean(f.ok || f.max_min || f.diet || f.heat || f.level || f.course || f.cuisine || f.protein);
 }
 
 // isQuestion: three words or more is a question for Ask, not a word search.

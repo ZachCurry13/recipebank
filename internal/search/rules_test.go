@@ -21,3 +21,9 @@ func TestParse(t *testing.T) {
 		t.Errorf("keywords %v", k)
 	}
 }
+
+func TestEasyWords(t *testing.T) {
+	if !Parse("something easy with chicken").Easy || !Parse("a simple soup").Easy || Parse("easygoing peasy chili").Easy {
+		t.Fatal("easy words")
+	}
+}

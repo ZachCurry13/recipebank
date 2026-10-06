@@ -1,7 +1,7 @@
 // A recipe's page: who can eat it and why, swaps, Home & Care warnings,
 // servings and units, steps, and the parents' tools.
 import { get, post, put, del, qs } from "./api.js";
-import { $, $$, esc, attempt, busy, fmtMin, peppers, canManage, cap, toast, sheet } from "./ui.js";
+import { $, $$, esc, attempt, busy, fmtMin, peppers, levelChip, canManage, cap, toast, sheet } from "./ui.js";
 import { verdictList } from "./verdicts.js";
 import { startCooking } from "./cook.js";
 import { ingredientList, stepList } from "./recipeparts.js";
@@ -47,7 +47,7 @@ export async function renderRecipe(view, params, state) {
             ${data.original ? `<p class="mt-1 text-sm text-slate-400">Our version of <a class="underline" href="#/recipe/${data.original.id}">${esc(data.original.title)}</a></p>` : ""}
             <div class="mt-2 flex flex-wrap items-center gap-1">
               ${r.total_min ? `<span class="chip-info">⏱ ${fmtMin(r.total_min)}${r.prep_min ? ` (prep ${fmtMin(r.prep_min)})` : ""}</span>` : ""}
-              ${home ? "" : peppers(data.heat)}
+              ${home ? "" : peppers(data.heat) + levelChip(data.level)}
               ${r.course ? `<span class="chip-cat">${esc(cap(r.course))}</span>` : ""}
               ${r.cuisine ? `<span class="chip-cat">${esc(r.cuisine)}</span>` : ""}
               ${r.protein ? `<span class="chip-cat">${esc(cap(r.protein))}</span>` : ""}

@@ -2,7 +2,7 @@
 // Ingredients and steps are plain text, one per line; "Filling:" starts a
 // part; "(?) " marks a line the AI wasn't sure about.
 import { get, post, put } from "./api.js";
-import { $, $$, esc, attempt, busy, COURSES, HOME_CATS } from "./ui.js";
+import { $, $$, esc, attempt, busy, COURSES, HOME_CATS, LEVELS } from "./ui.js";
 import { verdictList } from "./verdicts.js";
 import { shrinkPhoto } from "./photo.js";
 import { cardBox } from "./cardcheck.js";
@@ -74,6 +74,9 @@ export function editRecipe(view, r, preview, cardCheck) {
         ${field("yield_text", "Makes (optional)", r.yield_text, 'placeholder="2 dozen cookies, one 16 oz bottle"')}
         <div class="grid grid-cols-2 gap-3">
           ${field("course", "Course or kind", r.course, 'list="courses"')}
+          <label class="block"><span class="label">How hard</span><select name="difficulty" class="input">
+            <option value="">Worked out from the recipe</option>${Object.entries(LEVELS).map(([k, l]) =>
+              `<option value="${k}" ${r.difficulty === k ? "selected" : ""}>${l}</option>`).join("")}</select></label>
           <datalist id="courses">${[...COURSES, ...HOME_CATS].map((c) => `<option value="${c}">`).join("")}</datalist>
           ${field("cuisine", "Cuisine", r.cuisine)}
           ${field("protein", "Main protein", r.protein)}
@@ -131,6 +134,7 @@ export function editRecipe(view, r, preview, cardCheck) {
       ...r, area: form.querySelector('input[name="area"]:checked')?.value || "kitchen", title: f.title.value, summary: f.summary.value,
       photo, servings: num("servings"), prep_min: num("prep_min"), cook_min: num("cook_min"), total_min: num("total_min"),
       yield_text: f.yield_text.value, course: f.course.value.trim().toLowerCase(), cuisine: f.cuisine.value.trim(),
+      difficulty: f.difficulty.value,
       protein: f.protein.value.trim().toLowerCase(), heat: Number(f.heat.value), ingredients, steps, notes: f.notes.value,
       storage: f.storage.value, source_url: f.source_url.value.trim(), source_note: f.source_note.value,
       // A photo recipe stays "check it" until someone ticks that they did.
