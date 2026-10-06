@@ -1,6 +1,6 @@
 # Changelog
 
-## [0.2.0] - 2026-10-05
+## [0.2.0] - 2026-10-06
 
 A big one: the pantry, shopping, planning the week, and using RecipeBank away from home.
 
