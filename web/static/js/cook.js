@@ -2,6 +2,7 @@
 // that ring, and the screen kept on where the browser allows it.
 import { $, $$, esc } from "./ui.js";
 import { amountLine, temps, timersIn } from "./units.js";
+import { canSpeak, canListen, voiceOn, setVoice, speak, stopSpeaking, listen } from "./cookvoice.js";
 
 let wake = null;
 const timers = []; // {label, ends, done}
@@ -47,6 +48,22 @@ function usedIn(step, ingredients) {
 export function startCooking(r, v) {
   const box = $("#cook-view");
   let at = 0;
+  let spoken = -1; // the step last read aloud
+  let stopListening = null;
+  const say = () => { spoken = at; speak(`Step ${at + 1}. ${temps(r.steps[at].text, v.system)}`); };
+  const startTimer = (t) => {
+    timers.push({ label: t.label, ends: Date.now() + t.secs * 1000, done: false });
+    drawTimers();
+  };
+  const command = (c) => {
+    if (c === "next") move(1);
+    if (c === "back") move(-1);
+    if (c === "repeat") say();
+    if (c === "timer") {
+      const t = timersIn(r.steps[at].text)[0];
+      if (t) { startTimer(t); speak(`Timer started: ${t.label}`); }
+    }
+  };
   const onVisible = () => { if (document.visibilityState === "visible" && !box.classList.contains("hidden")) keepAwake(); };
   const close = () => {
     box.classList.add("hidden");
@@ -54,6 +71,9 @@ export function startCooking(r, v) {
     wake?.release?.();
     wake = null;
     clearInterval(tick);
+    stopSpeaking();
+    stopListening?.();
+    stopListening = null;
     document.removeEventListener("keydown", onKey);
     document.removeEventListener("visibilitychange", onVisible);
   };
@@ -84,8 +104,12 @@ export function startCooking(r, v) {
       <div class="mx-auto flex min-h-full max-w-3xl flex-col gap-4 p-4 pt-safe">
         <div class="flex items-center gap-2">
           <span class="text-sm text-slate-400">Step ${at + 1} of ${r.steps.length}${step.section ? ` · ${esc(step.section)}` : ""}</span>
-          <button id="cook-close" class="btn-ghost ml-auto">✕ Close</button>
+          <span class="ml-auto flex flex-wrap justify-end gap-1">
+            ${canSpeak() ? `<button id="cook-voice" class="btn-ghost px-2 ${voiceOn() ? "text-emerald-300" : ""}" aria-pressed="${voiceOn()}">${voiceOn() ? "🔊" : "🔈"} Read aloud</button>` : ""}
+            ${canListen() ? `<button id="cook-listen" class="btn-ghost px-2 ${stopListening ? "text-emerald-300" : ""}" aria-pressed="${Boolean(stopListening)}">🎙️ ${stopListening ? "Listening" : "Listen"}</button>` : ""}
+            <button id="cook-close" class="btn-ghost px-2">✕ Close</button></span>
         </div>
+        ${stopListening ? `<p class="text-xs text-slate-400">Say "next", "back", "repeat" or "timer".</p>` : ""}
         <div class="h-1.5 w-full rounded-full bg-slate-800"><div id="cook-bar" class="h-full rounded-full bg-emerald-500"></div></div>
         <p class="cook-step min-h-[30vh] break-words font-medium">${esc(temps(step.text, v.system))}</p>
         ${found.length ? `<div class="flex flex-wrap gap-2">${found.map((t, i) => `<button data-timer="${i}" class="btn-secondary">⏱ Start ${esc(t.label)}</button>`).join("")}</div>` : ""}
@@ -106,11 +130,16 @@ export function startCooking(r, v) {
     if (next) next.onclick = () => move(1);
     const done = $("#cook-done", box);
     if (done) done.onclick = close;
-    $$("[data-timer]", box).forEach((b) => (b.onclick = () => {
-      const t = found[Number(b.dataset.timer)];
-      timers.push({ label: t.label, ends: Date.now() + t.secs * 1000, done: false });
-      drawTimers();
-    }));
+    $$("[data-timer]", box).forEach((b) => (b.onclick = () => startTimer(found[Number(b.dataset.timer)])));
+    const voice = $("#cook-voice", box);
+    if (voice) voice.onclick = () => { setVoice(!voiceOn()); if (voiceOn()) say(); draw(); };
+    const ear = $("#cook-listen", box);
+    if (ear) ear.onclick = () => {
+      if (stopListening) { stopListening(); stopListening = null; }
+      else stopListening = listen(command, (msg) => { stopListening = null; draw(); alert(msg); });
+      draw();
+    };
+    if (voiceOn() && spoken !== at) say();
     drawTimers();
   };
 
@@ -134,6 +163,7 @@ export function startCooking(r, v) {
       if (!t.done && Date.now() >= t.ends) {
         t.done = true;
         beep();
+        if (voiceOn()) speak(`Timer done: ${t.label}`);
       }
     }
     drawTimers();

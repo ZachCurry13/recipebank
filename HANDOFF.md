@@ -26,7 +26,7 @@ Work on `feature/v0.2`, commit and push after each part. Status per part:
 4. [x] Collections (by hand or AI-described, parent reviews) + seasons and feasts (NovelCheck's
    `internal/seasons` Easter/Advent).
 5. [x] Smart search: a question's rules (diets, time, everyone) are read without the AI; the AI picks by meaning (or words rank them); rules have the last word. Embedding-model ranking not built (the AI pick covers meaning).
-6. [ ] Cook mode voice: read steps aloud; "next/back/repeat" where supported.
+6. [x] Cook mode voice: read steps aloud; "next/back/repeat" where supported.
 7. [ ] Remote access: Cloudflare tunnel from NovelCheck (`internal/tunnel`, cloudflared in the image).
 8. [ ] Phone notifications: Web Push from NovelCheck (`internal/push`): timers, use-by, low stock, tonight.
 9. [ ] Phone checks, docs (TRUENAS, REMOTE_ACCESS, CHANGELOG), release 0.2.0.
