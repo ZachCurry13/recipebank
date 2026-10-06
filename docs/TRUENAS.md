@@ -142,6 +142,13 @@ when a new version is out: a note at the top of the app and, if they turned on p
 notification. To do that it asks GitHub's public release list every few hours (only the version number of RecipeBank
 is sent). Turn it off under **Admin → House settings**. After an update, everyone sees the new version's notes once.
 
+## Nutrition estimates (optional)
+
+Recipes can show calories, protein, carbohydrates, fat, fiber and sodium per serving, estimated from USDA FoodData
+Central (public domain). Get a free key at [fdc.nal.usda.gov/api-key-signup](https://fdc.nal.usda.gov/api-key-signup)
+and paste it in **Admin → House settings**. Only food names are sent, and each food is looked up once and kept. Lines
+it can't work out are listed, so the estimate says what it leaves out.
+
 ## Backups
 
 - **Config** (`recipebank.db`) and **Photos** are the ones that matter. Protect them with TrueNAS snapshots (**Data Protection → Periodic Snapshot Tasks**) or copy them somewhere safe. The database holds passwords (scrambled) and your AI key.

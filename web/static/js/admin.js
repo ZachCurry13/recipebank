@@ -47,6 +47,10 @@ export async function renderAdmin(view, params, state) {
         </div>
         <label class="block"><span class="label">Stay signed in for (days)</span>
           <input name="session_days" type="number" min="1" max="365" class="input" value="${esc(s.session_days)}"></label>
+        <label class="block"><span class="label">USDA FoodData Central key, for nutrition estimates ${s.usda_api_key_set ? "(saved; leave blank to keep it)" : ""}</span>
+          <input name="usda_api_key" type="password" autocomplete="off" class="input"></label>
+        <p class="text-xs text-slate-500">Free: <a href="https://fdc.nal.usda.gov/api-key-signup" target="_blank" rel="noopener noreferrer" class="underline">sign up for a key</a>
+          (1,000 lookups an hour), or type DEMO_KEY to try it (about 25 foods a day). Only food names are sent, and each food is looked up once.</p>
         <label class="toggle"><input type="checkbox" name="check_updates" ${s.check_updates === "true" ? "checked" : ""}>
           Tell me when a new version is out (asks GitHub every few hours)</label>
         <button class="btn-primary">Save</button>
@@ -91,7 +95,8 @@ export async function renderAdmin(view, params, state) {
     attempt(async () => {
       await put("/api/admin/settings", { allergen_list: house.allergen_list.value, default_units: house.default_units.value, session_days: house.session_days.value,
         morning_hour: house.morning_hour.value, tonight_hour: house.tonight_hour.value,
-        check_updates: house.check_updates.checked ? "true" : "false" });
+        check_updates: house.check_updates.checked ? "true" : "false", usda_api_key: house.usda_api_key.value.trim() });
+      house.usda_api_key.value = "";
       await refreshInfo();
     }, "Saved");
   };

@@ -8,6 +8,7 @@ import { ingredientList, stepList } from "./recipeparts.js";
 import { cardBox } from "./cardcheck.js";
 import { readAgain } from "./readagain.js";
 import { cookedSheet, cookHistory, wireHistory } from "./cooked.js";
+import { nutritionCard, wireNutrition } from "./nutrition.js";
 import { subButton, wireSubstitute } from "./substitute.js";
 import { go } from "./app.js";
 import { addToCollection } from "./collections.js";
@@ -91,6 +92,7 @@ export async function renderRecipe(view, params, state) {
             <ol class="space-y-3">${stepList(r, view_)}</ol>
           </div>
           ${cookHistory(data.cooks, people, manage)}
+          ${home || !r.ingredients.length ? "" : nutritionCard()}
           ${r.notes ? `<div class="card"><h2 class="mb-1 font-semibold">Our notes</h2><p class="whitespace-pre-line text-sm text-slate-300">${esc(r.notes)}</p></div>` : ""}
           ${r.storage ? `<div class="card"><h2 class="mb-1 font-semibold">Storage</h2><p class="whitespace-pre-line text-sm text-slate-300">${esc(r.storage)}</p></div>` : ""}
           ${source(r, manage)}
@@ -109,6 +111,7 @@ export async function renderRecipe(view, params, state) {
     const cooked = $("#cooked", view);
     if (cooked) cooked.onclick = () => attempt(() => cookedSheet(r, load));
     wireHistory(view, load);
+    wireNutrition(view, r, canManage(state.user));
     const reread = $("[data-reread]", view);
     if (reread) reread.onclick = () => attempt(() => readAgain(r, load));
     const cardOK = $("[data-cardok]", view);

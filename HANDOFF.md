@@ -72,7 +72,9 @@ the catch-ups and new ideas below. Build in this order:
    ("1 cup salt" in cookies) as lines to check; never changes amounts silently.
 4. [x] (cooks + cook_thumbs tables, js/cooked.js, /api/recipes/{id}/cooks, likeTier in Tonight ideas) **Cooked it + 👍/👎:** log a cook with each person's thumbs; Tonight's ideas and suggestions favor what
    the family liked; the recipe page shows the history.
-5. [ ] **Nutrition estimates:** per serving from USDA FoodData Central (a free key the user signs up for,
+5. [x] (internal/nutrition, nutrition_foods cache, GET /api/recipes/{id}/nutrition, js/nutrition.js; tested live with
+   DEMO_KEY: dataType must be repeated params, search ranks badly so plainNames + score pick the food; 2 requests
+   per new food) **Nutrition estimates:** per serving from USDA FoodData Central (a free key the user signs up for,
    Admin → Nutrition), labelled an estimate; cached per food.
 6. [ ] **Share + print:** share target (Android), print layout + Print button, family cookbook to print/PDF.
 6b. [x] **First-time guide** (chosen 2026-10-06: both): a "Getting started" checklist for the admin on Tonight that

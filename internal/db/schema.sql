@@ -205,3 +205,11 @@ CREATE TABLE IF NOT EXISTS cook_thumbs (
     thumb     INTEGER NOT NULL CHECK (thumb IN (-1, 1)),
     PRIMARY KEY (cook_id, person_id)
 );
+
+-- FoodData Central answers per food (JSON; '' = not found), so each food is
+-- looked up once.
+CREATE TABLE IF NOT EXISTS nutrition_foods (
+    food       TEXT PRIMARY KEY,
+    data       TEXT NOT NULL,
+    fetched_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+);

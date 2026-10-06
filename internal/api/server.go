@@ -11,6 +11,7 @@ import (
 	"github.com/zachcurry13/recipebank/internal/auth"
 	"github.com/zachcurry13/recipebank/internal/config"
 	"github.com/zachcurry13/recipebank/internal/foodfacts"
+	"github.com/zachcurry13/recipebank/internal/nutrition"
 	"github.com/zachcurry13/recipebank/internal/push"
 	"github.com/zachcurry13/recipebank/internal/store"
 	"github.com/zachcurry13/recipebank/internal/tunnel"
@@ -30,6 +31,7 @@ type Server struct {
 	Tunnel    *tunnel.Manager
 	Push      *push.Service    // phone notifications
 	Updates   *updates.Checker // newer releases on GitHub; tests point it at a fake
+	Nutrition string           // USDA FoodData Central's address; tests point it at a fake
 	timers    push.Timers      // cook-mode timers that buzz the phone
 	logins    *loginLimiter
 	etags     sync.Map  // static file name → ETag
@@ -52,6 +54,9 @@ func (s *Server) Router() http.Handler {
 	}
 	if s.Updates == nil {
 		s.Updates = updates.New()
+	}
+	if s.Nutrition == "" {
+		s.Nutrition = nutrition.DefaultBase
 	}
 	if s.Products.FoodBases == nil {
 		s.Products = productBases{FoodBases: foodfacts.FoodBases, HomeBases: foodfacts.HomeBases}
@@ -88,6 +93,7 @@ func (s *Server) Router() http.Handler {
 			r.Put("/recipes/{id}/rating", s.handleRating)
 			r.Post("/recipes/{id}/substitute", s.handleSubstitute)
 			r.Get("/recipes/{id}/cooks", s.handleListCooks)
+			r.Get("/recipes/{id}/nutrition", s.handleNutrition)
 			r.Post("/recipes/{id}/cooks", s.handleAddCook)
 			r.Post("/make", s.handleMake)
 			r.Post("/make/photo", s.handleMakePhoto)
