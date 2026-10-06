@@ -16,6 +16,7 @@ smart search, cook-mode voice, remote access, phone notifications (HANDOFF secti
   CHANGELOG 0.1.0, HANDOFF. CI tests pass on `feature/v0.1`.
 
 ## Next
-- The user tests 0.2.0, especially over the https address (scanning, voice, notifications) and with a real AI.
+- The user tests 0.2.0, especially over the https address (scanning, voice, notifications) and with a real AI; fixes go out as 0.2.x.
+- Then 0.3 (HANDOFF section 1c): "What can I make?", dish photo → ideas, share + print.
 - Later (from the user's list): "what can I make?" from a photo of the fridge, dish photo → ideas, kitchen tablet
   (only if wanted), cookbooks and the card pile, share from the phone and printing, other-app imports, Cast to TV.

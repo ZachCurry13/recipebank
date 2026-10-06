@@ -32,6 +32,20 @@ Work on `feature/v0.2`, commit and push after each part. Status per part:
 9. [x] Phone checks (all 18 pages at 360 px, light and dark), docs (TRUENAS, REMOTE_ACCESS, CHANGELOG, README).
    [x] **Released 0.2.0 on 2026-10-06** (https://github.com/ZachCurry13/recipebank/releases/tag/v0.2.0).
 
+## 1c. 0.3 plan (chosen 2026-10-06; build only after the user has tried 0.2.0 and the fixes are out)
+
+1. [ ] **What can I make?** Tick what's on hand (pantry items pre-ticked, extras typed) or photograph the
+   fridge/pantry (the vision AI lists foods, small photo for 4096-token models; the person confirms the list).
+   Kitchen recipes ranked by how much is covered (staples like salt and oil count as on hand), showing
+   what's missing, safe swaps for it, everyone's verdicts, "only what I have", and "add missing to shopping".
+2. [ ] **Dish photo → ideas:** a photo of a finished meal; the vision AI describes it (name, likely
+   ingredients, cuisine). Shows matching recipes already in RecipeBank (smart search) and an AI-drafted
+   recipe to try, labelled as a best guess, going through the normal import draft and checks before saving.
+3. [ ] **Share + print:** the app as a share target (Android: Share → RecipeBank opens Add with the link
+   read; iPhone can't receive shares from Safari, so: copy the link and paste); a clean print layout and a
+   Print button on recipes; a family cookbook (a collection or all recipes, cover, contents, one recipe per
+   page with card photos) printed or saved as PDF from the browser.
+
 ## 2. Rules
 
 See `CLAUDE.md` (hard rules) and the local-only `concepts/working-rules.md` (how we work: plan first,
