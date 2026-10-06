@@ -82,13 +82,18 @@ func (s *Server) suggest(ctx context.Context, r *http.Request, area, request str
 		}
 	}
 	if !out.UsedAI {
+		// Recipes sharing the request's words; when none do but the request
+		// has rules ("quick dairy-free"), the rules alone choose.
+		rules := len(out.Rules.Diets) > 0 || out.Rules.MaxMin > 0 || out.Rules.Everyone
 		for _, c := range cands {
 			byID[c.rc.ID] = c.rc
-			if c.score > 0 || len(search.Keywords(request)) == 0 {
+			if c.score > 0 {
 				ids = append(ids, c.rc.ID)
 			}
-			if len(ids) == 20 {
-				break
+		}
+		if len(ids) == 0 && rules {
+			for _, c := range cands {
+				ids = append(ids, c.rc.ID)
 			}
 		}
 	}
@@ -104,6 +109,9 @@ func (s *Server) suggest(ctx context.Context, r *http.Request, area, request str
 		return out, err
 	}
 	for _, id := range ids {
+		if len(out.Picks) == 20 {
+			break
+		}
 		rc := byID[id]
 		if ok, reason := keepIf(rc, out.Rules.Diets, out.Rules.MaxMin, everyone); !ok {
 			out.LeftOut = append(out.LeftOut, leftOut{rc.ID, rc.Title, reason})
@@ -142,6 +150,32 @@ func (s *Server) handleCollectionSuggest(w http.ResponseWriter, r *http.Request)
 		request = c.Name + ": " + c.Description
 	}
 	sug, err := s.suggest(r.Context(), r, c.Area, request, skip)
+	if err != nil {
+		writeStoreErr(w, err)
+		return
+	}
+	writeJSON(w, http.StatusOK, sug)
+}
+
+// handleSearch answers a plain-words question about the recipes
+// ({"q": "something quick with chicken everyone can eat", "area": "kitchen"},
+// ?who= the people eating).
+func (s *Server) handleSearch(w http.ResponseWriter, r *http.Request) {
+	var body struct {
+		Q    string `json:"q"`
+		Area string `json:"area"`
+	}
+	if !readJSON(w, r, &body, 4<<10) {
+		return
+	}
+	if len(body.Q) < 3 || len(body.Q) > 300 {
+		writeErr(w, http.StatusBadRequest, "ask in a few words")
+		return
+	}
+	if body.Area != "home" {
+		body.Area = "kitchen"
+	}
+	sug, err := s.suggest(r.Context(), r, body.Area, body.Q, nil)
 	if err != nil {
 		writeStoreErr(w, err)
 		return

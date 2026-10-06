@@ -83,6 +83,7 @@ func (s *Server) Router() http.Handler {
 			r.Get("/collections", s.handleCollections)
 			r.Get("/collections/{id}", s.handleCollection)
 			r.Get("/seasons/{key}", s.handleSeason)
+			r.Post("/search", s.handleSearch)
 
 			// Parents: add and edit recipes and people.
 			r.Group(func(r chi.Router) {

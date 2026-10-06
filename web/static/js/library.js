@@ -3,6 +3,7 @@ import { get, qs } from "./api.js";
 import { $, $$, esc, fmtMin, peppers, stars, canManage, cap, HOME_CATS } from "./ui.js";
 import { verdictChips } from "./verdicts.js";
 import { localDate } from "./planpick.js";
+import { askRecipes } from "./ask.js";
 
 // Filters are kept per area while the app is open.
 const filters = { kitchen: { who: null, ok: "" }, home: { who: null, ok: "" } };
@@ -26,7 +27,8 @@ export async function renderLibrary(view, area, params, state) {
     </div>
     <div id="seasons" class="mb-3 flex flex-wrap gap-2"></div>
     <div class="card mb-4 space-y-3">
-      <input id="q" type="search" class="input" placeholder="Search titles and ingredients" value="${esc(f.q || "")}">
+      <form id="qf" class="flex flex-wrap gap-2"><input id="q" type="search" class="input min-w-0 flex-1 basis-48" placeholder="Search, or ask: quick dairy-free dinners" value="${esc(f.q || "")}" enterkeyhint="search">
+        <button id="ask" class="btn-primary hidden">✨ Ask</button></form>
       ${people.length ? `<div>
         <span class="label">Who's ${home ? "using it" : "eating"}?</span>
         <div id="who" class="flex flex-wrap gap-2">${people.map((p) =>
@@ -55,16 +57,26 @@ export async function renderLibrary(view, area, params, state) {
 
   let timer;
   const load = async () => {
-    const data = await get("/api/recipes" + qs({ area, who: f.who.join(",") || "0", q: f.q, ok: f.ok, max_min: f.max_min,
+    const q = isQuestion(f.q) ? "" : f.q;
+    const data = await get("/api/recipes" + qs({ area, who: f.who.join(",") || "0", q, ok: f.ok, max_min: f.max_min,
       diet: f.diet, heat: f.heat, course: f.course, cuisine: f.cuisine, protein: f.protein }));
     if (!home) renderFacets(data.facets, f, load);
     renderCards(data.recipes, area, f);
   };
+  // Three words or more is a question: answered by Ask (or Enter), not word search.
+  const ask = () => askRecipes($("#results"), area, f.q.trim(), f.who, state.info?.diets, () => { f.q = ""; $("#q").value = ""; $("#ask").classList.add("hidden"); load(); });
   $("#q").oninput = (e) => {
     f.q = e.target.value;
+    $("#ask").classList.toggle("hidden", !isQuestion(f.q));
     clearTimeout(timer);
-    timer = setTimeout(load, 250);
+    if (!isQuestion(f.q)) timer = setTimeout(load, 250);
   };
+  $("#qf").onsubmit = (e) => {
+    e.preventDefault();
+    if (isQuestion(f.q)) ask();
+    else load();
+  };
+  $("#ask").classList.toggle("hidden", !isQuestion(f.q));
   $$("#who .pick").forEach((b) => (b.onclick = () => {
     const id = Number(b.dataset.id);
     f.who = f.who.includes(id) ? f.who.filter((x) => x !== id) : [...f.who, id];
@@ -128,4 +140,9 @@ export function cardGrid(list, area, remove = false) {
 // filtered: any filter beyond search and who's eating is on.
 function filtered(f) {
   return Boolean(f.ok || f.max_min || f.diet || f.heat || f.course || f.cuisine || f.protein);
+}
+
+// isQuestion: three words or more is a question for Ask, not a word search.
+function isQuestion(q) {
+  return (q || "").trim().split(/\s+/).length >= 3;
 }

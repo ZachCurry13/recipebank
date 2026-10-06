@@ -83,3 +83,22 @@ func TestCollectionsAndSeasons(t *testing.T) {
 		t.Fatalf("Advent baking should be in season on Dec 10: %+v", lists.Seasons)
 	}
 }
+
+// Without the AI, a question's rules still answer it: "quick dairy-free
+// dinners" finds the 25-minute dairy-free recipe, not the slow one or the cheesy one.
+func TestSearchWithoutAI(t *testing.T) {
+	c, _ := setup(t)
+	var fast, slow, cheesy struct{ ID int64 }
+	c.do("POST", "/api/recipes", map[string]any{"title": "Stir fry", "total_min": 25, "ingredients": []map[string]string{{"line": "1 lb chicken"}, {"line": "2 cups broccoli"}}}, &fast)
+	c.do("POST", "/api/recipes", map[string]any{"title": "Pot roast", "total_min": 240, "ingredients": []map[string]string{{"line": "3 lb beef chuck"}}}, &slow)
+	c.do("POST", "/api/recipes", map[string]any{"title": "Quesadillas", "total_min": 15, "ingredients": []map[string]string{{"line": "4 tortillas"}, {"line": "2 cups cheddar cheese"}}}, &cheesy)
+	var sug suggestion
+	c.do("POST", "/api/search", map[string]string{"q": "quick dairy-free dinners"}, &sug)
+	if sug.UsedAI || len(sug.Picks) != 1 || sug.Picks[0].ID != fast.ID {
+		t.Fatalf("picks: %+v left out %+v", sug.Picks, sug.LeftOut)
+	}
+	c.do("POST", "/api/search", map[string]string{"q": "something with broccoli"}, &sug)
+	if len(sug.Picks) != 1 || sug.Picks[0].ID != fast.ID {
+		t.Fatalf("broccoli: %+v", sug.Picks)
+	}
+}
