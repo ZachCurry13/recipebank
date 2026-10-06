@@ -6,6 +6,7 @@ import { verdictList } from "./verdicts.js";
 import { startCooking } from "./cook.js";
 import { ingredientList, stepList } from "./recipeparts.js";
 import { cardBox } from "./cardcheck.js";
+import { readAgain } from "./readagain.js";
 import { go } from "./app.js";
 import { addToCollection } from "./collections.js";
 
@@ -86,7 +87,7 @@ export async function renderRecipe(view, params, state) {
           </div>
           ${r.notes ? `<div class="card"><h2 class="mb-1 font-semibold">Our notes</h2><p class="whitespace-pre-line text-sm text-slate-300">${esc(r.notes)}</p></div>` : ""}
           ${r.storage ? `<div class="card"><h2 class="mb-1 font-semibold">Storage</h2><p class="whitespace-pre-line text-sm text-slate-300">${esc(r.storage)}</p></div>` : ""}
-          ${source(r)}
+          ${source(r, manage)}
         </div>
       </div>`;
     wire(r);
@@ -99,6 +100,8 @@ export async function renderRecipe(view, params, state) {
       attempt(load);
     }));
     $$("[data-sys]", view).forEach((b) => (b.onclick = () => { view_.system = b.dataset.sys; draw(); }));
+    const reread = $("[data-reread]", view);
+    if (reread) reread.onclick = () => attempt(() => readAgain(r, load));
     const cardOK = $("[data-cardok]", view);
     if (cardOK) cardOK.onclick = () => attempt(() => busy(cardOK, "Saving…", async () => {
       await post(`/api/recipes/${r.id}/card-checked`, {});
@@ -165,7 +168,7 @@ function scaler(r, v) {
     <button data-serv="1" class="btn-secondary min-h-0 px-3 py-1" aria-label="More">+</button></div>`;
 }
 
-function source(r) {
+function source(r, manage) {
   const parts = [];
   if (r.source_url) parts.push(`<a class="break-all underline" href="${esc(r.source_url)}" target="_blank" rel="noopener noreferrer">${esc(r.source_url)}</a>`);
   if (r.source_note) parts.push(esc(r.source_note));
@@ -174,6 +177,7 @@ function source(r) {
   return `<div class="card space-y-2"><h2 class="font-semibold">Where it's from</h2>${parts.map((p) => `<p class="text-sm text-slate-300">${p}</p>`).join("")}
     ${photos ? `<div class="flex flex-wrap gap-2">${photos}</div>` : ""}
     ${r.read_by ? `<p class="text-xs text-slate-500">Read from the photo by ${esc(r.read_by)}.</p>` : ""}
+    ${manage && photos ? `<button type="button" data-reread class="btn-secondary">↻ Read the card again</button>` : ""}
     <p class="text-xs text-slate-500">Kept for the family's own use.</p></div>`;
 }
 

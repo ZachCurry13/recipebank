@@ -7,6 +7,7 @@ import (
 	"image"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"strings"
 	"testing"
 
@@ -118,5 +119,36 @@ func TestPhotoTooBigForAnySizeSaysWhy(t *testing.T) {
 	}
 	if len(sides) != len(aiPhotoSides) {
 		t.Fatalf("tried sizes %v", sides)
+	}
+}
+
+// Reading a saved card again keeps nothing: no new photo files, no recipe
+// change; the page compares the readings first.
+func TestReadAgainKeepsNothing(t *testing.T) {
+	c, srv := setup(t)
+	var sides []int
+	ai := fakeVisionAI(t, 2000, &sides)
+	defer ai.Close()
+	useAI(srv.Store, ai.URL)
+	files := func() int {
+		list, _ := os.ReadDir(srv.PhotoDir)
+		return len(list)
+	}
+	before := files()
+	var draft struct {
+		Recipe map[string]any `json:"recipe"`
+	}
+	if code := c.do("POST", "/api/import/photo/again", photoBody(800, 600), &draft); code != 200 {
+		t.Fatalf("read again: %d", code)
+	}
+	if draft.Recipe["title"] != "Grandma's Biscuits" || draft.Recipe["read_by"] != "test-vision" || files() != before {
+		t.Fatalf("draft %+v, photo files %d → %d", draft.Recipe, before, files())
+	}
+	if photos, _ := draft.Recipe["source_photos"].([]any); len(photos) != 0 {
+		t.Fatalf("photos kept: %v", photos)
+	}
+	c.do("POST", "/api/import/photo", photoBody(800, 600), &draft)
+	if files() != before+1 {
+		t.Fatalf("a first import should keep its photo: %d → %d", before, files())
 	}
 }

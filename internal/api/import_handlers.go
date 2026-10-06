@@ -129,6 +129,15 @@ func (s *Server) handleImportText(w http.ResponseWriter, r *http.Request) {
 // handleImportPhoto reads a recipe card, page or clipping (up to 4 photos:
 // front and back, or pages in order). The photos are kept with the recipe.
 func (s *Server) handleImportPhoto(w http.ResponseWriter, r *http.Request) {
+	s.importPhotos(w, r, true)
+}
+
+// handleReadAgain reads a saved recipe's card photos once more (turned the
+// right way up, or after changing the AI) without keeping anything: the
+// recipe page shows the new reading beside the old one.
+func (s *Server) handleReadAgain(w http.ResponseWriter, r *http.Request) { s.importPhotos(w, r, false) }
+
+func (s *Server) importPhotos(w http.ResponseWriter, r *http.Request, keep bool) {
 	var body struct {
 		Images []string `json:"images"` // data: URLs
 		Area   string   `json:"area"`
@@ -148,13 +157,15 @@ func (s *Server) handleImportPhoto(w http.ResponseWriter, r *http.Request) {
 			writeErr(w, http.StatusBadRequest, err.Error())
 			return
 		}
-		name, err := s.savePhoto(data) // the full photo stays with the recipe
-		if err != nil {
-			writeErr(w, http.StatusBadRequest, err.Error())
-			return
+		if keep {
+			name, err := s.savePhoto(data) // the full photo stays with the recipe
+			if err != nil {
+				writeErr(w, http.StatusBadRequest, err.Error())
+				return
+			}
+			names = append(names, name)
 		}
 		originals = append(originals, llm.Image{Data: data, MediaType: mt})
-		names = append(names, name)
 	}
 	rc, err := s.readPhotos(r.Context(), originals)
 	if err != nil {

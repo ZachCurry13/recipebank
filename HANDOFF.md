@@ -50,7 +50,7 @@ the catch-ups and new ideas below. Build in this order:
    3. DONE (safety/crosscheck.go, POST /recipes/{id}/card-checked, js/cardcheck.js; also: steps naming an
       allergen no line has → "not sure"; Staple no longer counts bell pepper/garlic salt) Automatic cross-check (no AI): foods the steps mention that the list lacks, lines without amounts, odd
       amounts; while unchecked, verdicts for allergic/severe people say "not sure"; "Checked against the card" clears it.
-   4. Read again: re-read the saved photos (optionally another model), show line-by-line changes, keep either.
+   4. DONE (POST /import/photo/again keeps nothing; js/readagain.js compares, ⟳ turns, Keep) Read again: re-read the saved photos (optionally another model), show line-by-line changes, keep either.
    5. Teach it: corrections become short reading hints (abbreviations, misreads) sent with the next cards;
       listed and editable under Admin → AI.
 1. [ ] **What can I make?** (backend started) Tick what's on hand (pantry items pre-ticked, extras typed) or photograph the
