@@ -1,7 +1,7 @@
 // Shown once per person: a short welcome the first time they open
 // RecipeBank, and "What's new" after an update. Both reopen from Me.
 import { get, put } from "./api.js";
-import { $, $$, esc, canManage, sheet } from "./ui.js";
+import { $$, esc, canManage, sheet } from "./ui.js";
 import { renderMarkdown, changelogSections } from "./markdown.js";
 
 const PAGES = [

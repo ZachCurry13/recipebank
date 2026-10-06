@@ -21,7 +21,15 @@ func TestParseLine(t *testing.T) {
 		{"2 pt. milk", 2, "pint", "milk", ""},
 		{"½ tsp vanilla extract", 0.5, "tsp", "vanilla extract", ""},
 		{"10 drops tea tree oil", 10, "drop", "tea tree oil", ""},
-		{"Salt and pepper to taste", 0, "", "Salt and pepper to taste", ""},
+		{"Salt and pepper to taste", 0, "", "Salt and pepper", "to taste"},
+		{"2 x 400g tins chopped tomatoes", 2, "can", "chopped tomatoes", "400 g"},
+		{"1 tablespoon + 1 teaspoon sugar", 1.333, "tbsp", "sugar", ""},
+		{"2 cups plus 2 tbsp flour", 2.125, "cup", "flour", ""},
+		{"a pinch of nutmeg", 1, "pinch", "nutmeg", ""},
+		{"A dash of hot sauce", 1, "dash", "hot sauce", ""},
+		{"1 cup cream, for serving", 1, "cup", "cream", "for serving"},
+		{"4 cups flour, plus more for dusting", 4, "cup", "flour", "plus more for dusting"},
+		{"fresh parsley to garnish", 0, "", "fresh parsley", "to garnish"},
 	}
 	for _, c := range cases {
 		in := ParseLine(c.line)

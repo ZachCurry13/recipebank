@@ -1,6 +1,7 @@
 package recipe
 
 import (
+	"math"
 	"regexp"
 	"strconv"
 	"strings"
@@ -23,7 +24,7 @@ var unitNames = map[string]string{
 	"liter": "l", "liters": "l", "litre": "l", "litres": "l", "l": "l",
 	"pinch": "pinch", "pinches": "pinch", "dash": "dash", "dashes": "dash",
 	"drop": "drop", "drops": "drop",
-	"clove": "clove", "cloves": "clove", "can": "can", "cans": "can", "stick": "stick", "sticks": "stick",
+	"clove": "clove", "cloves": "clove", "can": "can", "cans": "can", "tin": "can", "tins": "can", "stick": "stick", "sticks": "stick",
 	"package": "package", "packages": "package", "pkg": "package", "slice": "slice", "slices": "slice",
 	"bunch": "bunch", "bunches": "bunch", "sprig": "sprig", "sprigs": "sprig", "head": "head", "heads": "head",
 	"jar": "jar", "jars": "jar", "bottle": "bottle", "bottles": "bottle", "handful": "handful",
@@ -58,8 +59,36 @@ func ParseLine(line string) Ingredient {
 			rest = strings.TrimSpace(rest[end+1:])
 		}
 	}
-	if in.Qty != nil {
+	// "a pinch of nutmeg", "an 8 oz package": one of the unit.
+	if in.Qty == nil {
+		for _, a := range []string{"a ", "an "} {
+			if strings.HasPrefix(strings.ToLower(rest), a) {
+				var one Ingredient
+				if after := takeUnit(&one, rest[len(a):]); one.Unit != "" {
+					q := 1.0
+					in.Qty, in.Unit, rest = &q, one.Unit, after
+				}
+			}
+		}
+	}
+	// "2 x 400g tins tomatoes": the size goes in the note, the tin is the unit.
+	if m := timesRE.FindStringSubmatch(rest); in.Qty != nil && m != nil {
+		notes = append(notes, strings.ReplaceAll(m[1], ",", ".")+" "+strings.ToLower(m[2]))
+		rest = rest[len(m[0]):]
+	}
+	if in.Qty != nil && in.Unit == "" {
 		rest = takeUnit(&in, rest)
+	}
+	// "1 tablespoon + 1 teaspoon sugar": the second amount joins the first.
+	if m := plusRE.FindStringSubmatch(rest); in.Qty != nil && m != nil {
+		if q2, ok := parseQty(m[1]); ok {
+			var two Ingredient
+			after := takeUnit(&two, rest[len(m[0]):])
+			if f1, f2, ok := sameKind(in.Unit, two.Unit); ok {
+				q := math.Round((*in.Qty+q2*f2/f1)*1000) / 1000
+				in.Qty, rest = &q, after
+			}
+		}
 	}
 	food := rest
 	if i := strings.Index(food, ","); i >= 0 {
@@ -73,6 +102,14 @@ func ParseLine(line string) Ingredient {
 		}
 	}
 	in.Food = strings.TrimSpace(strings.TrimPrefix(strings.TrimSpace(food), "of "))
+	// "Salt and pepper to taste": "to taste" is a note, not part of the food.
+	for _, t := range trailingNotes {
+		if low := strings.ToLower(in.Food); strings.HasSuffix(low, t) && len(low) > len(t) {
+			in.Food = strings.TrimSpace(in.Food[:len(in.Food)-len(t)])
+			notes = append([]string{strings.TrimSpace(t)}, notes...)
+			break
+		}
+	}
 	in.Note = strings.Join(nonEmpty(notes), "; ")
 	if in.Food == "" {
 		in.Food = in.Line
@@ -153,4 +190,26 @@ func unitName(key string) (string, bool) {
 		u, ok = unitNames[strings.ToLower(key)]
 	}
 	return u, ok
+}
+
+var (
+	timesRE = regexp.MustCompile(`(?i)^[x×]\s*(\d+(?:[.,]\d+)?)\s*(g|kg|ml|l|oz|lb)\b\.?\s*`)
+	plusRE  = regexp.MustCompile(`(?i)^(?:\+|plus)\s+(\d+(?:\s+\d+/\d+)?|\d+/\d+|\d*[.,]\d+)\s+`)
+	// trailingNotes end a food name but say how it's used.
+	trailingNotes = []string{" to taste", " as needed", " for serving", " to serve", " for garnish", " to garnish",
+		" (optional)", " optional"}
+	unitML = map[string]float64{"tsp": 4.929, "tbsp": 14.787, "cup": 236.588, "fl oz": 29.574, "ml": 1, "l": 1000,
+		"pint": 473.176, "quart": 946.353, "gallon": 3785.41}
+	unitG = map[string]float64{"g": 1, "kg": 1000, "oz": 28.3495, "lb": 453.592}
+)
+
+// sameKind gives both units' size in one measure (ml or g) when they can be added.
+func sameKind(a, b string) (float64, float64, bool) {
+	if unitML[a] > 0 && unitML[b] > 0 {
+		return unitML[a], unitML[b], true
+	}
+	if unitG[a] > 0 && unitG[b] > 0 {
+		return unitG[a], unitG[b], true
+	}
+	return 0, 0, false
 }
