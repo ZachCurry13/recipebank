@@ -66,6 +66,7 @@ export async function renderRecipe(view, params, state) {
           <div class="flex flex-wrap gap-2">
             ${r.steps.length ? `<button id="cook" class="btn-primary">▶ ${home ? "Step by step" : "Start cooking"}</button>` : ""}
             ${home ? "" : `<button id="cooked" class="btn-secondary">🍳 We cooked it</button>`}
+            <button id="print" class="btn-secondary">🖨 Print</button>
             ${r.ingredients.length ? `<button id="shop" class="btn-secondary">🛒 Add to shopping list</button>` : ""}
             ${manage ? `<a href="#/edit/${r.id}" class="btn-secondary">✎ Edit</a>
               <button id="version" class="btn-secondary" title="A copy to change, keeping this one">⎘ Make our version</button>
@@ -83,7 +84,7 @@ export async function renderRecipe(view, params, state) {
               </div>
               ${r.ingredients.length ? subButton(view_.sub.on) : ""}
             </div>
-            ${r.needs_review ? `<div class="mb-3">${cardBox(r, data.card_check, manage ? "page" : "")}</div>` : ""}
+            ${r.needs_review ? `<div class="no-print mb-3">${cardBox(r, data.card_check, manage ? "page" : "")}</div>` : ""}
             <ul class="space-y-0.5">${ingredientList(r, data, manage, view_, nm)}</ul>
           </div>
           <div class="card">
@@ -108,6 +109,7 @@ export async function renderRecipe(view, params, state) {
       attempt(load);
     }));
     $$("[data-sys]", view).forEach((b) => (b.onclick = () => { view_.system = b.dataset.sys; draw(); }));
+    $("#print", view).onclick = () => window.print();
     const cooked = $("#cooked", view);
     if (cooked) cooked.onclick = () => attempt(() => cookedSheet(r, load));
     wireHistory(view, load);

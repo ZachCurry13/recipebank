@@ -76,7 +76,8 @@ the catch-ups and new ideas below. Build in this order:
    DEMO_KEY: dataType must be repeated params, search ranks badly so plainNames + score pick the food; 2 requests
    per new food) **Nutrition estimates:** per serving from USDA FoodData Central (a free key the user signs up for,
    Admin → Nutrition), labelled an estimate; cached per food.
-6. [ ] **Share + print:** share target (Android), print layout + Print button, family cookbook to print/PDF.
+6. [x] (manifest share_target → GET /share redirect; 🖨 Print + @media print in tailwind.input.css; #/cookbook,
+   GET /api/cookbook, js/cookbook.js) **Share + print:** share target (Android), print layout + Print button, family cookbook to print/PDF.
 6b. [x] **First-time guide** (chosen 2026-10-06: both): a "Getting started" checklist for the admin on Tonight that
    ticks itself off (admin account, family + allergies, first recipe, AI or skip, sign-ins for everyone, on the
    phones) with "Hide this guide"; a short welcome for each person on first sign-in (what ✓/✕/⚠ mean, where

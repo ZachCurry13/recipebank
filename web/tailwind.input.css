@@ -94,3 +94,20 @@ html.light .dialog::backdrop { background: rgb(15 23 42 / 0.45); }
 /* Cook mode: the step text is as big as the screen allows. */
 .cook-step { font-size: clamp(1.35rem, 4.5vw, 2.4rem); line-height: 1.35; }
 .line-through-soft { text-decoration: line-through; opacity: 0.55; }
+
+/* Printing a recipe or the family cookbook: black on white, no menus or
+   buttons, each cookbook recipe on its own page. */
+@media print {
+  header, footer, #mobile-nav, #update-banner, #toast, #guide, button, .btn-primary, .btn-secondary, .btn-ghost, .no-print,
+  dialog { display: none !important; }
+  html, body, #app-view, main { background: #fff !important; }
+  * { color: #000 !important; box-shadow: none !important; text-shadow: none !important; }
+  #app-view { padding-bottom: 0 !important; }
+  main { max-width: none !important; padding: 0 !important; }
+  .card { background: #fff !important; border: 0 !important; padding: 0 !important; margin-bottom: 1rem; }
+  .card, li, img { break-inside: avoid; }
+  a { text-decoration: none !important; }
+  .print-page { break-before: page; }
+  .print-only { display: block !important; }
+}
+.print-only { display: none; }

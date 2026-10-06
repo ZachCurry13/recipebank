@@ -3,7 +3,7 @@
 import { get } from "./api.js";
 import { $, esc, attempt, busy } from "./ui.js";
 
-export const nutritionCard = () => `<div id="nutri" class="card space-y-3">
+export const nutritionCard = () => `<div id="nutri" class="no-print card space-y-3">
   <div class="flex flex-wrap items-center gap-2"><h2 class="mr-auto font-semibold">🥗 Nutrition</h2>
     <button type="button" id="nutri-go" class="btn-secondary min-h-0 py-1 text-sm">Estimate</button></div>
   <p class="text-xs text-slate-500">An estimate from USDA FoodData Central. Only the food names are sent.</p></div>`;
@@ -13,6 +13,7 @@ const ROWS = [["kcal", "Calories", ""], ["protein_g", "Protein", "g"], ["carbs_g
 
 function show(box, a, manage) {
   const e = a.estimate;
+  box.classList.toggle("no-print", !e.counted); // print it once there's something to print
   const n = e.per_serving;
   const round = (v, unit) => (unit === "g" && v < 10 ? v.toFixed(1) : Math.round(v)).toString();
   box.innerHTML = `<div class="flex flex-wrap items-center gap-2"><h2 class="mr-auto font-semibold">🥗 Nutrition</h2>

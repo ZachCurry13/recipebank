@@ -68,6 +68,7 @@ func (s *Server) Router() http.Handler {
 	r.Use(securityHeaders)
 
 	r.Get("/healthz", func(w http.ResponseWriter, _ *http.Request) { w.Write([]byte("ok")) })
+	r.Get("/share", s.handleShare) // the phone's share menu; the app asks to sign in if needed
 
 	r.Route("/api", func(r chi.Router) {
 		r.Use(noStore)
@@ -94,6 +95,7 @@ func (s *Server) Router() http.Handler {
 			r.Post("/recipes/{id}/substitute", s.handleSubstitute)
 			r.Get("/recipes/{id}/cooks", s.handleListCooks)
 			r.Get("/recipes/{id}/nutrition", s.handleNutrition)
+			r.Get("/cookbook", s.handleCookbook)
 			r.Post("/recipes/{id}/cooks", s.handleAddCook)
 			r.Post("/make", s.handleMake)
 			r.Post("/make/photo", s.handleMakePhoto)

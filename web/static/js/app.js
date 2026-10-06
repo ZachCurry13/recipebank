@@ -17,6 +17,7 @@ import { renderAdmin } from "./admin.js";
 import { renderProfile } from "./profile.js";
 import { renderMake } from "./make.js";
 import { renderWhatsNew } from "./whatsnew.js";
+import { renderCookbook } from "./cookbook.js";
 import { firstRun } from "./firstrun.js";
 import { checkForUpdates, watchServerVersion } from "./updatebanner.js";
 
@@ -41,8 +42,9 @@ const routes = {
   admin: renderAdmin,
   profile: renderProfile,
   whatsnew: renderWhatsNew,
+  cookbook: renderCookbook,
 };
-const NAV_OF = { recipe: null, edit: "add", collection: "collections", season: "collections", whatsnew: "profile" };
+const NAV_OF = { recipe: null, edit: "add", collection: "collections", season: "collections", whatsnew: "profile", cookbook: "collections" };
 
 function showOnly(id) {
   for (const v of ["#setup-view", "#login-view", "#app-view"]) $(v).classList.toggle("hidden", v !== id);

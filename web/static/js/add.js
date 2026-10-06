@@ -1,7 +1,7 @@
 // Add a recipe: from a link, photos of a card or page, pasted text, or typed in.
 // Every import comes back as an unsaved draft, checked for everyone.
 import { post } from "./api.js";
-import { $, $$, attempt, busy } from "./ui.js";
+import { $, $$, esc, attempt, busy } from "./ui.js";
 import { shrinkPhoto, rotatePhoto } from "./photo.js";
 import { editRecipe } from "./editor.js";
 import { renderDish } from "./dish.js";
@@ -39,7 +39,7 @@ export function renderAdd(view, params, state) {
     const needAI = !ai ? `<p class="box-caution">This needs the AI, and none is set up yet. An admin can add one under Admin → AI.</p>` : "";
     if (way === "link") {
       box.innerHTML = `<form id="f" class="space-y-3"><label class="block"><span class="label">Recipe page address</span>
-        <input name="url" type="url" required class="input" placeholder="https://…" inputmode="url"></label>
+        <input name="url" type="url" required class="input" placeholder="https://…" inputmode="url" value="${esc(params.url || "")}"></label>
         <p class="text-xs text-slate-400">Most recipe sites include the recipe in a standard format RecipeBank reads exactly. For other pages the AI reads it${ai ? "" : " (not set up yet)"}.</p>
         <button class="btn-primary">Read the recipe</button></form>`;
       $("#f", box).onsubmit = (e) => { e.preventDefault(); run(e.submitter, "Reading the page…", "/api/import/url", { url: e.target.url.value }); };
@@ -72,7 +72,7 @@ export function renderAdd(view, params, state) {
       renderDish(box, view, ai);
     } else if (way === "text") {
       box.innerHTML = `<form id="f" class="space-y-3"><label class="block"><span class="label">The recipe</span>
-        <textarea name="text" rows="12" required class="input" placeholder="Title, ingredients and steps…"></textarea></label>
+        <textarea name="text" rows="12" required class="input" placeholder="Title, ingredients and steps…">${esc(params.text || "")}</textarea></label>
         ${ai ? "" : `<p class="text-xs text-slate-400">Without the AI, put the title first, then a line saying <b>Ingredients</b>, then a line saying <b>Directions</b>.</p>`}
         <button class="btn-primary">Read the recipe</button></form>`;
       $("#f", box).onsubmit = (e) => { e.preventDefault(); run(e.submitter, "The AI is reading it…", "/api/import/text", { text: e.target.text.value }); };

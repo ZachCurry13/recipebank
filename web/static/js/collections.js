@@ -16,6 +16,7 @@ export async function renderCollections(view, params, state) {
     <div class="mb-4 flex flex-wrap items-end gap-3">
       <div class="min-w-0 basis-full sm:basis-auto sm:flex-1"><h1 class="text-2xl font-bold">📚 Collections</h1>
         <p class="text-sm text-slate-400">Themed shelves: fill them by hand, or describe them and let the AI suggest recipes.</p></div>
+      <a href="#/cookbook" class="btn-secondary">📖 Family cookbook</a>
       ${manage ? `<button id="new" class="btn-primary">➕ New collection</button>` : ""}
     </div>
     ${data.seasons.length ? `<h2 class="label">In season now</h2><div class="mb-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">${data.seasons.map((s) =>
@@ -63,6 +64,7 @@ export async function renderCollection(view, params, state) {
     <div class="mb-4 mt-2 flex flex-wrap items-end gap-3">
       <div class="min-w-0 basis-full sm:basis-auto sm:flex-1"><h1 class="break-words text-2xl font-bold">${esc(c.icon)} ${esc(c.name)}</h1>
         ${c.description ? `<p class="text-sm text-slate-400">${esc(c.description)}</p>` : ""}</div>
+      ${data.recipes.length && c.area === "kitchen" ? `<a href="#/cookbook?collection=${c.id}" class="btn-secondary">📖 Print as a cookbook</a>` : ""}
       ${manage ? `<button id="suggest" class="btn-primary">✨ Suggest recipes</button>
         <button id="edit" class="btn-secondary">✎ Edit</button><button id="rm" class="btn-ghost text-rose-300">🗑 Delete</button>` : ""}
     </div>
