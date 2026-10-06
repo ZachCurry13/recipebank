@@ -7,6 +7,7 @@ import { startCooking } from "./cook.js";
 import { ingredientList, stepList } from "./recipeparts.js";
 import { cardBox } from "./cardcheck.js";
 import { readAgain } from "./readagain.js";
+import { subButton, wireSubstitute } from "./substitute.js";
 import { go } from "./app.js";
 import { addToCollection } from "./collections.js";
 
@@ -21,10 +22,11 @@ export async function renderRecipe(view, params, state) {
   NAMES = Object.fromEntries((state.info?.all_allergens || []).map((a) => [a.key, a.label.toLowerCase()]));
   const people = await get("/api/people");
   const view_ = { who: people.filter((p) => !p.is_guest).map((p) => p.id), factor: 1, servings: 0,
-    system: state.user.units || state.info?.default_units || "us" };
+    system: state.user.units || state.info?.default_units || "us", sub: { on: false, open: new Map() } };
   let data;
   const load = async () => {
     data = await get(`/api/recipes/${params.id}` + qs({ who: view_.who.join(",") || "0" }));
+    view_.sub.open.clear(); // ideas depend on who's eating
     if (!view_.servings) view_.servings = data.recipe.servings || 0;
     draw();
   };
@@ -76,6 +78,7 @@ export async function renderRecipe(view, params, state) {
               <div class="flex rounded-lg ring-1 ring-slate-700" role="group" aria-label="Units">
                 ${["us", "metric"].map((s) => `<button data-sys="${s}" class="px-3 py-1.5 text-sm ${view_.system === s ? "rounded-lg bg-slate-700 text-white" : "text-slate-400"}">${s === "us" ? "US" : "Metric"}</button>`).join("")}
               </div>
+              ${r.ingredients.length ? subButton(view_.sub.on) : ""}
             </div>
             ${r.needs_review ? `<div class="mb-3">${cardBox(r, data.card_check, manage ? "page" : "")}</div>` : ""}
             <ul class="space-y-0.5">${ingredientList(r, data, manage, view_, nm)}</ul>
@@ -136,6 +139,7 @@ export async function renderRecipe(view, params, state) {
     const shop = $("#shop", view);
     if (shop) shop.onclick = () => attempt(() => addToShopping(r, view_.factor));
     $$("[data-ing]", view).forEach((li) => (li.onclick = (e) => { if (!e.target.closest("button")) li.classList.toggle("line-through-soft"); }));
+    wireSubstitute(view, r, view_.sub, () => view_.who.join(",") || "0", draw);
     const cook = $("#cook", view);
     if (cook) cook.onclick = () => startCooking(r, view_);
     const version = $("#version", view);

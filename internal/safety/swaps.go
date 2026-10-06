@@ -102,21 +102,5 @@ type SwapIdea struct {
 	Note string `json:"note,omitempty"`
 }
 
-// SwapIdeasFor lists the table's replacements for a food (not yet checked
-// against anyone's rules: use OKForAll).
-func SwapIdeasFor(food string) []SwapIdea {
-	t := newText(food)
-	for _, row := range swapTable {
-		if t.has(row.when) {
-			out := make([]SwapIdea, len(row.ideas))
-			for i, idea := range row.ideas {
-				out[i] = SwapIdea{To: idea.to, Note: idea.note}
-			}
-			return out
-		}
-	}
-	return nil
-}
-
 // OKForAll reports whether a food passes every diner's rules on its own.
 func OKForAll(area, food string, diners []Person) bool { return okForAll(area, food, diners) }

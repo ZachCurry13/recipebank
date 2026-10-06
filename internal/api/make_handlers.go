@@ -127,7 +127,7 @@ func (s *Server) makeOne(rc *recipe.Recipe, onHand []string, soon []store.StockI
 		name := shopping.CleanName(food)
 		res.Missing = append(res.Missing, name)
 		var use []safety.SwapIdea
-		for _, idea := range safety.SwapIdeasFor(food) {
+		for _, idea := range safety.Substitutes(food) {
 			if covered(onHand, strings.SplitN(idea.To, " (", 2)[0]) && safety.OKForAll(rc.Area, idea.To, diners) {
 				use = append(use, idea)
 			}

@@ -54,6 +54,10 @@ the catch-ups and new ideas below. Build in this order:
    5. DONE (reading_hints table, recipe.Misreads, api/hints_handlers.go, js/readinghints.js; learned only on a
       photo recipe's first save or while it still needs checking) Teach it: corrections become short reading hints (abbreviations, misreads) sent with the next cards;
       listed and editable under Admin → AI.
+0c. [x] **Substitute** (the user's name for it; was "Missing something?"): recipe page → "↔ Substitute", tap
+   what you don't have → ideas from the substitution table, the allergy swaps and (on request) the AI, only
+   ones that suit everyone eating (OKForAll), pantry items first ("✓ You have it"), "+ List" adds to shopping.
+   POST /api/recipes/{id}/substitute, js/substitute.js. The AI sees only the title, the line and the pantry.
 1. [ ] **What can I make?** (backend started) Tick what's on hand (pantry items pre-ticked, extras typed) or photograph the
    fridge/pantry (vision AI lists foods; the person confirms). Recipes ranked by coverage; **food near its
    use-by date first ("use it up")**; what's missing, with swaps from the table and **AI swap ideas from what's
