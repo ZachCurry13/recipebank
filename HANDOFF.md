@@ -30,7 +30,7 @@ Work on `feature/v0.2`, commit and push after each part. Status per part:
 7. [x] Remote access: Cloudflare tunnel from NovelCheck (`internal/tunnel`, cloudflared in the image).
 8. [x] Phone notifications: Web Push from NovelCheck (`internal/push`): timers, use-by, low stock, tonight.
 9. [x] Phone checks (all 18 pages at 360 px, light and dark), docs (TRUENAS, REMOTE_ACCESS, CHANGELOG, README).
-   [ ] Release 0.2.0 (waiting for the user's OK).
+   [x] **Released 0.2.0 on 2026-10-06** (https://github.com/ZachCurry13/recipebank/releases/tag/v0.2.0).
 
 ## 2. Rules
 
@@ -71,8 +71,7 @@ search ranking.
 
 ## 7. Next immediate steps
 
-1. With the user's OK, release 0.2.0 (all parts built on `feature/v0.2`, CI passing).
-   Not tried for real yet: live camera scanning, notifications and voice (need the https address on a phone),
+1. The user updates TrueNAS to 0.2.0 and tests. Not tried for real yet: live camera scanning, notifications and voice (need the https address on a phone),
    the tunnel connecting (needs the user's Cloudflare token), AI suggestions with a real model.
 2. Not yet tested for real: reading card photos with an AI (no AI was set up locally).
 3. Then plan 0.2 with the user (pantry, supply closet, shopping list, meal plan).
