@@ -3,6 +3,7 @@ package api
 import (
 	"bytes"
 	"encoding/json"
+	"io/fs"
 	"net/http"
 	"net/http/cookiejar"
 	"net/http/httptest"
@@ -13,6 +14,7 @@ import (
 	"github.com/zachcurry13/recipebank/internal/config"
 	"github.com/zachcurry13/recipebank/internal/db"
 	"github.com/zachcurry13/recipebank/internal/store"
+	"github.com/zachcurry13/recipebank/web"
 )
 
 type client struct {
@@ -52,7 +54,7 @@ func setup(t *testing.T) (*client, *Server) {
 	t.Cleanup(func() { d.Close() })
 	st := store.New(d)
 	srv := &Server{Cfg: config.Config{}, Store: st, Auth: &auth.Manager{Store: st, SessionDays: 30},
-		Web: fstest.MapFS{"index.html": {Data: []byte("<html></html>")}}, PhotoDir: t.TempDir()}
+		Web: fstest.MapFS{"index.html": {Data: []byte("<html></html>")}, "share.tmpl.html": {Data: shareTemplate(t)}}, PhotoDir: t.TempDir()}
 	ts := httptest.NewServer(srv.Router())
 	t.Cleanup(ts.Close)
 	jar, _ := cookiejar.New(nil)
@@ -134,4 +136,13 @@ func TestCSRFHeaderRequired(t *testing.T) {
 	if resp.StatusCode != 403 {
 		t.Fatalf("no X-RecipeBank header: %d", resp.StatusCode)
 	}
+}
+
+// shareTemplate is the real shared-recipe page, for tests.
+func shareTemplate(t *testing.T) []byte {
+	data, err := fs.ReadFile(web.FS(), "share.tmpl.html")
+	if err != nil {
+		t.Fatal(err)
+	}
+	return data
 }

@@ -10,6 +10,7 @@ import { readAgain } from "./readagain.js";
 import { cookedSheet, cookHistory, wireHistory } from "./cooked.js";
 import { nutritionCard, wireNutrition } from "./nutrition.js";
 import { emailSheet } from "./email.js";
+import { shareSheet } from "./sharelink.js";
 import { subButton, wireSubstitute } from "./substitute.js";
 import { go } from "./app.js";
 import { addToCollection } from "./collections.js";
@@ -69,6 +70,7 @@ export async function renderRecipe(view, params, state) {
             ${r.steps.length ? `<button id="cook" class="btn-primary">▶ ${home ? "Step by step" : "Start cooking"}</button>` : ""}
             ${home ? "" : `<button id="cooked" class="btn-secondary">🍳 We cooked it</button>`}
             <button id="print" class="btn-secondary">🖨 Print</button>
+            ${manage ? `<button id="share-link" class="btn-secondary">🔗 Share link</button>` : ""}
             ${canEmail(state) ? `<button id="mail" class="btn-secondary">✉️ Email</button>` : ""}
             ${r.ingredients.length ? `<button id="shop" class="btn-secondary">🛒 Add to shopping list</button>` : ""}
             ${manage ? `<a href="#/edit/${r.id}" class="btn-secondary">✎ Edit</a>
@@ -113,6 +115,8 @@ export async function renderRecipe(view, params, state) {
     }));
     $$("[data-sys]", view).forEach((b) => (b.onclick = () => { view_.system = b.dataset.sys; draw(); }));
     $("#print", view).onclick = () => window.print();
+    const shareBtn = $("#share-link", view);
+    if (shareBtn) shareBtn.onclick = () => attempt(() => shareSheet(r));
     const mail = $("#mail", view);
     if (mail) mail.onclick = () => emailSheet(state, r.title, `/api/recipes/${r.id}/email`, true);
     const cooked = $("#cooked", view);

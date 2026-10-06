@@ -2,6 +2,7 @@
 package api
 
 import (
+	"html/template"
 	"io/fs"
 	"net/http"
 	"sync"
@@ -35,6 +36,8 @@ type Server struct {
 	Nutrition string                                // USDA FoodData Central's address; tests point it at a fake
 	SendMail  func(mail.Config, mail.Message) error // tests catch emails here; nil = mail.Send
 	mails     mailLimiter
+	shareOnce sync.Once // the shared-recipe page's template, parsed once
+	shareTmpl *template.Template
 	timers    push.Timers // cook-mode timers that buzz the phone
 	logins    *loginLimiter
 	etags     sync.Map  // static file name → ETag
@@ -71,7 +74,9 @@ func (s *Server) Router() http.Handler {
 	r.Use(securityHeaders)
 
 	r.Get("/healthz", func(w http.ResponseWriter, _ *http.Request) { w.Write([]byte("ok")) })
-	r.Get("/share", s.handleShare) // the phone's share menu; the app asks to sign in if needed
+	r.Get("/share", s.handleShare)         // the phone's share menu; the app asks to sign in if needed
+	r.Get("/s/{token}", s.handleSharePage) // a shared recipe, no sign-in
+	r.Get("/s/{token}/photo", s.handleSharePhoto)
 
 	r.Route("/api", func(r chi.Router) {
 		r.Use(noStore)
@@ -146,6 +151,9 @@ func (s *Server) Router() http.Handler {
 				r.Post("/recipes/{id}/version", s.handleVersion)
 				r.Put("/recipes/{id}/label", s.handleLabelChecked)
 				r.Post("/recipes/{id}/card-checked", s.handleCardChecked)
+				r.Get("/recipes/{id}/share", s.handleGetShare)
+				r.Post("/recipes/{id}/share", s.handleShareRecipe)
+				r.Delete("/recipes/{id}/share", s.handleStopSharing)
 				r.Post("/events", s.handleSaveEvent)
 				r.Put("/events/{id}", s.handleSaveEvent)
 				r.Delete("/events/{id}", s.handleDeleteEvent)

@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="referrer" content="no-referrer">
+  <title>{{if .Gone}}Link expired{{else}}{{.Title}}{{end}} · RecipeBank</title>
+  <link rel="stylesheet" href="/css/app.css">
+  <script src="/js/share.js"></script>
+</head>
+<body class="bg-slate-950 text-slate-100">
+  <main class="mx-auto max-w-3xl space-y-4 px-4 py-6">
+    {{if .Gone}}
+    <div class="card space-y-2">
+      <h1 class="text-xl font-bold">This link has run out</h1>
+      <p class="text-sm text-slate-400">Shared recipes are open for a week. Ask whoever shared it for a new link.</p>
+    </div>
+    {{else}}
+    {{if .Photo}}<img src="{{.Photo}}" alt="" class="max-h-80 w-full rounded-xl object-cover">{{end}}
+    <div>
+      <h1 class="break-words text-2xl font-bold">{{.Title}}</h1>
+      {{if .Summary}}<p class="mt-1 text-slate-300">{{.Summary}}</p>{{end}}
+      {{if .Facts}}<p class="mt-1 text-sm text-slate-400">{{.Facts}}</p>{{end}}
+    </div>
+    <div class="grid gap-4 md:grid-cols-[minmax(0,1fr)_minmax(0,1.3fr)]">
+      <div class="card min-w-0">
+        <h2 class="mb-2 font-semibold">Ingredients</h2>
+        <ul class="space-y-1 text-sm">{{range .Ingredients}}<li class="break-words">{{.}}</li>{{end}}</ul>
+      </div>
+      <div class="card min-w-0">
+        <h2 class="mb-2 font-semibold">Steps</h2>
+        <ol class="list-decimal space-y-2 pl-5 text-sm">{{range .Steps}}<li class="break-words">{{.}}</li>{{end}}</ol>
+      </div>
+    </div>
+    {{if .Notes}}<div class="card"><h2 class="mb-1 font-semibold">Notes</h2><p class="whitespace-pre-line text-sm text-slate-300">{{.Notes}}</p></div>{{end}}
+    <p class="text-xs text-slate-500">Shared from RecipeBank until {{.Until}}. Allergies aren't checked here: read the labels for who's eating.</p>
+    {{end}}
+  </main>
+</body>
+</html>

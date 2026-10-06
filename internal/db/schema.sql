@@ -236,3 +236,13 @@ CREATE TABLE IF NOT EXISTS event_dishes (
     brings    TEXT NOT NULL DEFAULT ''
 );
 CREATE INDEX IF NOT EXISTS event_dishes_event ON event_dishes (event_id);
+
+-- Links that show one recipe to someone without an account, until they expire.
+CREATE TABLE IF NOT EXISTS shares (
+    token      TEXT PRIMARY KEY,
+    recipe_id  INTEGER NOT NULL REFERENCES recipes(id) ON DELETE CASCADE,
+    expires_at TEXT NOT NULL,
+    created_by TEXT NOT NULL DEFAULT '',
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+CREATE INDEX IF NOT EXISTS shares_recipe ON shares (recipe_id);
