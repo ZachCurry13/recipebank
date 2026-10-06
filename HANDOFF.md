@@ -124,6 +124,27 @@ Build in this order (each with tests, phone checks, a commit):
    they can eat", and my dishes to the shopping list scaled to the guest count. In More.
 6. [x] Docs, CHANGELOG 0.4.0, phone checks (every page at 360×760, no failed requests), release (the user gave the OK on 2026-10-06).
 
+## 1e. After 0.4.0 (2026-10-06, the user away)
+
+Fixed on `feature/v0.5`, not released yet (a 0.4.1 when the user says so): email works right after setup without
+a reload; a recipe's cost says "N of M priced" in words (phones show no tooltips); "No prices yet" instead of
+"about $0.00" with a weekly budget; the Events list ignores people taken off the Family page; package sizes like
+"500g", "1.5 L", "1 dozen"; "as written" when nobody is listed as coming to an event.
+
+0.5 ideas for the user to pick from (nothing chosen yet):
+1. **Scan a receipt:** a photo of a store receipt updates pantry amounts and prices (the AI reads it, the person
+   ticks what's right). Makes the budget work without typing prices.
+2. **Plan my week:** one tap fills the week's dinners from recipes everyone can eat, favouring 👍, using up food
+   near its date, within the weekly budget, with leftovers planned; every pick editable.
+3. **Back up and move recipes:** download every recipe (with photos) as one file, and import such a file into
+   another RecipeBank (for a grandparent's or a friend's install).
+4. **Share a recipe with a link:** a read-only page for someone without an account (expires after a week).
+5. **Cookbooks and the card pile** (from the first notes): the family's cookbooks by barcode with their recipe
+   index, and a "still to photograph" list of cards. Declined for 0.3; worth asking again.
+6. **Imports from other recipe apps:** Mealie, Tandoor, Paprika (explain each in plain words first).
+7. **Kids can help:** steps marked for kids (stir, measure) and a simple kid view. Declined for 0.3.
+8. **Who may send email:** today every signed-in person can email recipes and the list; maybe parents only.
+
 ## 2. Rules
 
 See `CLAUDE.md` (hard rules) and the local-only `concepts/working-rules.md` (how we work: plan first,
