@@ -15,7 +15,7 @@ smart search, cook-mode voice, remote access, phone notifications (HANDOFF secti
 - Install docs done: `docs/TRUENAS.md` (Custom App form and YAML), `docker-compose.yml`, README,
   CHANGELOG 0.1.0, HANDOFF. CI tests pass on `feature/v0.1`.
 
-**0.3 in progress on `feature/v0.3` (2026-10-06):** cleaner ingredient layout; better photo reading done
+**0.3.0 released 2026-10-06:** cleaner ingredient layout; better photo reading done
 (photos the right way up, two-step reading, cross-check with "not sure" until checked against the card, Read
 the card again, reading hints learned from corrections under Admin → AI); "Substitute" on the recipe page; barcode
 scans confirmed with the package photo; "What can I make?" (ticked/typed foods or a fridge photo); a first-time
@@ -24,8 +24,8 @@ We cooked it with 👍/👎; nutrition estimates (USDA FoodData Central); share 
 CHANGELOG 0.3.0 written; every page checked at 360×760 (light and dark).
 
 ## Next
-- Release 0.3.0 when the user says so (HANDOFF release steps). Then 0.4: budget, difficulty, planned leftovers,
-  email a recipe or the list, events. The user's photo model is a 3B vision model; a cloud model (Gemini's free tier) was suggested.
+- The user updates to 0.3.0 and tests with a real AI; fixes go out as 0.3.x.
+- Then 0.4 on `feature/v0.4`: budget, difficulty, planned leftovers, email a recipe or the list, events. The user's photo model is a 3B vision model; a cloud model (Gemini's free tier) was suggested.
 - The user tests 0.2.0 with a real AI; fixes go out as 0.2.x.
 - Later (from the user's list): "what can I make?" from a photo of the fridge, dish photo → ideas, kitchen tablet
   (only if wanted), cookbooks and the card pile, share from the phone and printing, other-app imports, Cast to TV.

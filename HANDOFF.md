@@ -9,6 +9,11 @@
   as `config/<app>/{config,cache}` on a fast pool, photos on a big pool). Card photos are sent to
   the AI at 1280/896/640 px, smaller on each "exceeds the available context size" answer: a home AI
   server with a 4096-token context refused a 2000 px photo (4318 tokens).
+- **0.2.0 released 2026-10-06** (pantry, shopping, meal plan, collections, remote access; section 1b).
+- **0.3.0 released 2026-10-06** (https://github.com/ZachCurry13/recipebank/releases/tag/v0.3.0): What can I make?,
+  Substitute, better card reading (two steps, cross-check, read again, hints), From a dish, We cooked it, nutrition,
+  share/print/cookbook, first-time guide, update notices and What's new (section 1c). `:0.3.0` = `:latest`.
+  Work continues on `feature/v0.4`.
 - Repo: https://github.com/ZachCurry13/recipebank (public, MIT). Image: `ghcr.io/zachcurry13/recipebank`.
 - Decisions made with the user are in Claude's project memory (`recipebank-decisions`): name, public repo,
   Home & Care area, strict allergy mode in 0.1, links and photos only for imports, US + metric, separate
@@ -88,7 +93,7 @@ the catch-ups and new ideas below. Build in this order:
    banner when the server changed under an open page, a once-per-release push to admins ("updates" kind),
    #/whatsnew (bundled CHANGELOG.md via changelog.go + GitHub notes), "What's new" sheet once per person after an
    update. The 0.3.0 CHANGELOG section must exist before release, or nobody sees notes after updating.
-7. [~] Phone checks (all 22 pages at 360×760, light and dark), docs and CHANGELOG 0.3.0 done; release only with the user's OK.
+7. [x] Phone checks (all 22 pages at 360×760, light and dark), docs, CHANGELOG 0.3.0; released 2026-10-06 with the user's OK.
 
 0.4 first (chosen 2026-10-06): budget (prices, weekly estimate, cost per recipe), difficulty, planned leftovers,
 email a recipe or the list, events (holiday menus, potlucks, guests per meal).
@@ -138,7 +143,9 @@ search ranking.
 
 ## 7. Next immediate steps
 
-1. The user updates TrueNAS to 0.2.0 and tests. Not tried for real yet: live camera scanning, notifications and voice (need the https address on a phone),
-   the tunnel connecting (needs the user's Cloudflare token), AI suggestions with a real model.
-2. Not yet tested for real: reading card photos with an AI (no AI was set up locally).
-3. Then plan 0.2 with the user (pantry, supply closet, shopping list, meal plan).
+1. The user updates TrueNAS to 0.3.0 and tests. Not tried for real yet (no AI locally): the fridge photo, the dish photo,
+   AI substitutes and two-step card reading with a real model; nutrition beyond flour (DEMO_KEY's hourly limit);
+   live camera scanning, notifications, voice and the Android share target (need the https address on a phone).
+2. The user's AI was Ollama with qwen2.5:3b / qwen2.5vl:3b (too small for handwriting); Gemini's free tier was
+   suggested (OpenAI-compatible, https://generativelanguage.googleapis.com/v1beta/openai, a Flash model).
+3. Fix what the user finds as 0.3.x, then plan 0.4 with the user (the five extras chosen 2026-10-06, section 1c).
