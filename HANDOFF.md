@@ -110,7 +110,7 @@ no-undef), every page at 360×760, bad input on new endpoints, Kitchen list spee
 Build in this order (each with tests, phone checks, a commit):
 1. [x] **Difficulty:** recipes.difficulty ('' = worked out from time, steps, ingredients and techniques); chip on
    cards and the recipe page; editor choice; Library filter; "easy" in smart search.
-2. [ ] **Planned leftovers:** a plan meal can be "Leftovers from" an earlier planned recipe; the earlier meal's
+2. [x] **Planned leftovers:** a plan meal can be "Leftovers from" an earlier planned recipe; the earlier meal's
    servings grow to cover it, the shopping list skips the leftovers meal, Tonight says what to reheat.
 3. [ ] **Email a recipe or the list:** Admin → Email (SMTP, from NovelCheck's delivery/smtp.go, password kept
    secret, test button); ✉️ on the recipe page and the shopping list; one address at a time, rate-limited.

@@ -5,7 +5,7 @@ import { $, $$, esc, attempt, canManage, fmtMin, toast } from "./ui.js";
 import { verdictList } from "./verdicts.js";
 import { startCooking } from "./cook.js";
 import { useByChip } from "./stock.js";
-import { localDate, dayLabel, MEAL_NAMES } from "./planpick.js";
+import { localDate, dayLabel, MEAL_NAMES, mealName } from "./planpick.js";
 import { renderGuide } from "./guide.js";
 
 export async function renderTonight(view, params, state) {
@@ -14,7 +14,12 @@ export async function renderTonight(view, params, state) {
   const manage = canManage(state.user);
   const system = state.user.units || state.info?.default_units || "us";
   const name = Object.fromEntries(data.people.map((p) => [p.id, p.name]));
-  const factorOf = (m) => (m.servings && m.recipe?.servings ? m.servings / m.recipe.servings : 1);
+  // Planned leftovers make the meal bigger: cook and buy for them too.
+  const factorOf = (m) => {
+    const rs = m.recipe?.servings;
+    if (!rs) return 1 + (m.for?.length || 0);
+    return ((m.servings || rs) + (m.extra || 0)) / rs;
+  };
   const photo = (p, cls) => (p ? `<img src="/api/photos/${esc(p)}?w=1200" alt="" class="${cls}">` : "");
 
   view.innerHTML = `
@@ -24,12 +29,14 @@ export async function renderTonight(view, params, state) {
       ${manage ? `· <a href="#/plan" class="underline">change</a>` : ""}</p>
     ${data.meals.map((m, i) => `<div class="card mb-4 space-y-3">
       ${m.recipe ? photo(m.recipe.photo, "max-h-64 w-full rounded-lg object-cover") : ""}
-      <div><span class="label">${MEAL_NAMES[m.meal]}</span>
+      <div><span class="label">${MEAL_NAMES[m.meal]}${m.from ? " · 🍱 leftovers" : ""}</span>
         <h2 class="break-words text-xl font-semibold">${m.recipe ? `<a href="#/recipe/${m.recipe.id}" class="hover:underline">${esc(m.recipe.title)}</a>` : esc(m.title)}</h2>
         ${m.recipe?.total_min ? `<span class="chip-info">⏱ ${fmtMin(m.recipe.total_min)}</span>` : ""}
-        ${m.servings ? `<span class="chip-info">For ${+m.servings}</span>` : ""}</div>
+        ${m.servings ? `<span class="chip-info">For ${+m.servings}</span>` : ""}
+        ${m.from ? `<p class="mt-1 text-sm text-slate-300">From ${esc(mealName(m.from))}: just reheat.</p>` : ""}
+        ${m.for?.length ? `<p class="mt-1 text-sm text-slate-300">Make extra: leftovers are planned for ${esc(m.for.map(mealName).join(", "))}.</p>` : ""}</div>
       ${m.full.length ? verdictList(m.full, []) : ""}
-      ${m.recipe ? `<div class="flex flex-wrap gap-2">
+      ${m.recipe && !m.from ? `<div class="flex flex-wrap gap-2">
         <button data-cook="${i}" class="btn-primary">▶ Start cooking</button>
         <a href="#/recipe/${m.recipe.id}" class="btn-secondary">Open recipe</a>
         <button data-shop="${i}" class="btn-ghost">🛒 Add to shopping list</button></div>` : ""}

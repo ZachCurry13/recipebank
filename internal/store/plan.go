@@ -20,17 +20,19 @@ func ValidMeal(m string) bool {
 
 // PlanEntry is one planned meal: a recipe, or just a note.
 type PlanEntry struct {
-	ID        int64   `db:"id" json:"id"`
-	Date      string  `db:"date" json:"date"`
-	Meal      string  `db:"meal" json:"meal"`
-	RecipeID  *int64  `db:"recipe_id" json:"recipe_id"`
-	Title     string  `db:"title" json:"title"`
-	Servings  float64 `db:"servings" json:"servings"`
-	Note      string  `db:"note" json:"note"`
-	CreatedBy string  `db:"created_by" json:"created_by"`
+	ID       int64   `db:"id" json:"id"`
+	Date     string  `db:"date" json:"date"`
+	Meal     string  `db:"meal" json:"meal"`
+	RecipeID *int64  `db:"recipe_id" json:"recipe_id"`
+	Title    string  `db:"title" json:"title"`
+	Servings float64 `db:"servings" json:"servings"`
+	Note     string  `db:"note" json:"note"`
+	// LeftoversOf is the planned meal this one eats the leftovers of.
+	LeftoversOf *int64 `db:"leftovers_of" json:"leftovers_of"`
+	CreatedBy   string `db:"created_by" json:"created_by"`
 }
 
-const planCols = `id, date, meal, recipe_id, title, servings, note, created_by`
+const planCols = `id, date, meal, recipe_id, title, servings, note, leftovers_of, created_by`
 
 // PlanBetween returns the entries from one date to another (inclusive).
 func (s *Store) PlanBetween(from, to string) ([]PlanEntry, error) {
@@ -55,15 +57,15 @@ func (s *Store) PlanEntry(id int64) (*PlanEntry, error) {
 func (s *Store) SavePlan(e *PlanEntry) (int64, error) {
 	e.Title = strings.TrimSpace(e.Title)
 	if e.ID == 0 {
-		res, err := s.DB.Exec(`INSERT INTO meal_plan (date, meal, recipe_id, title, servings, note, created_by)
-			VALUES (?, ?, ?, ?, ?, ?, ?)`, e.Date, e.Meal, e.RecipeID, e.Title, max(0, e.Servings), e.Note, e.CreatedBy)
+		res, err := s.DB.Exec(`INSERT INTO meal_plan (date, meal, recipe_id, title, servings, note, leftovers_of, created_by)
+			VALUES (?, ?, ?, ?, ?, ?, ?, ?)`, e.Date, e.Meal, e.RecipeID, e.Title, max(0, e.Servings), e.Note, e.LeftoversOf, e.CreatedBy)
 		if err != nil {
 			return 0, err
 		}
 		return res.LastInsertId()
 	}
-	res, err := s.DB.Exec(`UPDATE meal_plan SET date = ?, meal = ?, recipe_id = ?, title = ?, servings = ?, note = ?
-		WHERE id = ?`, e.Date, e.Meal, e.RecipeID, e.Title, max(0, e.Servings), e.Note, e.ID)
+	res, err := s.DB.Exec(`UPDATE meal_plan SET date = ?, meal = ?, recipe_id = ?, title = ?, servings = ?, note = ?,
+		leftovers_of = ? WHERE id = ?`, e.Date, e.Meal, e.RecipeID, e.Title, max(0, e.Servings), e.Note, e.LeftoversOf, e.ID)
 	if err != nil {
 		return 0, err
 	}
@@ -106,4 +108,11 @@ func (s *Store) SetPlanDay(date string, who []int64) error {
 	_, err := s.DB.Exec(`INSERT INTO plan_days (date, who) VALUES (?, ?)
 		ON CONFLICT(date) DO UPDATE SET who = excluded.who`, date, string(b))
 	return err
+}
+
+// LeftoversFor lists the planned meals that eat a meal's leftovers.
+func (s *Store) LeftoversFor(id int64) ([]PlanEntry, error) {
+	out := []PlanEntry{}
+	err := s.DB.Select(&out, `SELECT `+planCols+` FROM meal_plan WHERE leftovers_of = ? ORDER BY date, id`, id)
+	return out, err
 }

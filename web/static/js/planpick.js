@@ -4,6 +4,10 @@ import { $, $$, esc, attempt, sheet, fmtMin } from "./ui.js";
 import { verdictChips } from "./verdicts.js";
 
 export const MEAL_NAMES = { breakfast: "Breakfast", lunch: "Lunch", dinner: "Dinner", snack: "Snack" };
+const ORDER = { breakfast: 0, lunch: 1, dinner: 2, snack: 3 };
+
+// mealName: "Mon, Oct 5 dinner".
+export const mealName = (ref) => `${dayLabel(ref.date)} ${MEAL_NAMES[ref.meal].toLowerCase()}`;
 
 // localDate is a date as YYYY-MM-DD in the phone's own time zone.
 export function localDate(d = new Date()) {
@@ -25,6 +29,7 @@ export function pickMeal(date, meal, who, done) {
       <label class="col-span-2 flex items-center gap-2 text-sm text-slate-300">For how many?
         <input id="serv" type="number" min="0" step="any" inputmode="decimal" class="input w-24" placeholder="as written"></label>
     </div>
+    <div id="lo"></div>
     <ul id="picks" class="max-h-[45dvh] space-y-1 overflow-y-auto"></ul>
     <form id="note" class="flex flex-wrap gap-2 border-t border-slate-800 pt-3">
       <input name="title" class="input min-w-0 flex-1 basis-40" placeholder="Or just write it: Leftovers, Pizza night out">
@@ -46,6 +51,17 @@ export function pickMeal(date, meal, who, done) {
     $$("[data-pick]", d).forEach((b) => (b.onclick = () => add({ recipe_id: Number(b.dataset.pick) })));
   };
   $("#pq", d).oninput = () => { clearTimeout(timer); timer = setTimeout(() => attempt(search), 250); };
+  // Leftovers of a recipe planned in the last few days (not leftovers themselves).
+  const from = new Date(date + "T00:00:00");
+  from.setDate(from.getDate() - 3);
+  get("/api/plan" + qs({ from: localDate(from), days: 4 })).then((plan) => {
+    const earlier = plan.days.flatMap((day) => day.meals).filter((m) => m.recipe && !m.leftovers_of &&
+      (m.date < date || (m.date === date && ORDER[m.meal] < ORDER[meal])));
+    if (!earlier.length) return;
+    $("#lo", d).innerHTML = `<p class="mb-1 text-sm font-semibold">🍱 Leftovers from…</p><div class="flex flex-wrap gap-2">${earlier.map((m) =>
+      `<button type="button" data-lo="${m.id}" class="btn-secondary min-h-0 max-w-full break-words py-1 text-left text-sm">${esc(mealName(m))}: ${esc(m.recipe.title)}</button>`).join("")}</div>`;
+    $$("[data-lo]", d).forEach((b) => (b.onclick = () => add({ leftovers_of: Number(b.dataset.lo) })));
+  }).catch(() => {});
   $("#note", d).onsubmit = (e) => {
     e.preventDefault();
     const title = e.target.title.value.trim();

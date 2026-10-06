@@ -14,6 +14,7 @@ func migrate(d *sqlx.DB) error {
 		{"recipes", "read_by", "TEXT NOT NULL DEFAULT ''"},
 		{"recipes", "ai_reading", "TEXT NOT NULL DEFAULT ''"},
 		{"recipes", "difficulty", "TEXT NOT NULL DEFAULT ''"},
+		{"meal_plan", "leftovers_of", "INTEGER REFERENCES meal_plan(id) ON DELETE CASCADE"},
 	} {
 		if err := addColumn(d, c.table, c.column, c.def); err != nil {
 			return err

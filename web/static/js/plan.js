@@ -2,7 +2,7 @@
 import { get, post, del } from "./api.js";
 import { $, $$, esc, attempt, canManage, toast } from "./ui.js";
 import { verdictChips } from "./verdicts.js";
-import { pickMeal, pickWho, localDate, dayLabel, MEAL_NAMES } from "./planpick.js";
+import { pickMeal, pickWho, localDate, dayLabel, MEAL_NAMES, mealName } from "./planpick.js";
 
 const MEALS = ["breakfast", "lunch", "dinner"];
 
@@ -23,9 +23,11 @@ export async function renderPlan(view, params, state) {
       <div class="min-w-0 flex-1 basis-48 space-y-2">
         ${items.map((m) => `<div class="flex min-w-0 flex-wrap items-center gap-2">
           <div class="min-w-0 flex-1 basis-40">
-            ${m.recipe ? `<a href="#/recipe/${m.recipe.id}" class="break-words font-medium hover:underline">${esc(m.recipe.title)}</a>`
+            ${m.from ? "🍱 Leftovers: " : ""}${m.recipe ? `<a href="#/recipe/${m.recipe.id}" class="break-words font-medium hover:underline">${esc(m.recipe.title)}</a>`
               : `<span class="break-words font-medium">${esc(m.title || "(recipe removed)")}</span>`}
             ${m.servings ? `<span class="text-xs text-slate-400"> · for ${+m.servings}</span>` : ""}
+            ${m.from ? `<span class="block text-xs text-slate-400">from ${esc(mealName(m.from))}</span>` : ""}
+            ${m.for?.length ? `<span class="block text-xs text-slate-400">makes extra for ${esc(m.for.map(mealName).join(", "))}</span>` : ""}
             ${m.verdicts.length ? `<div class="mt-1 flex flex-wrap gap-1">${verdictChips(m.verdicts)}</div>` : ""}
           </div>
           ${manage ? `<button data-rm="${m.id}" class="btn-ghost min-h-0 px-2 py-1 text-slate-500" aria-label="Remove">✕</button>` : ""}

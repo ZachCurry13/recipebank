@@ -19,6 +19,9 @@ type planMeal struct {
 	store.PlanEntry
 	Recipe   *planRecipe `json:"recipe"`
 	Verdicts []status    `json:"verdicts"`
+	From     *planRef    `json:"from,omitempty"` // leftovers: the meal they're from
+	Extra    float64     `json:"extra"`          // servings to make on top, for planned leftovers
+	For      []planRef   `json:"for"`            // the meals those leftovers are for
 }
 
 type planRecipe struct {
@@ -98,7 +101,7 @@ func (s *Server) recipeFor(pc *planContext, id int64) *recipe.Recipe {
 }
 
 func (s *Server) buildMeal(pc *planContext, e store.PlanEntry, diners []safety.Person) planMeal {
-	m := planMeal{PlanEntry: e, Verdicts: []status{}}
+	m := planMeal{PlanEntry: e, Verdicts: []status{}, For: []planRef{}}
 	if e.RecipeID == nil {
 		return m
 	}
@@ -106,6 +109,7 @@ func (s *Server) buildMeal(pc *planContext, e store.PlanEntry, diners []safety.P
 	if rc == nil {
 		return m
 	}
+	s.addLeftovers(&m, rc)
 	m.Recipe = &planRecipe{ID: rc.ID, Title: rc.Title, Photo: rc.Photo, TotalMin: rc.TotalMin, Servings: rc.Servings}
 	for _, p := range diners {
 		m.Verdicts = append(m.Verdicts, status{p.ID, p.Name, safety.Check(rc, p).Status})
@@ -163,6 +167,14 @@ func (s *Server) handleSavePlan(w http.ResponseWriter, r *http.Request) {
 	if _, err := time.Parse(day, e.Date); err != nil || !store.ValidMeal(e.Meal) {
 		writeErr(w, http.StatusBadRequest, "a date and a meal (breakfast, lunch, dinner or snack) are needed")
 		return
+	}
+	if e.LeftoversOf != nil {
+		src, err := s.Store.PlanEntry(*e.LeftoversOf)
+		if err != nil || src.RecipeID == nil || src.Date > e.Date || src.LeftoversOf != nil {
+			writeErr(w, http.StatusBadRequest, "leftovers come from an earlier planned recipe")
+			return
+		}
+		e.RecipeID, e.Title = src.RecipeID, ""
 	}
 	if e.RecipeID != nil {
 		if _, err := s.Store.Recipe(*e.RecipeID); err != nil {
@@ -234,17 +246,14 @@ func (s *Server) handlePlanShopping(w http.ResponseWriter, r *http.Request) {
 	}
 	added, have, seen := 0, []haveItem{}, map[string]bool{}
 	for _, e := range entries {
-		if e.RecipeID == nil {
+		if e.RecipeID == nil || e.LeftoversOf != nil { // leftovers come from a meal that's bought for
 			continue
 		}
 		rc, err := s.Store.Recipe(*e.RecipeID)
 		if err != nil {
 			continue
 		}
-		factor := 1.0
-		if e.Servings > 0 && rc.Servings > 0 {
-			factor = e.Servings / rc.Servings
-		}
+		factor := s.mealFactor(e, rc)
 		n, h, err := s.shopRecipe(rc, factor, auth.UserFrom(r).Username)
 		if err != nil {
 			writeStoreErr(w, err)
