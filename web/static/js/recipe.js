@@ -6,6 +6,7 @@ import { verdictList, flagsFor } from "./verdicts.js";
 import { amountLine, temps, timersIn } from "./units.js";
 import { startCooking } from "./cook.js";
 import { go } from "./app.js";
+import { addToCollection } from "./collections.js";
 
 const HAZARD_BOX = { danger: "box-danger", caution: "box-caution", info: "box-info" };
 const HAZARD_ICON = { danger: "⛔", caution: "⚠️", info: "ℹ️" };
@@ -61,6 +62,7 @@ export async function renderRecipe(view, params, state) {
             ${r.ingredients.length ? `<button id="shop" class="btn-secondary">🛒 Add to shopping list</button>` : ""}
             ${manage ? `<a href="#/edit/${r.id}" class="btn-secondary">✎ Edit</a>
               <button id="version" class="btn-secondary" title="A copy to change, keeping this one">⎘ Make our version</button>
+              <button id="tocol" class="btn-secondary">📚 Add to a collection</button>
               <button id="delete" class="btn-ghost text-rose-300">🗑 Delete</button>` : ""}
           </div>
         </div>
@@ -118,6 +120,8 @@ export async function renderRecipe(view, params, state) {
         { ingredient: Number(i), allergen, checked: on === "1" });
       draw();
     })));
+    const tocol = $("#tocol", view);
+    if (tocol) tocol.onclick = () => attempt(() => addToCollection(r.id, r.area));
     const shop = $("#shop", view);
     if (shop) shop.onclick = () => attempt(() => addToShopping(r, view_.factor));
     const cook = $("#cook", view);

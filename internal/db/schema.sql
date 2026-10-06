@@ -147,3 +147,20 @@ CREATE TABLE IF NOT EXISTS plan_days (
     date TEXT PRIMARY KEY,
     who  TEXT NOT NULL DEFAULT '[]'
 );
+
+-- Collections: themed shelves, filled by hand or with the AI's suggestions (a parent picks).
+CREATE TABLE IF NOT EXISTS collections (
+    id          INTEGER PRIMARY KEY AUTOINCREMENT,
+    name        TEXT NOT NULL,
+    description TEXT NOT NULL DEFAULT '',   -- what belongs, in plain words (the AI reads it)
+    icon        TEXT NOT NULL DEFAULT '📚',
+    area        TEXT NOT NULL DEFAULT 'kitchen' CHECK (area IN ('kitchen', 'home')),
+    created_by  TEXT NOT NULL DEFAULT '',
+    created_at  DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+CREATE TABLE IF NOT EXISTS collection_recipes (
+    collection_id INTEGER NOT NULL REFERENCES collections(id) ON DELETE CASCADE,
+    recipe_id     INTEGER NOT NULL REFERENCES recipes(id) ON DELETE CASCADE,
+    added_at      DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (collection_id, recipe_id)
+);

@@ -2,6 +2,7 @@
 import { get, qs } from "./api.js";
 import { $, $$, esc, fmtMin, peppers, stars, canManage, cap, HOME_CATS } from "./ui.js";
 import { verdictChips } from "./verdicts.js";
+import { localDate } from "./planpick.js";
 
 // Filters are kept per area while the app is open.
 const filters = { kitchen: { who: null, ok: "" }, home: { who: null, ok: "" } };
@@ -23,6 +24,7 @@ export async function renderLibrary(view, area, params, state) {
       </div>
       ${canManage(state.user) ? `<a href="#/add?area=${area}" class="btn-primary">➕ Add a recipe</a>` : ""}
     </div>
+    <div id="seasons" class="mb-3 flex flex-wrap gap-2"></div>
     <div class="card mb-4 space-y-3">
       <input id="q" type="search" class="input" placeholder="Search titles and ingredients" value="${esc(f.q || "")}">
       ${people.length ? `<div>
@@ -74,6 +76,10 @@ export async function renderLibrary(view, area, params, state) {
     if (el) el.onchange = () => { f[key] = el.value; load(); };
   }
   await load();
+  get(`/api/collections?area=${area}&date=${localDate()}`).then((d) => {
+    const box = $("#seasons", view);
+    if (box) box.innerHTML = d.seasons.map((s) => `<a href="#/season/${s.key}" class="pick">${esc(s.icon)} ${esc(s.name)} (${s.count})</a>`).join("");
+  }).catch(() => {});
 }
 
 function renderFacets(facets, f, load) {
@@ -95,8 +101,13 @@ function renderCards(list, area, f) {
       `No ${area === "home" ? "Home & Care" : ""} recipes yet. Add one from a link, a photo of a card, or by typing it in.`}</div>`;
     return;
   }
-  box.innerHTML = `<p class="mb-2 text-sm text-slate-400">${list.length} recipe${list.length === 1 ? "" : "s"}</p>
-    <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">${list.map((r) => `
+  box.innerHTML = `<p class="mb-2 text-sm text-slate-400">${list.length} recipe${list.length === 1 ? "" : "s"}</p>${cardGrid(list, area)}`;
+}
+
+// cardGrid is the recipe cards (for the Library, collections and seasons).
+// remove, when given, adds a ✕ to each card with data-remove="<id>".
+export function cardGrid(list, area, remove = false) {
+  return `<div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">${list.map((r) => `<div class="relative min-w-0">
       <a href="#/recipe/${r.id}" class="card block min-w-0 p-0 hover:ring-emerald-700">
         ${r.photo ? `<img src="/api/photos/${esc(r.photo)}?w=480" alt="" loading="lazy" class="h-40 w-full rounded-t-xl object-cover">`
           : `<div class="flex h-24 items-center justify-center rounded-t-xl bg-slate-800 text-4xl">${area === "home" ? "🧴" : "🍲"}</div>`}
@@ -111,7 +122,7 @@ function renderCards(list, area, f) {
           </div>
           <div class="flex flex-wrap gap-1">${verdictChips(r.verdicts)}</div>
         </div>
-      </a>`).join("")}</div>`;
+      </a>${remove ? `<button data-remove="${r.id}" class="absolute right-2 top-2 rounded-full bg-slate-900/90 px-3 py-1 text-sm ring-1 ring-slate-700" aria-label="Take off this collection">✕</button>` : ""}</div>`).join("")}</div>`;
 }
 
 // filtered: any filter beyond search and who's eating is on.

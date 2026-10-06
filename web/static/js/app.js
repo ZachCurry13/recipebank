@@ -6,6 +6,7 @@ import { renderStock } from "./stock.js";
 import { renderShopping, flush } from "./shopping.js";
 import { renderTonight } from "./tonight.js";
 import { renderPlan } from "./plan.js";
+import { renderCollections, renderCollection, renderSeason } from "./collections.js";
 import { applyAppearance } from "./appearance.js";
 import { renderLibrary } from "./library.js";
 import { renderRecipe } from "./recipe.js";
@@ -25,6 +26,9 @@ const routes = {
   shopping: renderShopping,
   tonight: renderTonight,
   plan: renderPlan,
+  collections: renderCollections,
+  collection: renderCollection,
+  season: renderSeason,
   recipe: renderRecipe,
   add: renderAdd,
   edit: renderEdit,
@@ -32,7 +36,7 @@ const routes = {
   admin: renderAdmin,
   profile: renderProfile,
 };
-const NAV_OF = { recipe: null, edit: "add" };
+const NAV_OF = { recipe: null, edit: "add", collection: "collections", season: "collections" };
 
 function showOnly(id) {
   for (const v of ["#setup-view", "#login-view", "#app-view"]) $(v).classList.toggle("hidden", v !== id);

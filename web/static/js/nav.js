@@ -13,6 +13,7 @@ export const NAV = [
   ["home", "Home & Care", "🧴", all, false],
   ["pantry", "Pantry", "🥫", all, false],
   ["supplies", "Supplies", "🧽", all, false],
+  ["collections", "Collections", "📚", all, false],
   ["add", "Add a recipe", "➕", canManage, false],
   ["family", "Family", "👪", all, false],
   ["admin", "Admin", "⚙️", (u) => u.role === "admin", false],

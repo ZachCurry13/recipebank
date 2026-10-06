@@ -66,15 +66,7 @@ func (s *Server) handleListRecipes(w http.ResponseWriter, r *http.Request) {
 		if diet != "" && safety.Check(rc, safety.Person{HeatMax: -1, Diets: []string{diet}}).Status != safety.OK {
 			continue
 		}
-		card := recipeCard{ID: rc.ID, Area: rc.Area, Title: rc.Title, Photo: rc.Photo, TotalMin: rc.TotalMin, Heat: heat,
-			Course: rc.Course, Cuisine: rc.Cuisine, Protein: rc.Protein, Rating: rc.Rating, NeedsReview: rc.NeedsReview,
-			Verdicts: []status{}}
-		worst := safety.OK
-		for _, p := range diners {
-			v := safety.Check(rc, p)
-			card.Verdicts = append(card.Verdicts, status{p.ID, p.Name, v.Status})
-			worst = worse(worst, v.Status)
-		}
+		card, worst := cardFor(rc, diners)
 		if ok := q.Get("ok"); ok == "1" && worst != safety.OK || ok == "unsure" && worst == safety.No {
 			continue
 		}
@@ -86,6 +78,20 @@ func (s *Server) handleListRecipes(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 	writeJSON(w, http.StatusOK, map[string]any{"recipes": cards, "facets": facets})
+}
+
+// cardFor is a recipe's Library card, and the worst verdict among diners.
+func cardFor(rc *recipe.Recipe, diners []safety.Person) (recipeCard, string) {
+	card := recipeCard{ID: rc.ID, Area: rc.Area, Title: rc.Title, Photo: rc.Photo, TotalMin: rc.TotalMin, Heat: heatOf(rc),
+		Course: rc.Course, Cuisine: rc.Cuisine, Protein: rc.Protein, Rating: rc.Rating, NeedsReview: rc.NeedsReview,
+		Verdicts: []status{}}
+	worst := safety.OK
+	for _, p := range diners {
+		v := safety.Check(rc, p)
+		card.Verdicts = append(card.Verdicts, status{p.ID, p.Name, v.Status})
+		worst = worse(worst, v.Status)
+	}
+	return card, worst
 }
 
 // handleGetRecipe sends one recipe with verdicts, swaps and (for Home &

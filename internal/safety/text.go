@@ -120,3 +120,32 @@ func (t text) mask(ps phrases) {
 		}
 	}
 }
+
+// Words is a compiled list of words and phrases for other packages
+// (seasons, search), matched whole-word like the safety checks.
+type Words struct{ yes, not phrases }
+
+// NewWords compiles phrases to find and look-alikes to ignore.
+func NewWords(find, ignore []string) Words { return Words{compile(find...), compile(ignore...)} }
+
+// In reports whether any phrase is in s (look-alikes masked first).
+func (w Words) In(s string) bool {
+	t := newText(s)
+	t.mask(w.not)
+	return t.has(w.yes)
+}
+
+// Count is how many of the phrases are in s (for ranking).
+func (w Words) Count(s string) int {
+	t := newText(s)
+	t.mask(w.not)
+	n := 0
+	for i, word := range t {
+		for _, p := range w.yes.byFirst[word] {
+			if word != "" && t.at(i, p) {
+				n++
+			}
+		}
+	}
+	return n
+}
