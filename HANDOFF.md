@@ -191,6 +191,26 @@ everything below is built and checked.
 8. [x] Docs, CHANGELOG, phone checks (360×760, light and dark; desktop widths for the menu). Released as 0.6.0 on 2026-10-07 (user OK); `:0.6.0` = `:latest`. Work continues on `feature/v0.7`.
    The SW cache is v8 (0.5.1 used v7).
 
+## 1h. 0.7 plan (2026-10-07; on `feature/v0.7`; one 0.7.0 at the end, ASK the user before releasing)
+
+0.6.1 released 2026-10-07 (Gemini thinking/time-out, List models, ingredient lines kept as written).
+The user's notes after using 0.6, plan agreed ("Yes, build it"):
+1. [ ] **Fewer pages:** "Recipes" with Kitchen | Home & Care tabs; "Pantry" with Food | Supplies tabs; Family moves
+   under Me (no menu entry); "Add a recipe" near the front by default.
+2. [ ] **Menu order on Me:** each person can reorder their pages (the first ones go on the phone's bottom bar and the
+   computer's top bar).
+3. [ ] **Recipe → shopping list:** the button sits near the top and opens a list to tick which ingredients to add
+   (ticked: what isn't in the pantry); Home & Care recipes too.
+4. [ ] **🔍 Search everything** from the top bar: recipes (both areas), pantry and supplies, the list, cookbooks'
+   recipes, events, collections.
+5. [ ] **Event guest link:** a link guests open without an account to add their name, their allergies and what
+   they're bringing; the menu is checked for them; the host can stop it; it ends after the event.
+6. [ ] Docs, CHANGELOG, phone checks, then ASK to release 0.7.0.
+
+Undecided (the user: "Not sure yet"): sharing a recipe with "nobody / household / family / everyone on the server"
+needs several households on one server (a big split of people, pantry, plan and list by household) or one household
+plus relatives with accounts. Ask again after 0.7.
+
 ## 2. Rules
 
 See `CLAUDE.md` (hard rules) and the local-only `concepts/working-rules.md` (how we work: plan first,
