@@ -40,9 +40,9 @@ CHANGELOG 0.3.0 written; every page checked at 360×760 (light and dark).
 - 0.7.1 released 2026-10-07: the photo AI organizes recipes when the main AI fails; Ollama model-load errors explained.
 - 0.7.0 released 2026-10-07 (HANDOFF 1h): Recipes and Pantry with tabs, Family under Me,
   per-person menu order, pick ingredients for the list, search everything, event guest links.
-- feature/v0.8 (not released): Ollama card with 📝 For text / 📷 For photos pickers (Download and use, Other model…,
+- 0.8.0 released 2026-10-07: Ollama card with 📝 For text / 📷 For photos pickers (Download and use, Other model…,
   photo models marked from Ollama's capabilities, List models marks them too); a busy online AI is asked once more;
-  "neither AI could" says each AI's problem; CLIP load failures and usage limits explained. Ask before releasing.
+  "neither AI could" says each AI's problem; CLIP load failures and usage limits explained.
 - Next: ask whether several households will share the server (recipe sharing levels); the import formats still need
   real export files to confirm.
 - The user tests 0.2.0 with a real AI; fixes go out as 0.2.x.
