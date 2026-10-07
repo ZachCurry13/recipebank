@@ -105,7 +105,7 @@ func (s *Server) handleTestAI(w http.ResponseWriter, r *http.Request) {
 		return nil
 	})
 	if err != nil {
-		writeErr(w, http.StatusBadGateway, err.Error())
+		writeErr(w, http.StatusBadGateway, importErr(err))
 		return
 	}
 	writeJSON(w, http.StatusOK, map[string]any{"ok": true, "seconds": time.Since(start).Seconds(), "model": model})

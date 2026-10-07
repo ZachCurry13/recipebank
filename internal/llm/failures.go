@@ -53,3 +53,21 @@ func MaxTokens(model string) int {
 	}
 	return 4000
 }
+
+// WontLoad reports whether an AI server (Ollama, llama.cpp) couldn't load a
+// model: out of graphics memory, a graphics driver that wouldn't start
+// ("vk::…ErrorInitializationFailed", CUDA), or the model runner crashing.
+func WontLoad(err error) bool {
+	if err == nil {
+		return false
+	}
+	msg := strings.ToLower(err.Error())
+	for _, k := range []string{"error loading model", "failed to load model", "llama-server process has terminated",
+		"llama runner process has terminated", "errorinitializationfailed", "vk::", "cuda error", "out of memory",
+		"unable to allocate", "model requires more system memory"} {
+		if strings.Contains(msg, k) {
+			return true
+		}
+	}
+	return false
+}

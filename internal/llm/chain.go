@@ -17,22 +17,42 @@ import (
 var ErrNoAI = errors.New("no AI is set up yet: an admin can add one under Admin → AI")
 
 // Ask sends one question to each model in order until parse accepts an answer.
-// Text goes to the main AI, or to the photo AI when it's the only one.
+// Text goes to the main AI, or to the photo AI when it's the only one. When
+// the main AI can't answer (its server is off, or a model won't load on its
+// graphics card), the photo AI answers instead: it reads text too.
 func Ask(ctx context.Context, st *store.Store, system, user string, parse func(string) error) error {
-	ai := st.AIConfig()
-	if !ai.Ready() {
-		ai = st.PhotoAIConfig()
+	main, photo := st.AIConfig(), st.PhotoAIConfig()
+	if !main.Ready() {
+		_, err := askTextWith(ctx, st, photo, true, system, user, parse)
+		return err
 	}
-	_, err := AskWith(ctx, st, ai, system, user, parse)
-	return err
+	_, err := AskWith(ctx, st, main, system, user, parse)
+	if err == nil || ctx.Err() != nil || !photo.Ready() || isDown(photo.BaseURL) {
+		return err
+	}
+	if _, perr := askTextWith(ctx, st, photo, true, system, user, parse); perr == nil {
+		return nil
+	} else if HostDown(perr) {
+		markDown(photo.BaseURL)
+	}
+	return err // the main AI's problem is the one to fix
 }
 
 // AskWith asks one AI's models (Ask's work; also the admin's "Test").
 func AskWith(ctx context.Context, st *store.Store, ai store.AIConfig, system, user string, parse func(string) error) (string, error) {
+	return askTextWith(ctx, st, ai, false, system, user, parse)
+}
+
+// askTextWith asks one AI; quick gives up connecting after a few seconds
+// (the photo AI may be on a computer that's switched off).
+func askTextWith(ctx context.Context, st *store.Store, ai store.AIConfig, quick bool, system, user string, parse func(string) error) (string, error) {
 	if !ai.Ready() {
 		return "", ErrNoAI
 	}
 	client := New(ai.Provider, ai.BaseURL, ai.APIKey, ai.JSONMode)
+	if c, ok := client.(*Client); ok && quick {
+		c.HTTP = quickDial
+	}
 	return try(ctx, st, ai, ai.Models, parse, func(cctx context.Context, model string) (string, Usage, error) {
 		return client.Complete(cctx, model, system, user)
 	})

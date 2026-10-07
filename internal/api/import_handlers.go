@@ -239,6 +239,14 @@ func (s *Server) finishDraft(w http.ResponseWriter, r *http.Request, rc *recipe.
 }
 
 // importErr puts the AI's failures in plain words.
+// shorten keeps an error short enough to show.
+func shorten(s string, n int) string {
+	if len(s) <= n {
+		return s
+	}
+	return s[:n] + "…"
+}
+
 func importErr(err error) string {
 	switch {
 	case errors.Is(err, llm.ErrNoAI):
@@ -248,6 +256,11 @@ func importErr(err error) string {
 			"or give the model more room on the AI server (for Ollama, a context length of 8192 or more), or use a cloud AI."
 	case llm.TooLong(err):
 		return "The text is too long for this AI model's working memory. Paste just the recipe, or give the model more room on the AI server."
+	case llm.WontLoad(err):
+		return "The AI server couldn't load its model (on Ollama, usually its graphics card couldn't start or is out of memory). " +
+			"Restart the Ollama app (TrueNAS: Apps → ollama → Restart) and try again. If it keeps happening, another model may be " +
+			"filling the card's memory, or the card isn't shared with the app: check the app's GPU setting, or use a smaller model. " +
+			"(It said: " + shorten(err.Error(), 160) + ")"
 	case errors.Is(err, llm.ErrNoRecipe) || strings.Contains(err.Error(), llm.ErrNoRecipe.Error()):
 		return "No recipe was found there. Try a clearer photo, or paste the recipe's text."
 	}

@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.7.1] - 2026-10-07
+
+### Fixes
+- When the main AI can't answer (its computer is off, or Ollama can't load its model on the graphics card), the **AI for photos** now organizes the recipe instead, so reading a card finishes as long as one AI works.
+- When Ollama can't load a model ("error loading model", "vk::…ErrorInitializationFailed", out of memory), RecipeBank says what that means and what to do: restart the Ollama app, and check its graphics card setting. **Test the AI** says it the same way.
+
+Updating: nothing to change in TrueNAS.
+
 ## [0.7.0] - 2026-10-07
 
 A tidier menu in your own order, search everything, and events your guests can join.
