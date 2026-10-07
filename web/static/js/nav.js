@@ -1,7 +1,7 @@
 // Navigation. On a computer: the main pages in the top bar (more of them on
 // wider screens) and a More menu with the rest, so the bar never scrolls.
 // On a phone: a bottom bar with the main pages and a More sheet.
-import { $, $$, esc, canManage, sheet } from "./ui.js";
+import { $, $$, esc, canManage, sheet, hiddenPages } from "./ui.js";
 
 const all = () => true;
 
@@ -25,6 +25,11 @@ export const NAV = [
   ["profile", "Me", "🙂", all, false, ""],
 ];
 
+// PAGE_FEATURES: the house features (Admin → Features) a page needs.
+export const PAGE_FEATURES = { plan: ["plan"], shopping: ["shopping"], make: ["make"], home: ["home"], pantry: ["pantry"],
+  supplies: ["home", "pantry"], collections: ["collections"], collection: ["collections"], season: ["collections"],
+  books: ["books"], book: ["books"], events: ["events"], event: ["events"] };
+
 // Pages on the top bar from a width on are hidden below it, and the other way round in More.
 const ON_BAR = { md: "", lg: "hidden lg:block", xl: "hidden xl:block" };
 const IN_MORE = { md: "hidden", lg: "lg:hidden", xl: "xl:hidden", "": "" };
@@ -38,8 +43,12 @@ function showMenu(open) {
   $("#nav-more").setAttribute("aria-expanded", String(open));
 }
 
-export function buildNav(user) {
-  const items = NAV.filter(([, , , may]) => may(user));
+// buildNav shows the pages this person may see, minus what the house turned
+// off and what they hid from their own menu (Me → Keep it simple).
+export function buildNav(user, info) {
+  const hidden = hiddenPages(user);
+  const items = NAV.filter(([r, , , may]) => may(user) && !hidden.includes(r) &&
+    (PAGE_FEATURES[r] || []).every((f) => info?.features?.[f] !== false));
   const top = $("#nav");
   top.innerHTML = items.filter((i) => i[5]).map(([r, label, ico, , , w]) =>
     `<a href="#/${r}" data-route="${r}" class="nav-link ${ON_BAR[w]}">${ico} ${esc(label)}</a>`).join("") +

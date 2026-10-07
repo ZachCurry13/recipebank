@@ -1,7 +1,7 @@
 // A recipe's page: who can eat it and why, swaps, Home & Care warnings,
 // servings and units, steps, and the parents' tools.
 import { get, post, put, del, qs } from "./api.js";
-import { $, $$, esc, attempt, busy, fmtMin, peppers, levelChip, money, canManage, canEmail, cap, toast, sheet } from "./ui.js";
+import { $, $$, esc, attempt, busy, fmtMin, peppers, levelChip, money, canManage, canEmail, cap, toast, sheet, featureOn } from "./ui.js";
 import { verdictList } from "./verdicts.js";
 import { startCooking } from "./cook.js";
 import { kidsChip } from "./kids.js";
@@ -40,6 +40,7 @@ export async function renderRecipe(view, params, state) {
     const r = data.recipe;
     const home = r.area === "home";
     const manage = canManage(state.user);
+    const on = (f) => featureOn(state, f); // what the house uses (Admin → Features)
     view.innerHTML = `
       <a href="#/${r.area}" class="text-sm text-slate-400 hover:text-slate-200">‹ ${home ? "Home & Care" : "Kitchen"}</a>
       <div class="mt-2 grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.3fr)]">
@@ -49,11 +50,11 @@ export async function renderRecipe(view, params, state) {
             <h1 class="break-words text-2xl font-bold leading-tight">${esc(r.title)}</h1>
             ${r.summary ? `<p class="mt-1 text-slate-300">${esc(r.summary)}</p>` : ""}
             ${data.original ? `<p class="mt-1 text-sm text-slate-400">Our version of <a class="underline" href="#/recipe/${data.original.id}">${esc(data.original.title)}</a></p>` : ""}
-            ${home ? "" : bookLine(data.book, state.user)}
+            ${home || !on("books") ? "" : bookLine(data.book, state.user)}
             <div class="mt-2 flex flex-wrap items-center gap-1">
               ${r.total_min ? `<span class="chip-info">⏱ ${fmtMin(r.total_min)}${r.prep_min ? ` (prep ${fmtMin(r.prep_min)})` : ""}</span>` : ""}
-              ${home ? "" : peppers(data.heat) + levelChip(data.level) + kidsChip(data.kids)}
-              ${data.cost ? `<span class="chip-info" title="From the pantry's prices: ${data.cost.priced} of ${data.cost.lines} ingredients priced">💲 about ${money(data.cost.total, state.info?.currency)}${data.cost.priced < data.cost.lines ? ` · ${data.cost.priced} of ${data.cost.lines} priced` : ""}</span>` : ""}
+              ${home ? "" : peppers(data.heat) + levelChip(data.level) + kidsChip(on("kids") && data.kids)}
+              ${data.cost && on("budget") ? `<span class="chip-info" title="From the pantry's prices: ${data.cost.priced} of ${data.cost.lines} ingredients priced">💲 about ${money(data.cost.total, state.info?.currency)}${data.cost.priced < data.cost.lines ? ` · ${data.cost.priced} of ${data.cost.lines} priced` : ""}</span>` : ""}
               ${r.course ? `<span class="chip-cat">${esc(cap(r.course))}</span>` : ""}
               ${r.cuisine ? `<span class="chip-cat">${esc(r.cuisine)}</span>` : ""}
               ${r.protein ? `<span class="chip-cat">${esc(cap(r.protein))}</span>` : ""}
@@ -73,9 +74,9 @@ export async function renderRecipe(view, params, state) {
             ${r.steps.length ? `<button id="cook" class="btn-primary">▶ ${home ? "Step by step" : "Start cooking"}</button>` : ""}
             ${home ? "" : `<button id="cooked" class="btn-secondary">🍳 We cooked it</button>`}
             <button id="print" class="btn-secondary">🖨 Print</button>
-            ${manage ? `<button id="share-link" class="btn-secondary">🔗 Share link</button>` : ""}
+            ${manage && on("share") ? `<button id="share-link" class="btn-secondary">🔗 Share link</button>` : ""}
             ${canEmail(state) ? `<button id="mail" class="btn-secondary">✉️ Email</button>` : ""}
-            ${r.ingredients.length ? `<button id="shop" class="btn-secondary">🛒 Add to shopping list</button>` : ""}
+            ${r.ingredients.length && on("shopping") ? `<button id="shop" class="btn-secondary">🛒 Add to shopping list</button>` : ""}
             ${manage ? `<a href="#/edit/${r.id}" class="btn-secondary">✎ Edit</a>
               <button id="version" class="btn-secondary" title="A copy to change, keeping this one">⎘ Make our version</button>
               <button id="tocol" class="btn-secondary">📚 Add to a collection</button>
@@ -101,7 +102,7 @@ export async function renderRecipe(view, params, state) {
             <ol class="space-y-3">${stepList(r, view_)}</ol>
           </div>
           ${cookHistory(data.cooks, people, manage)}
-          ${home || !r.ingredients.length ? "" : nutritionCard()}
+          ${home || !r.ingredients.length || !on("nutrition") ? "" : nutritionCard()}
           ${r.notes ? `<div class="card"><h2 class="mb-1 font-semibold">Our notes</h2><p class="whitespace-pre-line text-sm text-slate-300">${esc(r.notes)}</p></div>` : ""}
           ${r.storage ? `<div class="card"><h2 class="mb-1 font-semibold">Storage</h2><p class="whitespace-pre-line text-sm text-slate-300">${esc(r.storage)}</p></div>` : ""}
           ${source(r, manage)}
@@ -164,7 +165,7 @@ export async function renderRecipe(view, params, state) {
     $$("[data-ing]", view).forEach((li) => (li.onclick = (e) => { if (!e.target.closest("button")) li.classList.toggle("line-through-soft"); }));
     wireSubstitute(view, r, view_.sub, () => view_.who.join(",") || "0", draw);
     const cook = $("#cook", view);
-    if (cook) cook.onclick = () => startCooking(r, { ...view_, needs: data.needs });
+    if (cook) cook.onclick = () => startCooking(r, { ...view_, needs: featureOn(state, "kids") ? data.needs : null });
     wireBookLink(view, r, data.book, () => attempt(load));
     const version = $("#version", view);
     if (version) version.onclick = () => attempt(async () => {

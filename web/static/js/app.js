@@ -1,7 +1,7 @@
 // RecipeBank bootstrap: session check, hash router, navigation.
 import { api, get, post, setUnauthorizedHandler, setOffline } from "./api.js";
-import { $, esc, canManage } from "./ui.js";
-import { buildNav, markNav } from "./nav.js";
+import { $, esc, canManage, featureOn } from "./ui.js";
+import { buildNav, markNav, PAGE_FEATURES } from "./nav.js";
 import { renderStock } from "./stock.js";
 import { renderShopping, flush } from "./shopping.js";
 import { renderTonight } from "./tonight.js";
@@ -60,7 +60,16 @@ function showOnly(id) {
 
 export async function refreshInfo() {
   state.info = await get("/api/info");
+  if (state.user && $("#nav")) rebuildNav(); // features may have been turned on or off
   return state.info;
+}
+
+let lit = null; // the menu entry for the open page
+
+// rebuildNav redraws the menu after features or a person's choices change.
+export function rebuildNav() {
+  buildNav(state.user, state.info);
+  if (lit) markNav(lit);
 }
 
 async function showApp() {
@@ -68,7 +77,7 @@ async function showApp() {
   document.body.dataset.role = state.user.role;
   applyAppearance(state.user);
   await refreshInfo().catch(() => {});
-  buildNav(state.user);
+  buildNav(state.user, state.info);
   const v = state.user.version || "dev";
   $("#version-label").textContent = `Version ${v}`;
   $("#header-version").textContent = v;
@@ -87,13 +96,19 @@ async function route() {
   const page = routes[name] ? name : "tonight";
   const params = Object.fromEntries(new URLSearchParams(query));
   if (id) params.id = id;
-  const lit = page in NAV_OF ? NAV_OF[page] : page;
+  lit = page in NAV_OF ? NAV_OF[page] : page;
   markNav(lit);
   if (leaving) {
     leaving();
     leaving = null;
   }
   const view = $("#view");
+  if ((PAGE_FEATURES[page] || []).some((f) => !featureOn(state, f))) {
+    view.innerHTML = `<div class="card space-y-2"><p>This part of RecipeBank is turned off for the house.</p>
+      <p class="text-sm text-slate-400">${state.user.role === "admin" ? `Turn it back on under <a class="underline" href="#/admin">Admin → Features</a>.`
+        : "An admin can turn it back on under Admin → Features."}</p></div>`;
+    return;
+  }
   view.innerHTML = `<p class="text-slate-500">Loading…</p>`;
   try {
     leaving = (await routes[page](view, params, state)) || null;

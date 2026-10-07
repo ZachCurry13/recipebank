@@ -1,6 +1,6 @@
 // The Library: Kitchen or Home & Care recipes, filtered, with each diner's verdict.
 import { get, qs } from "./api.js";
-import { $, $$, esc, fmtMin, peppers, stars, canManage, cap, HOME_CATS, LEVELS, levelChip } from "./ui.js";
+import { $, $$, esc, fmtMin, peppers, stars, canManage, cap, HOME_CATS, LEVELS, levelChip, featureOn } from "./ui.js";
 import { verdictChips } from "./verdicts.js";
 import { localDate } from "./planpick.js";
 import { askRecipes } from "./ask.js";
@@ -11,6 +11,7 @@ const filters = { kitchen: { who: null, ok: "" }, home: { who: null, ok: "" } };
 
 export async function renderLibrary(view, area, params, state) {
   const f = filters[area];
+  if (!featureOn(state, "kids")) f.kids = ""; // a filter left on from before the feature was turned off
   const people = await get("/api/people");
   if (f.who === null) f.who = people.filter((p) => !p.is_guest).map((p) => p.id);
   const home = area === "home";
@@ -52,8 +53,8 @@ export async function renderLibrary(view, area, params, state) {
           `<option value="${h}" ${f.heat === String(h) ? "selected" : ""}>${h ? "Up to " + "🌶️".repeat(h) : "No heat"}</option>`).join("")}</select></label>
         <label><span class="label">How hard</span><select id="level" class="input"><option value="">Any</option>${Object.entries(LEVELS).map(([k, l]) =>
           `<option value="${k}" ${f.level === k ? "selected" : ""}>${l}</option>`).join("")}</select></label>
-        <label><span class="label">Helpers</span><select id="kids" class="input"><option value="">Anyone</option>
-          <option value="1" ${f.kids === "1" ? "selected" : ""}>🧒 Kids can help</option></select></label>`}
+        ${featureOn(state, "kids") ? `<label><span class="label">Helpers</span><select id="kids" class="input"><option value="">Anyone</option>
+          <option value="1" ${f.kids === "1" ? "selected" : ""}>🧒 Kids can help</option></select></label>` : ""}`}
       </div>
       <div id="facets" class="mt-3 grid gap-3 sm:grid-cols-3"></div>
       </details>
@@ -69,7 +70,7 @@ export async function renderLibrary(view, area, params, state) {
     renderCards(data.recipes, area, f);
     const hits = $("#bookhits");
     const words = (q || "").trim();
-    if (hits) hits.innerHTML = words && !home ? bookHits((await get("/api/books/search" + qs({ q: words }))).entries) : "";
+    if (hits) hits.innerHTML = words && !home && featureOn(state, "books") ? bookHits((await get("/api/books/search" + qs({ q: words }))).entries) : "";
   };
   // Three words or more is a question: answered by Ask (or Enter), not word search.
   const ask = () => askRecipes($("#results"), area, f.q.trim(), f.who, state.info?.diets, () => { f.q = ""; $("#q").value = ""; $("#ask").classList.add("hidden"); load(); });

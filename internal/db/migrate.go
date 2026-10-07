@@ -17,6 +17,8 @@ func migrate(d *sqlx.DB) error {
 		{"meal_plan", "leftovers_of", "INTEGER REFERENCES meal_plan(id) ON DELETE CASCADE"},
 		{"stock", "price", "REAL NOT NULL DEFAULT 0"},
 		{"stock", "size", "TEXT NOT NULL DEFAULT ''"},
+		{"users", "plan_meals", "TEXT NOT NULL DEFAULT ''"},   // meals the person's plan shows; '' = all
+		{"users", "hidden_pages", "TEXT NOT NULL DEFAULT ''"}, // pages left out of the person's menu
 	} {
 		if err := addColumn(d, c.table, c.column, c.def); err != nil {
 			return err

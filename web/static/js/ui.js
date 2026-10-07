@@ -58,8 +58,14 @@ export async function busy(btn, label, fn) {
 }
 
 export const canManage = (user) => user?.role === "admin" || user?.role === "editor";
-// canEmail: parents, or everyone when Admin → Email allows it.
-export const canEmail = (state) => canManage(state.user) || state.info?.email_who === "everyone";
+// featureOn is false only for what an admin turned off for the house (Admin → Features).
+export const featureOn = (state, f) => state.info?.features?.[f] !== false;
+// canEmail: parents, or everyone when Admin → Email allows it (and email is on).
+export const canEmail = (state) => featureOn(state, "email") && (canManage(state.user) || state.info?.email_who === "everyone");
+// planMeals are the meals a person's plan shows (all until they choose); hiddenPages leave their menu.
+export const ALL_MEALS = ["breakfast", "lunch", "dinner", "snack"];
+export const planMeals = (user) => (user?.plan_meals ? user.plan_meals.split(",") : ALL_MEALS);
+export const hiddenPages = (user) => (user?.hidden_pages ? user.hidden_pages.split(",") : []);
 
 export function fmtMin(m) {
   if (!m) return "";

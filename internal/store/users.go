@@ -6,7 +6,7 @@ import (
 	"fmt"
 )
 
-const userCols = `id, username, password_hash, role, person_id, units, theme, seen_version, created_at`
+const userCols = `id, username, password_hash, role, person_id, units, theme, seen_version, plan_meals, hidden_pages, created_at`
 
 func (s *Store) CountUsers() (int, error) {
 	var n int

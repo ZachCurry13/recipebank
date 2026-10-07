@@ -22,6 +22,7 @@ func (s *Server) handleInfo(w http.ResponseWriter, r *http.Request) {
 		"email_who":     s.Store.Setting(store.KeyEmailWho),
 		"currency":      s.Store.Setting(store.KeyCurrency),
 		"default_units": s.Store.Setting(store.KeyDefaultUnits),
+		"features":      s.Store.FeaturesOn(),
 	})
 }
 

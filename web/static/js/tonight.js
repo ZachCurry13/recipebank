@@ -1,7 +1,7 @@
 // Tonight: the start page. What's planned today and who's eating (with
 // everyone's checks), food to use soon, and ideas when nothing's planned.
 import { get, post } from "./api.js";
-import { $, $$, esc, attempt, canManage, fmtMin, toast } from "./ui.js";
+import { $, $$, esc, attempt, canManage, fmtMin, toast, featureOn, planMeals } from "./ui.js";
 import { verdictList } from "./verdicts.js";
 import { startCooking } from "./cook.js";
 import { useByChip } from "./stock.js";
@@ -12,6 +12,12 @@ export async function renderTonight(view, params, state) {
   const date = localDate();
   const data = await get(`/api/tonight?date=${date}`);
   const manage = canManage(state.user);
+  // Show only what this house uses and the meals this person keeps on their plan.
+  const plan = featureOn(state, "plan"), shop = featureOn(state, "shopping"), mine = planMeals(state.user);
+  data.meals = plan ? data.meals.filter((m) => mine.includes(m.meal)) : [];
+  if (!plan || (data.next && !mine.includes(data.next.meal))) data.next = null;
+  if (!featureOn(state, "events")) data.events = [];
+  if (!featureOn(state, "pantry")) data.use_soon = [];
   const system = state.user.units || state.info?.default_units || "us";
   const name = Object.fromEntries(data.people.map((p) => [p.id, p.name]));
   // Planned leftovers make the meal bigger: cook and buy for them too.
@@ -40,19 +46,19 @@ export async function renderTonight(view, params, state) {
       ${m.recipe && !m.from ? `<div class="flex flex-wrap gap-2">
         <button data-cook="${i}" class="btn-primary">▶ Start cooking</button>
         <a href="#/recipe/${m.recipe.id}" class="btn-secondary">Open recipe</a>
-        <button data-shop="${i}" class="btn-ghost">🛒 Add to shopping list</button></div>` : ""}
+        ${shop ? `<button data-shop="${i}" class="btn-ghost">🛒 Add to shopping list</button>` : ""}</div>` : ""}
     </div>`).join("")}
     ${data.meals.some((m) => m.meal === "dinner") ? "" : `<div class="card mb-4 space-y-3">
-      <h2 class="font-semibold">Nothing planned for dinner${data.meals.length ? "" : " yet"}</h2>
+      <h2 class="font-semibold">${plan ? `Nothing planned for dinner${data.meals.length ? "" : " yet"}` : "Ideas for dinner"}</h2>
       ${data.ideas.length ? `<p class="text-sm text-slate-400">Ideas everyone eating can have:</p>
         <div class="grid gap-2 sm:grid-cols-2">${data.ideas.map((r) => `<div class="flex min-w-0 items-center gap-3 rounded-lg p-2 ring-1 ring-slate-800">
           ${r.photo ? `<img src="/api/photos/${esc(r.photo)}?w=480" alt="" class="h-14 w-14 shrink-0 rounded-lg object-cover">` : `<span class="text-3xl">🍲</span>`}
           <div class="min-w-0 flex-1"><a href="#/recipe/${r.id}" class="break-words font-medium hover:underline">${esc(r.title)}</a>
             <div class="text-xs text-slate-400">${r.total_min ? fmtMin(r.total_min) : ""}${r.liked ? `${r.total_min ? " · " : ""}👍 liked before` : ""}</div></div>
-          ${manage ? `<button data-plan="${r.id}" class="btn-secondary min-h-0 py-1">Plan it</button>` : ""}</div>`).join("")}</div>`
+          ${manage && plan ? `<button data-plan="${r.id}" class="btn-secondary min-h-0 py-1">Plan it</button>` : ""}</div>`).join("")}</div>`
         : `<p class="text-sm text-slate-400">No saved recipe suits everyone eating yet.</p>`}
-      <div class="flex flex-wrap gap-2"><a href="#/make" class="btn-secondary">🥕 What can I make?</a>
-        ${manage ? `<a href="#/plan" class="btn-ghost">📅 Plan the week</a>` : ""}</div></div>`}
+      <div class="flex flex-wrap gap-2">${featureOn(state, "make") ? `<a href="#/make" class="btn-secondary">🥕 What can I make?</a>` : ""}
+        ${manage && plan ? `<a href="#/plan" class="btn-ghost">📅 Plan the week</a>` : ""}</div></div>`}
     ${data.use_soon.length ? `<div class="card mb-4"><h2 class="mb-2 font-semibold">Use soon</h2>
       <ul class="space-y-1">${data.use_soon.map((it) => `<li class="flex flex-wrap items-center gap-2"><span class="min-w-0 break-words">${esc(it.name)}</span>${useByChip(it.use_by)}</li>`).join("")}</ul>
       <a href="#/pantry" class="mt-2 inline-block text-sm underline">Open the pantry</a></div>` : ""}
@@ -63,7 +69,7 @@ export async function renderTonight(view, params, state) {
   $$("[data-cook]", view).forEach((b) => (b.onclick = () => attempt(async () => {
     const m = data.meals[Number(b.dataset.cook)];
     const full = await get(`/api/recipes/${m.recipe.id}`);
-    startCooking(full.recipe, { factor: factorOf(m), system, needs: full.needs });
+    startCooking(full.recipe, { factor: factorOf(m), system, needs: featureOn(state, "kids") ? full.needs : null });
   })));
   $$("[data-shop]", view).forEach((b) => (b.onclick = () => attempt(async () => {
     const m = data.meals[Number(b.dataset.shop)];

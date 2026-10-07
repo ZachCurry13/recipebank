@@ -1,6 +1,6 @@
 // Adding and editing pantry and supply items, by hand or from a barcode.
 import { get, post, put, del } from "./api.js";
-import { $, $$, esc, attempt, sheet, toast } from "./ui.js";
+import { $, $$, esc, attempt, sheet, toast, featureOn } from "./ui.js";
 import { fromPhoto, scanLive, liveBlocker, isBarcode } from "./barcode.js";
 
 export const LOCATIONS = {
@@ -34,7 +34,7 @@ export function editStock(area, item, state, done, prefill = {}) {
         <label class="block"><span class="label">Kept in</span><input name="location" list="locs" class="input" value="${esc(it.location)}">
           <datalist id="locs">${LOCATIONS[area].map((l) => `<option value="${l}">`).join("")}</datalist></label>
         <label class="block"><span class="label">Running low at</span><input name="low_at" type="number" min="0" step="any" class="input" value="${it.low_at || ""}" placeholder="not watched"></label>
-        <label class="block"><span class="label">Price for one</span><input name="price" type="number" min="0" step="0.01" inputmode="decimal" class="input" value="${it.price || ""}" placeholder="not priced"></label>
+        <label class="block ${featureOn(state, "budget") ? "" : "hidden"}"><span class="label">Price for one</span><input name="price" type="number" min="0" step="0.01" inputmode="decimal" class="input" value="${it.price || ""}" placeholder="not priced"></label>
         <label class="block"><span class="label">Package size</span><input name="size" class="input" value="${esc(it.size || "")}" placeholder="16 oz, 5 lb, 12 count"></label>
         ${area === "kitchen" ? `<label class="col-span-2 block"><span class="label">Use by</span><input name="use_by" type="date" class="input" value="${esc(it.use_by)}"></label>` : ""}
       </div>

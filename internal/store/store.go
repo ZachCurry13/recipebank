@@ -37,6 +37,8 @@ type User struct {
 	Units        string `db:"units" json:"units"`               // "" = the house default, "us", "metric"
 	Theme        string `db:"theme" json:"theme"`               // "" = match the device, "dark", "light"
 	SeenVersion  string `db:"seen_version" json:"seen_version"` // "" = hasn't seen the welcome yet
+	PlanMeals    string `db:"plan_meals" json:"plan_meals"`     // meals their plan shows, comma-separated; "" = all
+	HiddenPages  string `db:"hidden_pages" json:"hidden_pages"` // pages left out of their menu, comma-separated
 	CreatedAt    string `db:"created_at" json:"created_at"`
 }
 

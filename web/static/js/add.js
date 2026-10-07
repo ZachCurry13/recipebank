@@ -1,7 +1,7 @@
 // Add a recipe: from a link, photos of a card or page, pasted text, or typed in.
 // Every import comes back as an unsaved draft, checked for everyone.
 import { post } from "./api.js";
-import { $, $$, esc, attempt, busy } from "./ui.js";
+import { $, $$, esc, attempt, busy, featureOn } from "./ui.js";
 import { shrinkPhoto, rotatePhoto } from "./photo.js";
 import { editRecipe } from "./editor.js";
 import { renderDish } from "./dish.js";
@@ -18,7 +18,8 @@ const WAYS = [
 ];
 
 export function renderAdd(view, params, state) {
-  const area = params.area === "home" ? "home" : "kitchen";
+  const homeOn = featureOn(state, "home");
+  const area = params.area === "home" && homeOn ? "home" : "kitchen";
   const ai = state.info?.ai_ready;
   let way = params.way || "link";
   if (way === "dish" && area === "home") way = "link";
@@ -30,10 +31,10 @@ export function renderAdd(view, params, state) {
       <h1 class="text-2xl font-bold">➕ Add a recipe</h1>
       <p class="mb-4 text-sm text-slate-400">It's checked for everyone before you save it.</p>
       ${pendingNote(peekPending())}
-      <div class="mb-4 flex flex-wrap gap-2" role="radiogroup" aria-label="Goes in">
+      ${homeOn ? `<div class="mb-4 flex flex-wrap gap-2" role="radiogroup" aria-label="Goes in">
         ${[["kitchen", "🍲 Kitchen"], ["home", "🧴 Home & Care"]].map(([a, l]) =>
           `<a href="#/add?area=${a}&way=${way}" class="pick ${area === a ? "on" : ""}">${l}</a>`).join("")}
-      </div>
+      </div>` : ""}
       <div class="mb-4 grid gap-2 sm:grid-cols-3 lg:grid-cols-6">${ways.map(([k, ico, label, help]) => `
         <button data-way="${k}" class="card min-w-0 text-left ${way === k ? "ring-2 ring-emerald-600" : ""}">
           <div class="text-2xl">${ico}</div><div class="font-semibold">${label}</div>

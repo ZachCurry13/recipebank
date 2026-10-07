@@ -26,6 +26,12 @@ var editableKeys = map[string]bool{
 	store.KeyPhotoJSONMode: true,
 }
 
+func init() {
+	for _, f := range store.Features {
+		editableKeys[store.FeatureKey(f)] = true
+	}
+}
+
 func (s *Server) handleGetSettings(w http.ResponseWriter, r *http.Request) {
 	all, err := s.Store.AllSettings()
 	if err != nil {

@@ -1,7 +1,8 @@
 // "What can I make?" results: recipes needing least first, what each one is
 // missing, swaps already in the kitchen, and "Substitute" for the rest.
 import { post } from "./api.js";
-import { $, $$, esc, attempt, busy, toast } from "./ui.js";
+import { $, $$, esc, attempt, busy, toast, featureOn } from "./ui.js";
+import { state } from "./app.js";
 import { verdictChips } from "./verdicts.js";
 import { askIdeas, ideasBox, wireIdeas } from "./substitute.js";
 
@@ -23,7 +24,7 @@ function card(res, ri, open) {
     ${res.uses_soon.length ? `<p class="text-sm text-amber-300">Uses up: ${res.uses_soon.map(esc).join(", ")}</p>` : ""}
     <div class="flex flex-wrap gap-1">${verdictChips(c.verdicts)}</div>
     ${missing ? `<ul class="space-y-1 text-sm">${missing}</ul>
-      <button type="button" data-shopmiss="${ri}" class="btn-ghost">🛒 Add what's missing to the list</button>` : ""}</div>`;
+      ${featureOn(state, "shopping") ? `<button type="button" data-shopmiss="${ri}" class="btn-ghost">🛒 Add what's missing to the list</button>` : ""}` : ""}</div>`;
 }
 
 // showResults draws the answer into box; have() and who() give what's on hand

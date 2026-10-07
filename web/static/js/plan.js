@@ -1,11 +1,9 @@
 // The meal plan: a week of meals, who's eating each day, and the week's shopping.
 import { get, post, del } from "./api.js";
-import { $, $$, esc, attempt, busy, canManage, toast, money } from "./ui.js";
+import { $, $$, esc, attempt, busy, canManage, toast, money, featureOn, planMeals } from "./ui.js";
 import { verdictChips } from "./verdicts.js";
 import { pickMeal, pickWho, localDate, dayLabel, MEAL_NAMES, mealName } from "./planpick.js";
 import { planWeek } from "./planweek.js";
-
-const MEALS = ["breakfast", "lunch", "dinner"];
 
 export async function renderPlan(view, params, state) {
   const manage = canManage(state.user);
@@ -15,10 +13,14 @@ export async function renderPlan(view, params, state) {
   const data = await get(`/api/plan?from=${start}&days=7`);
   const name = Object.fromEntries(data.people.map((p) => [p.id, p.name]));
   const reload = () => renderPlan(view, params, state);
+  // The meals this person keeps on their plan (Me → Keep it simple). Snacks
+  // show when planned, or always for someone who chose them.
+  const meals = planMeals(state.user);
+  const snacksChosen = Boolean(state.user.plan_meals) && meals.includes("snack");
 
   const mealRow = (d, meal) => {
     const items = d.meals.filter((m) => m.meal === meal);
-    if (!items.length && meal === "snack") return "";
+    if (!items.length && meal === "snack" && !snacksChosen) return "";
     return `<div class="flex flex-wrap items-start gap-2 py-2">
       <span class="w-20 shrink-0 pt-1 text-xs font-semibold uppercase tracking-wide text-slate-400">${MEAL_NAMES[meal]}</span>
       <div class="min-w-0 flex-1 basis-48 space-y-2">
@@ -41,11 +43,11 @@ export async function renderPlan(view, params, state) {
   view.innerHTML = `
     <div class="mb-4 flex flex-wrap items-end gap-3">
       <div class="min-w-0 basis-full sm:basis-auto sm:flex-1"><h1 class="text-2xl font-bold">📅 Meal plan</h1>
-        ${data.cost?.priced ? `<p class="text-sm text-slate-400">These recipes: about ${money(data.cost.total, state.info?.currency)} from the pantry's prices
+        ${data.cost?.priced && featureOn(state, "budget") ? `<p class="text-sm text-slate-400">These recipes: about ${money(data.cost.total, state.info?.currency)} from the pantry's prices
           (${data.cost.priced} of ${data.cost.lines} ingredients priced).</p>` : ""}
         <p class="text-sm text-slate-400">Plan the week; every meal is checked for who's eating that day.</p></div>
       ${manage ? `<button id="week" class="btn-primary">✨ Plan my week</button>
-        <button id="shop" class="btn-secondary">🛒 Add this week to the shopping list</button>` : ""}
+        ${featureOn(state, "shopping") ? `<button id="shop" class="btn-secondary">🛒 Add this week to the shopping list</button>` : ""}` : ""}
     </div>
     <div class="mb-4 flex flex-wrap items-center gap-2">
       <a href="#/plan?from=${shift(-7)}" class="btn-secondary">‹ Earlier</a>
@@ -59,7 +61,7 @@ export async function renderPlan(view, params, state) {
           ${manage ? `<button data-who="${d.date}" class="text-xs text-slate-400 hover:underline">✎ Who's eating</button>` : ""}
         </div>
         <p class="text-xs text-slate-400">Eating: ${d.who.length ? esc(d.who.map((id) => name[id]).filter(Boolean).join(", ")) : "nobody picked"}${d.who_set ? "" : " (everyone)"}</p>
-        <div class="divide-y divide-slate-800">${[...MEALS, "snack"].map((m) => mealRow(d, m)).join("")}</div>
+        <div class="divide-y divide-slate-800">${meals.map((m) => mealRow(d, m)).join("")}</div>
       </div>`).join("")}</div>`;
 
   $$("[data-add]", view).forEach((b) => (b.onclick = () => {

@@ -91,7 +91,8 @@ func (s *Server) handleSharePage(w http.ResponseWriter, r *http.Request) {
 	token := chi.URLParam(r, "token")
 	page := sharePage{Gone: true}
 	status := http.StatusGone
-	if sh, err := s.Store.ShareByToken(token); err == nil && sh != nil {
+	// While sharing is turned off (Admin → Features), every link has run out.
+	if sh, err := s.Store.ShareByToken(token); err == nil && sh != nil && s.Store.FeatureOn("share") {
 		if rc, err := s.Store.Recipe(sh.RecipeID); err == nil {
 			status = http.StatusOK
 			page = sharePage{Title: rc.Title, Summary: rc.Summary, Notes: rc.Notes}
@@ -125,7 +126,7 @@ func (s *Server) handleSharePage(w http.ResponseWriter, r *http.Request) {
 // handleSharePhoto sends the shared recipe's own photo (never card photos).
 func (s *Server) handleSharePhoto(w http.ResponseWriter, r *http.Request) {
 	sh, err := s.Store.ShareByToken(chi.URLParam(r, "token"))
-	if err != nil || sh == nil {
+	if err != nil || sh == nil || !s.Store.FeatureOn("share") {
 		http.NotFound(w, r)
 		return
 	}
