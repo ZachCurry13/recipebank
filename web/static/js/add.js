@@ -6,6 +6,7 @@ import { shrinkPhoto, rotatePhoto } from "./photo.js";
 import { editRecipe } from "./editor.js";
 import { renderDish } from "./dish.js";
 import { renderAppImport } from "./appimport.js";
+import { photoPicker, wirePhotoPicker, cameraTip } from "./camera.js";
 import { peekPending, clearPending, pendingNote } from "./booklink.js";
 
 const WAYS = [
@@ -53,10 +54,8 @@ export function renderAdd(view, params, state) {
       $("#f", box).onsubmit = (e) => { e.preventDefault(); run(e.submitter, "Reading the page…", "/api/import/url", { url: e.target.url.value }); };
     } else if (way === "photo") {
       box.innerHTML = `${needAI}
-        <div class="flex flex-wrap gap-2">
-          <label class="btn-secondary cursor-pointer">📷 Take a photo<input type="file" accept="image/*" capture="environment" class="sr-only" data-add></label>
-          <label class="btn-secondary cursor-pointer">🖼️ Choose photos<input type="file" accept="image/*" multiple class="sr-only" data-add></label>
-        </div>
+        <div class="flex flex-wrap gap-2">${photoPicker("card", { choose: "🖼️ Choose photos", multiple: true })}</div>
+        ${cameraTip()}
         <p class="text-xs text-slate-400">Lay the card flat in good light. Add the back or the next page as another photo.</p>
         <div id="thumbs" class="flex flex-wrap gap-2">${photos.map((p, i) => `
           <div class="relative"><img src="${p}" alt="Photo ${i + 1}" class="h-28 rounded-lg object-cover">
@@ -65,10 +64,10 @@ export function renderAdd(view, params, state) {
         ${photos.length ? `<p class="text-xs text-slate-400">Is the writing the right way up? Tap ⟳ to turn a photo.</p>` : ""}
         <button id="go" class="btn-primary" ${photos.length && ai ? "" : "disabled"}>Read ${photos.length > 1 ? `these ${photos.length} photos` : "the photo"}</button>
         <p class="text-xs text-slate-500">Reading handwriting can take a minute, longer on a home AI server.</p>`;
-      $$("[data-add]", box).forEach((inp) => (inp.onchange = () => attempt(async () => {
-        for (const f of [...inp.files].slice(0, 4 - photos.length)) photos.push(await shrinkPhoto(f, 2000));
+      wirePhotoPicker(box, "card", (files) => attempt(async () => {
+        for (const f of files.slice(0, 4 - photos.length)) photos.push(await shrinkPhoto(f, 2000));
         draw();
-      })));
+      }));
       $$("[data-rm]", box).forEach((b) => (b.onclick = () => { photos.splice(Number(b.dataset.rm), 1); draw(); }));
       $$("[data-rot]", box).forEach((b) => (b.onclick = () => attempt(async () => {
         const i = Number(b.dataset.rot);

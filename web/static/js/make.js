@@ -5,6 +5,7 @@ import { get, post, qs } from "./api.js";
 import { $, $$, esc, attempt, busy } from "./ui.js";
 import { shrinkPhoto } from "./photo.js";
 import { showResults } from "./makeresults.js";
+import { photoPicker, wirePhotoPicker, cameraTip } from "./camera.js";
 
 export async function renderMake(view, params, state) {
   const [stock, people] = await Promise.all([get("/api/stock?area=kitchen"), get("/api/people")]);
@@ -27,8 +28,7 @@ export async function renderMake(view, params, state) {
       <form id="more" class="flex flex-wrap gap-2">
         <input name="food" class="input min-w-0 flex-1 basis-40" placeholder="Add foods: eggs, rice, spinach" aria-label="Add foods">
         <button class="btn-secondary">Add</button></form>
-      ${state.info?.ai_ready ? `<label class="btn-secondary cursor-pointer">📷 Photo of the fridge or a shelf
-        <input type="file" accept="image/*" capture="environment" class="sr-only" id="fridge"></label>` : ""}
+      ${state.info?.ai_ready ? `<div class="flex flex-wrap gap-2">${photoPicker("fridge", { take: "📷 Photo of the fridge or a shelf" })}</div>${cameraTip()}` : ""}
       <p id="photo-note" class="text-sm text-amber-300"></p>
       <div><span class="label">Who's eating</span><div id="who" class="flex flex-wrap gap-2"></div></div>
       <button type="button" id="find" class="btn-primary">Find recipes</button>
@@ -58,10 +58,7 @@ export async function renderMake(view, params, state) {
     e.target.food.value = "";
     drawItems();
   };
-  const fridge = $("#fridge", view);
-  if (fridge) fridge.onchange = () => attempt(async () => {
-    const f = fridge.files[0];
-    if (!f) return;
+  wirePhotoPicker(view, "fridge", ([f]) => attempt(async () => {
     photoNote = "Looking at the photo… (this can take a minute)";
     drawItems();
     try {
@@ -72,10 +69,9 @@ export async function renderMake(view, params, state) {
       photoNote = "";
       throw e;
     } finally {
-      fridge.value = "";
       drawItems();
     }
-  });
+  }));
   const find = $("#find", view);
   find.onclick = () => attempt(() => busy(find, "Looking…", async () => {
     const answer = await post("/api/make" + qs({ who: whoParam() }), { have: haveList() });

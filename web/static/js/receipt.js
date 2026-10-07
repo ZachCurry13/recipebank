@@ -5,6 +5,7 @@
 import { post } from "./api.js";
 import { $, $$, esc, attempt, busy, sheet, toast, money } from "./ui.js";
 import { shrinkPhoto } from "./photo.js";
+import { photoPicker, wirePhotoPicker, cameraTip } from "./camera.js";
 
 export function scanReceipt(state, done) {
   const ai = state.info?.ai_ready;
@@ -14,17 +15,13 @@ export function scanReceipt(state, done) {
     ${ai ? "" : `<p class="box-caution">This needs the AI, and none is set up yet. An admin can add one under Admin → AI.</p>`}
     <p class="text-sm text-slate-300">Take a photo of the receipt, flat and close. A long one can take up to 3 photos, top to
       bottom. You'll check every line before anything is added.</p>
-    <label class="btn-primary cursor-pointer ${ai ? "" : "pointer-events-none opacity-50"}">📷 Take or choose photos
-      <input type="file" accept="image/*" multiple class="sr-only" id="rc-in" ${ai ? "" : "disabled"}></label>
+    ${ai ? `<div class="flex flex-wrap gap-2">${photoPicker("receipt", { choose: "🖼️ Choose photos", multiple: true, primary: true })}</div>${cameraTip()}` : ""}
     <div id="rc-out" class="space-y-3"></div></div>`);
-  const input = $("#rc-in", d);
   const out = $("#rc-out", d);
-  input.onchange = () => attempt(async () => {
-    const files = [...input.files].slice(0, 3);
-    if (!files.length) return;
+  wirePhotoPicker(d, "receipt", (picked) => attempt(async () => {
+    const files = picked.slice(0, 3);
     const images = [];
     for (const f of files) images.push(await shrinkPhoto(f, 2000));
-    input.value = "";
     out.innerHTML = `<p class="text-sm text-slate-400">Reading the receipt… (this can take a minute)</p>`;
     let res;
     try {
@@ -34,7 +31,7 @@ export function scanReceipt(state, done) {
       throw e;
     }
     review(d, out, res.lines, state, done);
-  });
+  }));
 }
 
 function review(d, out, lines, state, done) {
