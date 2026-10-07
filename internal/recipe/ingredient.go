@@ -111,6 +111,11 @@ func ParseLine(line string) Ingredient {
 	}
 	in.Food = strings.TrimSpace(strings.TrimPrefix(strings.TrimSpace(food), "of "))
 	// "Salt and pepper to taste": "to taste" is a note, not part of the food.
+	// A weight after the food ("chocolate chips 340g") is a note, not part of its name.
+	if m := trailingWeight.FindStringSubmatchIndex(in.Food); m != nil && m[0] > 0 {
+		notes = append(notes, strings.TrimSpace(in.Food[m[2]:m[3]]))
+		in.Food = strings.TrimSpace(in.Food[:m[0]])
+	}
 	for _, t := range trailingNotes {
 		if low := strings.ToLower(in.Food); strings.HasSuffix(low, t) && len(low) > len(t) {
 			in.Food = strings.TrimSpace(in.Food[:len(in.Food)-len(t)])
@@ -201,8 +206,10 @@ func unitName(key string) (string, bool) {
 }
 
 var (
-	timesRE = regexp.MustCompile(`(?i)^[x×]\s*(\d+(?:[.,]\d+)?)\s*(g|kg|ml|l|oz|lb)\b\.?\s*`)
-	plusRE  = regexp.MustCompile(`(?i)^(?:\+|plus)\s+(\d+(?:\s+\d+/\d+)?|\d+/\d+|\d*[.,]\d+)\s+`)
+	// trailingWeight: "340g" or "(340 g)" at the end of a food name.
+	trailingWeight = regexp.MustCompile(`(?i)\s+\(?(\d+(?:[.,]\d+)?\s*(?:g|kg|grams?|ml|oz|lbs?))\)?\.?$`)
+	timesRE        = regexp.MustCompile(`(?i)^[x×]\s*(\d+(?:[.,]\d+)?)\s*(g|kg|ml|l|oz|lb)\b\.?\s*`)
+	plusRE         = regexp.MustCompile(`(?i)^(?:\+|plus)\s+(\d+(?:\s+\d+/\d+)?|\d+/\d+|\d*[.,]\d+)\s+`)
 	// trailingNotes end a food name but say how it's used.
 	trailingNotes = []string{" to taste", " as needed", " for serving", " to serve", " for garnish", " to garnish",
 		" (optional)", " optional"}

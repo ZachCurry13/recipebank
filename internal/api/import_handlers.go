@@ -222,6 +222,10 @@ func (s *Server) askText(ctx context.Context, text string) (recipe.Recipe, error
 		rc, err = llm.ParseRecipe(out)
 		return err
 	})
+	if err == nil {
+		// The lines as the person wrote them, even if the AI shortened them.
+		rc.Ingredients = recipe.RestoreLines(text, rc.Ingredients, rc.Steps)
+	}
 	return rc, err
 }
 
