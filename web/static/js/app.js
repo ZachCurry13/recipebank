@@ -52,7 +52,8 @@ const routes = {
   books: renderBooks,
   book: renderBook,
 };
-const NAV_OF = { recipe: null, edit: "add", collection: "collections", season: "collections", whatsnew: "profile", cookbook: "collections", event: "events", book: "books" };
+const NAV_OF = { recipe: null, edit: "add", collection: "collections", season: "collections", whatsnew: "profile", cookbook: "collections",
+  event: "events", book: "books", home: "kitchen", supplies: "pantry", family: "profile" };
 
 function showOnly(id) {
   for (const v of ["#setup-view", "#login-view", "#app-view"]) $(v).classList.toggle("hidden", v !== id);

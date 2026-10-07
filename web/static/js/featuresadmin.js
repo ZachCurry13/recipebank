@@ -19,7 +19,7 @@ const FEATURES = [
   ["nutrition", "🥗 Nutrition estimates", "Calories and more per serving (USDA)."],
   ["email", "✉️ Email", "Emailing recipes and the list."],
   ["share", "🔗 Share links", "Read-only links for people without an account. Off also stops links already shared."],
-  ["kids", "🧒 Kids can help", "Which steps a kid can do, in cook mode and the Kitchen."],
+  ["kids", "🧒 Kids can help", "Which steps a kid can do, in cook mode and on Recipes."],
 ];
 
 export function renderFeatures(box, s) {

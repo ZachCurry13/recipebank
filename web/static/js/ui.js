@@ -58,6 +58,11 @@ export async function busy(btn, label, fn) {
 }
 
 export const canManage = (user) => user?.role === "admin" || user?.role === "editor";
+// areaTabs switches one page between its two areas: Recipes' Kitchen | Home &
+// Care, the Pantry's Food | Supplies. tabs: [href, label, key].
+export const areaTabs = (tabs, current) => `<div class="mb-4 flex flex-wrap gap-2" role="tablist">${tabs.map(([href, label, key]) =>
+  `<a href="${href}" role="tab" aria-selected="${key === current}" class="pick ${key === current ? "on" : ""}">${label}</a>`).join("")}</div>`;
+
 // featureOn is false only for what an admin turned off for the house (Admin → Features).
 export const featureOn = (state, f) => state.info?.features?.[f] !== false;
 // canEmail: parents, or everyone when Admin → Email allows it (and email is on).

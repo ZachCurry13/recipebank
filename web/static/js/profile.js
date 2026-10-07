@@ -13,6 +13,10 @@ export function renderProfile(view, params, state) {
   const house = state.info?.default_units === "metric" ? "metric" : "US";
   view.innerHTML = `
     <h1 class="mb-4 text-2xl font-bold">🙂 ${esc(u.username)}</h1>
+    <a href="#/family" class="card mb-4 flex min-w-0 items-center gap-3"><span class="text-3xl" aria-hidden="true">👪</span>
+      <span class="min-w-0 flex-1"><span class="block font-semibold">Family</span>
+        <span class="block text-sm text-slate-400">Everyone who eats here: their allergies, diets and dislikes, and the pets.</span></span>
+      <span class="text-xl text-slate-400" aria-hidden="true">›</span></a>
     <div class="grid gap-4 lg:grid-cols-2">
       <form id="prefs" class="card space-y-3">
         <h2 class="font-semibold">How recipes look</h2>

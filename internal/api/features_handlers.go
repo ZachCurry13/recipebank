@@ -31,6 +31,7 @@ func (s *Server) handleSimpler(w http.ResponseWriter, r *http.Request) {
 	var body struct {
 		PlanMeals   []string `json:"plan_meals"`
 		HiddenPages []string `json:"hidden_pages"`
+		MenuOrder   []string `json:"menu_order"`
 	}
 	if !readJSON(w, r, &body, 2<<10) {
 		return
@@ -47,10 +48,18 @@ func (s *Server) handleSimpler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
+	seen := map[string]bool{}
+	for _, p := range body.MenuOrder {
+		if !slices.Contains(store.MenuPages, p) || seen[p] {
+			writeErr(w, http.StatusBadRequest, "that isn't a page for the menu: "+p)
+			return
+		}
+		seen[p] = true
+	}
 	if len(body.PlanMeals) == len(store.PlanMeals) {
 		body.PlanMeals = nil // every meal is the same as the default
 	}
-	if err := s.Store.SetSimpler(auth.UserFrom(r).ID, body.PlanMeals, body.HiddenPages); err != nil {
+	if err := s.Store.SetSimpler(auth.UserFrom(r).ID, body.PlanMeals, body.HiddenPages, body.MenuOrder); err != nil {
 		writeStoreErr(w, err)
 		return
 	}

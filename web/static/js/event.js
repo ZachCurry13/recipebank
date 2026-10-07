@@ -45,7 +45,7 @@ export async function renderEvent(view, params, state) {
             <span class="min-w-0 break-words font-medium">${esc(p.name)}</span>
             ${p.ok ? `<span class="chip-ok">✓ ${p.ok} dish${p.ok === 1 ? "" : "es"}</span>` : `<span class="chip-no">Nothing they can eat yet</span>`}
             ${p.unsure ? `<span class="chip-unsure">⚠ ${p.unsure} not sure</span>` : ""}</li>`).join("")}</ul>` : ""}
-          <p class="text-xs text-slate-500">Add guests with their allergies and diets on the Family page first.</p>
+          <p class="text-xs text-slate-500">Add guests with their allergies and diets under Me → Family first.</p>
         </div>
         <div class="card min-w-0 space-y-3">
           <h2 class="font-semibold">Menu</h2>

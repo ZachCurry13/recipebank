@@ -22,7 +22,8 @@ export async function renderFamily(view, params, state) {
   const dietName = (k) => (info.diets || []).find((d) => d.key === k)?.label || k;
   view.innerHTML = `
     <div class="mb-4 flex flex-wrap items-end gap-3">
-      <div class="min-w-0 basis-full sm:basis-auto sm:flex-1"><h1 class="text-2xl font-bold">👪 Family</h1>
+      <div class="min-w-0 basis-full sm:basis-auto sm:flex-1"><a href="#/profile" class="text-sm text-slate-400 underline">‹ Me</a>
+        <h1 class="text-2xl font-bold">👪 Family</h1>
         <p class="text-sm text-slate-400">Everyone who eats here. Each recipe is checked against their allergies, diets and dislikes.</p></div>
       ${manage ? `<button id="add" class="btn-primary">➕ Add a person</button>` : ""}
     </div>

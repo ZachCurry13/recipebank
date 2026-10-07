@@ -40,18 +40,21 @@ func TestFeaturesAndSimplerView(t *testing.T) {
 		t.Fatalf("unknown feature: %d", code)
 	}
 
-	if code := c.do("PUT", "/api/me/simpler", map[string]any{"plan_meals": []string{"dinner"}, "hidden_pages": []string{"events", "books"}}, nil); code != 204 {
+	if code := c.do("PUT", "/api/me/simpler", map[string]any{"plan_meals": []string{"dinner"}, "hidden_pages": []string{"events", "books"},
+		"menu_order": []string{"add", "tonight", "kitchen"}}, nil); code != 204 {
 		t.Fatalf("simpler: %d", code)
 	}
 	var me struct {
 		PlanMeals   string `json:"plan_meals"`
 		HiddenPages string `json:"hidden_pages"`
+		MenuOrder   string `json:"menu_order"`
 	}
 	c.do("GET", "/api/me", nil, &me)
-	if me.PlanMeals != "dinner" || me.HiddenPages != "events,books" {
+	if me.PlanMeals != "dinner" || me.HiddenPages != "events,books" || me.MenuOrder != "add,tonight,kitchen" {
 		t.Fatalf("me: %+v", me)
 	}
-	for _, bad := range []map[string]any{{"plan_meals": []string{"elevenses"}}, {"hidden_pages": []string{"admin"}}, {"hidden_pages": []string{"tonight"}}} {
+	for _, bad := range []map[string]any{{"plan_meals": []string{"elevenses"}}, {"hidden_pages": []string{"admin"}}, {"hidden_pages": []string{"tonight"}},
+		{"menu_order": []string{"admin"}}, {"menu_order": []string{"plan", "plan"}}} {
 		if code := c.do("PUT", "/api/me/simpler", bad, nil); code != 400 {
 			t.Fatalf("%v: %d", bad, code)
 		}

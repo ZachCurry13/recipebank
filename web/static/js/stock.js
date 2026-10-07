@@ -1,7 +1,7 @@
 // Pantry (food) and Supplies (cleaning and bathroom): what's in the house,
 // what to use soon, and what's running low.
 import { get, post } from "./api.js";
-import { $, $$, esc, attempt, canManage, cap, money } from "./ui.js";
+import { $, $$, esc, attempt, canManage, cap, money, featureOn, areaTabs } from "./ui.js";
 import { editStock, scanStock } from "./stockedit.js";
 import { scanReceipt } from "./receipt.js";
 
@@ -62,12 +62,13 @@ export async function renderStock(view, area, params, state) {
     view.innerHTML = `
       <div class="mb-4 flex flex-wrap items-end gap-3">
         <div class="min-w-0 basis-full sm:basis-auto sm:flex-1">
-          <h1 class="text-2xl font-bold">${home ? "🧽 Supplies" : "🥫 Pantry"}</h1>
+          <h1 class="text-2xl font-bold">🥫 Pantry</h1>
           <p class="text-sm text-slate-400">${home ? "Cleaning, laundry and bathroom supplies: what's in the house and what's running low."
             : "Food in the house: what's here, what to use soon, and what's running low."}</p>
         </div>
         ${manage ? `<button id="scan" class="btn-primary">📷 Scan a barcode</button><button id="receipt" class="btn-secondary">🧾 Scan a receipt</button><button id="add" class="btn-secondary">➕ Add</button>` : ""}
       </div>
+      ${featureOn(state, "home") ? areaTabs([["#/pantry", "🥫 Food", "kitchen"], ["#/supplies", "🧽 Supplies", "home"]], area) : ""}
       <div class="card mb-4 space-y-3">
         <input id="q" type="search" class="input" placeholder="Search" value="${esc(f.q)}">
         <div class="flex flex-wrap gap-2">

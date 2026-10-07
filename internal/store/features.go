@@ -32,12 +32,14 @@ func (s *Store) FeatureOn(f string) bool { return s.SettingBool(FeatureKey(f)) }
 var (
 	PlanMeals = []string{"breakfast", "lunch", "dinner", "snack"}
 	HidePages = []string{"plan", "shopping", "make", "home", "pantry", "supplies", "collections", "books", "events", "add", "family"}
+	// MenuPages are the pages a person can put in their own order (Admin and Me stay last).
+	MenuPages = []string{"tonight", "kitchen", "add", "plan", "shopping", "pantry", "make", "collections", "books", "events"}
 )
 
 // SetSimpler saves a person's own simpler view: the meals their plan shows
-// ("" = all) and the pages left out of their menu.
-func (s *Store) SetSimpler(id int64, planMeals, hiddenPages []string) error {
-	_, err := s.DB.Exec(`UPDATE users SET plan_meals = ?, hidden_pages = ? WHERE id = ?`,
-		strings.Join(planMeals, ","), strings.Join(hiddenPages, ","), id)
+// ("" = all), the pages left out of their menu, and the order of the rest.
+func (s *Store) SetSimpler(id int64, planMeals, hiddenPages, menuOrder []string) error {
+	_, err := s.DB.Exec(`UPDATE users SET plan_meals = ?, hidden_pages = ?, menu_order = ? WHERE id = ?`,
+		strings.Join(planMeals, ","), strings.Join(hiddenPages, ","), strings.Join(menuOrder, ","), id)
 	return err
 }

@@ -195,9 +195,9 @@ everything below is built and checked.
 
 0.6.1 released 2026-10-07 (Gemini thinking/time-out, List models, ingredient lines kept as written).
 The user's notes after using 0.6, plan agreed ("Yes, build it"):
-1. [ ] **Fewer pages:** "Recipes" with Kitchen | Home & Care tabs; "Pantry" with Food | Supplies tabs; Family moves
+1. [x] **Fewer pages:** "Recipes" with Kitchen | Home & Care tabs; "Pantry" with Food | Supplies tabs; Family moves
    under Me (no menu entry); "Add a recipe" near the front by default.
-2. [ ] **Menu order on Me:** each person can reorder their pages (the first ones go on the phone's bottom bar and the
+2. [x] **Menu order on Me:** each person can reorder their pages (the first ones go on the phone's bottom bar and the
    computer's top bar).
 3. [ ] **Recipe → shopping list:** the button sits near the top and opens a list to tick which ingredients to add
    (ticked: what isn't in the pantry); Home & Care recipes too.

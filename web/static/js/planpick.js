@@ -77,7 +77,7 @@ export function pickWho(date, people, who, done) {
     <div class="flex items-center"><h2 class="text-lg font-semibold">Who's eating, ${esc(dayLabel(date))}?</h2>
       <button type="button" data-close class="btn-ghost ml-auto">✕</button></div>
     <div class="flex flex-wrap gap-2">${people.map((p) => `<button data-p="${p.id}" class="pick ${on.has(p.id) ? "on" : ""}">${esc(p.name)}${p.is_guest ? " (guest)" : ""}</button>`).join("")}</div>
-    <p class="text-xs text-slate-500">Add guests on the Family page first.</p>
+    <p class="text-xs text-slate-500">Add guests under Me → Family first.</p>
     <div class="flex flex-wrap gap-2"><button id="save" class="btn-primary">Save</button>
       <button id="reset" class="btn-ghost">Everyone but guests</button></div></div>`);
   $$("[data-p]", d).forEach((b) => (b.onclick = () => {

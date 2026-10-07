@@ -1,6 +1,6 @@
 // The Library: Kitchen or Home & Care recipes, filtered, with each diner's verdict.
 import { get, qs } from "./api.js";
-import { $, $$, esc, fmtMin, peppers, stars, canManage, cap, HOME_CATS, LEVELS, levelChip, featureOn } from "./ui.js";
+import { $, $$, esc, fmtMin, peppers, stars, canManage, cap, HOME_CATS, LEVELS, levelChip, featureOn, areaTabs } from "./ui.js";
 import { verdictChips } from "./verdicts.js";
 import { localDate } from "./planpick.js";
 import { askRecipes } from "./ask.js";
@@ -15,18 +15,19 @@ export async function renderLibrary(view, area, params, state) {
   const people = await get("/api/people");
   if (f.who === null) f.who = people.filter((p) => !p.is_guest).map((p) => p.id);
   const home = area === "home";
-  const title = home ? "Home & Care" : "Kitchen";
+
   const blurb = home
     ? "Home-made cleaners, toothpaste, mouthwash and more, with safety checks for kids, pets and surfaces."
     : "The family's recipes, checked against everyone's allergies, diets and dislikes.";
   view.innerHTML = `
     <div class="mb-4 flex flex-wrap items-end gap-3">
       <div class="min-w-0 basis-full sm:basis-auto sm:flex-1">
-        <h1 class="text-2xl font-bold">${home ? "🧴" : "🍲"} ${title}</h1>
+        <h1 class="text-2xl font-bold">🍲 Recipes</h1>
         <p class="text-sm text-slate-400">${blurb}</p>
       </div>
       ${canManage(state.user) ? `<a href="#/add?area=${area}" class="btn-primary">➕ Add a recipe</a>` : ""}
     </div>
+    ${featureOn(state, "home") ? areaTabs([["#/kitchen", "🍲 Kitchen", "kitchen"], ["#/home", "🧴 Home & Care", "home"]], area) : ""}
     <div id="seasons" class="mb-3 flex flex-wrap gap-2"></div>
     <div class="card mb-4 space-y-3">
       <form id="qf" class="flex flex-wrap gap-2"><input id="q" type="search" class="input min-w-0 flex-1 basis-48" placeholder="Search, or ask: quick dairy-free dinners" value="${esc(f.q || "")}" enterkeyhint="search">
