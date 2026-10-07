@@ -9,6 +9,7 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
+	"github.com/zachcurry13/recipebank/internal/aitools"
 	"github.com/zachcurry13/recipebank/internal/auth"
 	"github.com/zachcurry13/recipebank/internal/books"
 	"github.com/zachcurry13/recipebank/internal/config"
@@ -38,6 +39,7 @@ type Server struct {
 	Nutrition string                                // USDA FoodData Central's address; tests point it at a fake
 	BookBase  string                                // Open Library's address; tests point it at a fake
 	Pulls     *ollama.Puller                        // Ollama model downloads, one at a time
+	AITools   *aitools.Service                      // model updates and the speed test
 	SendMail  func(mail.Config, mail.Message) error // tests catch emails here; nil = mail.Send
 	mails     mailLimiter
 	shareOnce sync.Once // the shared-recipe page's template, parsed once
@@ -73,6 +75,9 @@ func (s *Server) Router() http.Handler {
 	}
 	if s.Pulls == nil {
 		s.Pulls = &ollama.Puller{}
+	}
+	if s.AITools == nil {
+		s.AITools = aitools.New(s.Store)
 	}
 	if s.Products.FoodBases == nil {
 		s.Products = productBases{FoodBases: foodfacts.FoodBases, HomeBases: foodfacts.HomeBases}
@@ -231,6 +236,10 @@ func (s *Server) Router() http.Handler {
 				r.Put("/admin/users/{id}", s.handleUpdateUser)
 				r.Put("/admin/users/{id}/password", s.handleResetPassword)
 				r.Delete("/admin/users/{id}", s.handleDeleteUser)
+				r.Get("/admin/aitools", s.handleAIToolsStatus)
+				r.Post("/admin/aitools/check-updates", s.handleCheckModelUpdates)
+				r.Post("/admin/aitools/updated", s.handleModelUpdated)
+				r.Post("/admin/aitools/bench", s.handleStartBench)
 				r.Get("/admin/ollama/find", s.handleOllamaFind)
 				r.Post("/admin/ollama/pull", s.handleOllamaPull)
 				r.Get("/admin/ollama/pull", s.handleOllamaPullStatus)
