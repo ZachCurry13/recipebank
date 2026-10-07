@@ -15,6 +15,7 @@ import (
 	"github.com/zachcurry13/recipebank/internal/foodfacts"
 	"github.com/zachcurry13/recipebank/internal/mail"
 	"github.com/zachcurry13/recipebank/internal/nutrition"
+	"github.com/zachcurry13/recipebank/internal/ollama"
 	"github.com/zachcurry13/recipebank/internal/push"
 	"github.com/zachcurry13/recipebank/internal/store"
 	"github.com/zachcurry13/recipebank/internal/tunnel"
@@ -36,6 +37,7 @@ type Server struct {
 	Updates   *updates.Checker                      // newer releases on GitHub; tests point it at a fake
 	Nutrition string                                // USDA FoodData Central's address; tests point it at a fake
 	BookBase  string                                // Open Library's address; tests point it at a fake
+	Pulls     *ollama.Puller                        // Ollama model downloads, one at a time
 	SendMail  func(mail.Config, mail.Message) error // tests catch emails here; nil = mail.Send
 	mails     mailLimiter
 	shareOnce sync.Once // the shared-recipe page's template, parsed once
@@ -68,6 +70,9 @@ func (s *Server) Router() http.Handler {
 	}
 	if s.BookBase == "" {
 		s.BookBase = books.DefaultBase
+	}
+	if s.Pulls == nil {
+		s.Pulls = &ollama.Puller{}
 	}
 	if s.Products.FoodBases == nil {
 		s.Products = productBases{FoodBases: foodfacts.FoodBases, HomeBases: foodfacts.HomeBases}
@@ -226,6 +231,13 @@ func (s *Server) Router() http.Handler {
 				r.Put("/admin/users/{id}", s.handleUpdateUser)
 				r.Put("/admin/users/{id}/password", s.handleResetPassword)
 				r.Delete("/admin/users/{id}", s.handleDeleteUser)
+				r.Get("/admin/ollama/find", s.handleOllamaFind)
+				r.Post("/admin/ollama/pull", s.handleOllamaPull)
+				r.Get("/admin/ollama/pull", s.handleOllamaPullStatus)
+				r.Post("/admin/ollama/use", s.handleOllamaUse)
+				r.Get("/admin/ollama/gpu", s.handleOllamaGPU)
+				r.Get("/admin/ollama/models", s.handleOllamaModels)
+				r.Post("/admin/ollama/delete", s.handleOllamaDelete)
 				r.Get("/admin/tunnel", s.handleTunnelStatus)
 				r.Put("/admin/tunnel", s.handleTunnelSave)
 			})
