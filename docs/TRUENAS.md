@@ -108,7 +108,7 @@ services:
 
 ## Step 4: First-time setup (inside RecipeBank)
 
-1. **Family:** add each person who eats with you, with their allergies, diets, dislikes and how much heat they like. For a real allergy pick **Allergic** or **Severe (strict)**: the page explains the difference. If their doctor says they can have something made from the allergen (highly refined soybean oil for a soy allergy, for example), tick or type it under **Can have anyway**; only that exact food is let through. Tick the **pets** you have, for the Home & Care warnings.
+1. **Me → Family:** add each person who eats with you, with their allergies, diets, dislikes and how much heat they like. For a real allergy pick **Allergic** or **Severe (strict)**: the page explains the difference. If their doctor says they can have something made from the allergen (highly refined soybean oil for a soy allergy, for example), tick or type it under **Can have anyway**; only that exact food is let through. Tick the **pets** you have, for the Home & Care warnings.
 2. **Admin → AI (optional but recommended):** the AI reads photos of recipe cards and pages that don't use the standard recipe format. Allergy checks never depend on it.
    - **Quick setup** fills in the settings for Ollama, LM Studio, Google Gemini, OpenAI or Claude. For an online service, paste its API key.
    - **Ollama on your network (free):** install the Ollama app (TrueNAS **Apps → Discover Apps**; turn its GPU on there if you have one). Then use the **🦙 Ollama** card: **Find Ollama**, see which models suit your graphics card, **Download** one with a progress bar, and press **Use for text** or **Use for photos**. No terminal needed.
@@ -172,6 +172,10 @@ it can't work out are listed, so the estimate says what it leaves out.
 **Share link** on a recipe makes a page anyone with the link can open without an account, for 7 days. It only
 works for people outside your home when RecipeBank is reachable from the internet (Step 6). The page shows the
 recipe only: no names, allergies or anything else from your RecipeBank. **Stop sharing** ends it early.
+
+An event's **🔗 Guest link** works the same way: guests open it without an account to say they're coming, with their
+allergies and diets, and what they're bringing. They never see anyone else's allergies. It runs out the day after the
+event, and guests outside your home need the internet address (Step 6).
 
 To check where RecipeBank keeps each kind of file, open **Admin → House settings → Where files are kept**. "Own dataset" means that folder is mounted separately.
 

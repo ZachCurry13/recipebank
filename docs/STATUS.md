@@ -36,7 +36,11 @@ CHANGELOG 0.3.0 written; every page checked at 360×760 (light and dark).
 - 0.6.0 released 2026-10-07 (HANDOFF 1g): desktop menu with More, a second AI
   for photos, NovelCheck's Ollama tools (find, download, GPU picks, use for text/photos), AI check-up (health, cost,
   model updates, speed test), quick setup presets, features on/off (house + "Keep it simple"), allergy exceptions.
-- Next: the user tries 0.6 with their own Ollama/PC; the import formats still need real export files to confirm.
+- 0.6.1 released 2026-10-07: Gemini thinking/time-out, List models, ingredient lines kept as written.
+- 0.7.0 built on feature/v0.7 (HANDOFF 1h), waiting for the user's OK: Recipes and Pantry with tabs, Family under Me,
+  per-person menu order, pick ingredients for the list, search everything, event guest links.
+- Next: ask whether several households will share the server (recipe sharing levels); the import formats still need
+  real export files to confirm.
 - The user tests 0.2.0 with a real AI; fixes go out as 0.2.x.
 - Later (from the user's list): "what can I make?" from a photo of the fridge, dish photo → ideas, kitchen tablet
   (only if wanted), cookbooks and the card pile, share from the phone and printing, other-app imports, Cast to TV.

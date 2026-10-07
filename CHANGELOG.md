@@ -1,5 +1,27 @@
 # Changelog
 
+## [0.7.0] - 2026-10-07
+
+A tidier menu in your own order, search everything, and events your guests can join.
+
+### 🧭 A tidier menu, in your order
+- **Recipes** has **Kitchen** and **Home & Care** tabs, and the **Pantry** has **Food** and **Supplies** tabs, so there are fewer pages to look through.
+- **Add a recipe** is near the front, and **Family** moved under **Me**.
+- **Me → Keep it simple → My menu, in order:** move your pages up or down with ↑ ↓ and untick the ones you don't use. The first five are on a phone's bottom bar; on a computer the first four to seven are in the top bar. Everyone has their own order.
+
+### 🔍 Search everything
+- The 🔍 in the top bar (or **/** on a computer) searches recipes, what's in the house, the shopping list, your cookbooks' recipes, events, collections, people and the settings pages as you type.
+
+### 🛒 Recipe → shopping list
+- **Add to list** now sits in the Ingredients card and opens a list to tick. What the pantry or supplies seem to have starts unticked (with what it matched), and you can tick it anyway.
+
+### 🎉 Events your guests can join
+- **🔗 Guest link** on an event: guests open it without an account, say they're coming with their allergies and diets, see the menu marked for them (fine for you, not for you, or ask the cook), and add what they're bringing with the allergens it has.
+- You see the guests and their allergies on the event, and every dish is checked for them too. A dish without a recipe is "not sure" for a real allergy unless its cook says it has that allergen.
+- Guests never see the family's or each other's allergies, only how many are coming. The link runs out the day after the event, and you can stop it any time.
+
+Updating: nothing to change in TrueNAS. Guests outside your home need the link from RecipeBank's internet address (Admin → Remote access).
+
 ## [0.6.1] - 2026-10-07
 
 Fixes for Google Gemini and for recipes the AI organizes.
