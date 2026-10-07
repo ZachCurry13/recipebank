@@ -205,7 +205,7 @@ The user's notes after using 0.6, plan agreed ("Yes, build it"):
    recipes, events, collections.
 5. [x] **Event guest link:** a link guests open without an account to add their name, their allergies and what
    they're bringing; the menu is checked for them; the host can stop it; it ends after the event.
-6. [x] Docs, CHANGELOG, phone checks (360×760, light and dark). [ ] ASK to release 0.7.0.
+6. [x] Docs, CHANGELOG, phone checks (360×760, light and dark). Released as 0.7.0 on 2026-10-07 (user OK); `:0.7.0` = `:latest`. Work continues on `feature/v0.8`.
 
 Undecided (the user: "Not sure yet"): sharing a recipe with "nobody / household / family / everyone on the server"
 needs several households on one server (a big split of people, pantry, plan and list by household) or one household
