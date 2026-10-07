@@ -254,7 +254,7 @@ func (s *Server) handlePlanShopping(w http.ResponseWriter, r *http.Request) {
 			continue
 		}
 		factor := s.mealFactor(e, rc)
-		n, h, err := s.shopRecipe(rc, factor, auth.UserFrom(r).Username)
+		n, h, err := s.shopRecipe(rc, factor, auth.UserFrom(r).Username, nil)
 		if err != nil {
 			writeStoreErr(w, err)
 			return

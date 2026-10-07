@@ -1,10 +1,11 @@
 // A recipe's page: who can eat it and why, swaps, Home & Care warnings,
 // servings and units, steps, and the parents' tools.
 import { get, post, put, del, qs } from "./api.js";
-import { $, $$, esc, attempt, busy, fmtMin, peppers, levelChip, money, canManage, canEmail, cap, toast, sheet, featureOn } from "./ui.js";
+import { $, $$, esc, attempt, busy, fmtMin, peppers, levelChip, money, canManage, canEmail, cap, toast, featureOn } from "./ui.js";
 import { verdictList } from "./verdicts.js";
 import { startCooking } from "./cook.js";
 import { kidsChip } from "./kids.js";
+import { pickForList } from "./shoppick.js";
 import { bookLine, wireBookLink } from "./booklink.js";
 import { ingredientList, stepList } from "./recipeparts.js";
 import { cardBox } from "./cardcheck.js";
@@ -76,7 +77,6 @@ export async function renderRecipe(view, params, state) {
             <button id="print" class="btn-secondary">🖨 Print</button>
             ${manage && on("share") ? `<button id="share-link" class="btn-secondary">🔗 Share link</button>` : ""}
             ${canEmail(state) ? `<button id="mail" class="btn-secondary">✉️ Email</button>` : ""}
-            ${r.ingredients.length && on("shopping") ? `<button id="shop" class="btn-secondary">🛒 Add to shopping list</button>` : ""}
             ${manage ? `<a href="#/edit/${r.id}" class="btn-secondary">✎ Edit</a>
               <button id="version" class="btn-secondary" title="A copy to change, keeping this one">⎘ Make our version</button>
               <button id="tocol" class="btn-secondary">📚 Add to a collection</button>
@@ -87,6 +87,7 @@ export async function renderRecipe(view, params, state) {
           <div class="card">
             <div class="mb-3 flex flex-wrap items-center gap-2">
               <h2 class="mr-auto font-semibold">Ingredients</h2>
+              ${r.ingredients.length && on("shopping") ? `<button id="shop" class="btn-primary min-h-0 px-3 py-1.5 text-sm">🛒 Add to list</button>` : ""}
               ${scaler(r, view_)}
               <div class="flex rounded-lg ring-1 ring-slate-700" role="group" aria-label="Units">
                 ${["us", "metric"].map((s) => `<button data-sys="${s}" class="px-3 py-1.5 text-sm ${view_.system === s ? "rounded-lg bg-slate-700 text-white" : "text-slate-400"}">${s === "us" ? "US" : "Metric"}</button>`).join("")}
@@ -161,7 +162,7 @@ export async function renderRecipe(view, params, state) {
     const tocol = $("#tocol", view);
     if (tocol) tocol.onclick = () => attempt(() => addToCollection(r.id, r.area));
     const shop = $("#shop", view);
-    if (shop) shop.onclick = () => attempt(() => addToShopping(r, view_.factor));
+    if (shop) shop.onclick = () => attempt(() => pickForList(r, view_.factor));
     $$("[data-ing]", view).forEach((li) => (li.onclick = (e) => { if (!e.target.closest("button")) li.classList.toggle("line-through-soft"); }));
     wireSubstitute(view, r, view_.sub, () => view_.who.join(",") || "0", draw);
     const cook = $("#cook", view);
@@ -210,21 +211,3 @@ function source(r, manage) {
     <p class="text-xs text-slate-500">Kept for the family's own use.</p></div>`;
 }
 
-// addToShopping puts the recipe (at this scale) on the list, and says what
-// the pantry probably has already.
-async function addToShopping(r, factor) {
-  const res = await post("/api/shopping/recipe", { id: r.id, factor });
-  if (!res.have.length) return toast(`Added ${res.added} thing${res.added === 1 ? "" : "s"} to the shopping list`);
-  const d = sheet(`<div class="space-y-3">
-    <div class="flex items-center"><h2 class="text-lg font-semibold">Added ${res.added} to the shopping list</h2>
-      <button type="button" data-close class="btn-ghost ml-auto">✕</button></div>
-    <p class="text-sm text-slate-300">These look like they're in the house already, so they weren't added:</p>
-    <ul class="space-y-1 text-sm">${res.have.map((h, i) => `<li class="flex flex-wrap items-center gap-2"><span class="min-w-0 flex-1 basis-40 break-words">${esc(h.line)}
-      <span class="block text-xs text-slate-500">${h.area === "home" ? "Supplies" : "Pantry"}: ${esc(h.stock)}</span></span>
-      <button data-have="${i}" class="btn-ghost min-h-0 py-1">+ Add anyway</button></li>`).join("")}</ul>
-    <a href="#/shopping" class="btn-primary" data-close>Open the list</a></div>`);
-  $$("[data-have]", d).forEach((b) => (b.onclick = () => attempt(async () => {
-    await post("/api/shopping", { text: res.have[Number(b.dataset.have)].line });
-    b.replaceWith(Object.assign(document.createElement("span"), { className: "text-xs text-emerald-300", textContent: "✓ Added" }));
-  })));
-}

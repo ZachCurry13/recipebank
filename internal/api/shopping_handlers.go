@@ -3,6 +3,7 @@ package api
 import (
 	"github.com/zachcurry13/recipebank/internal/budget"
 	"net/http"
+	"slices"
 	"strings"
 
 	"github.com/zachcurry13/recipebank/internal/auth"
@@ -98,8 +99,9 @@ func (s *Server) handleShopRecipe(w http.ResponseWriter, r *http.Request) {
 	var body struct {
 		ID     int64   `json:"id"`
 		Factor float64 `json:"factor"`
+		Only   []int   `json:"only"` // the lines the person ticked (null: all but what the house has)
 	}
-	if !readJSON(w, r, &body, 1<<10) {
+	if !readJSON(w, r, &body, 8<<10) {
 		return
 	}
 	rc, err := s.Store.Recipe(body.ID)
@@ -107,7 +109,7 @@ func (s *Server) handleShopRecipe(w http.ResponseWriter, r *http.Request) {
 		writeStoreErr(w, err)
 		return
 	}
-	added, have, err := s.shopRecipe(rc, body.Factor, auth.UserFrom(r).Username)
+	added, have, err := s.shopRecipe(rc, body.Factor, auth.UserFrom(r).Username, body.Only)
 	if err != nil {
 		writeStoreErr(w, err)
 		return
@@ -123,7 +125,10 @@ type haveItem struct {
 	Area  string `json:"area"`
 }
 
-func (s *Server) shopRecipe(rc *recipe.Recipe, factor float64, by string) (int, []haveItem, error) {
+// shopRecipe puts a recipe's lines on the list. only (when not nil) are the
+// lines the person ticked, added even if the house has them; otherwise every
+// line the house doesn't seem to have.
+func (s *Server) shopRecipe(rc *recipe.Recipe, factor float64, by string, only []int) (int, []haveItem, error) {
 	if factor <= 0 {
 		factor = 1
 	}
@@ -132,13 +137,14 @@ func (s *Server) shopRecipe(rc *recipe.Recipe, factor float64, by string) (int, 
 		return 0, nil, err
 	}
 	added, have := 0, []haveItem{}
-lines:
-	for _, in := range rc.Ingredients {
-		for _, st := range stock {
-			if st.Qty > 0 && safety.SameFood(in.Food, st.Name) {
-				have = append(have, haveItem{Line: in.Line, Food: in.Food, Stock: st.Name, Area: st.Area})
-				continue lines
+	for i, in := range rc.Ingredients {
+		if only != nil {
+			if !slices.Contains(only, i) {
+				continue
 			}
+		} else if st := inStock(stock, in.Food); st != nil {
+			have = append(have, haveItem{Line: in.Line, Food: in.Food, Stock: st.Name, Area: st.Area})
+			continue
 		}
 		name := shopping.CleanName(in.Food)
 		it := store.ShopItem{Key: safety.FoodKey(name), Name: name, Unit: in.Unit, Area: rc.Area, AddedBy: by}
@@ -151,6 +157,39 @@ lines:
 		added++
 	}
 	return added, have, nil
+}
+
+// inStock is the item in the house a recipe line names, if any.
+func inStock(stock []store.StockItem, food string) *store.StockItem {
+	for i := range stock {
+		if stock[i].Qty > 0 && safety.SameFood(food, stock[i].Name) {
+			return &stock[i]
+		}
+	}
+	return nil
+}
+
+// handleShopCheck says, for each of a recipe's lines, what the house seems
+// to have already, so the person can tick what to buy.
+func (s *Server) handleShopCheck(w http.ResponseWriter, r *http.Request) {
+	id, _ := pathID(r, "id")
+	rc, err := s.Store.Recipe(id)
+	if err != nil {
+		writeStoreErr(w, err)
+		return
+	}
+	stock, err := s.Store.ListStock("")
+	if err != nil {
+		writeStoreErr(w, err)
+		return
+	}
+	out := make([]*haveItem, len(rc.Ingredients))
+	for i, in := range rc.Ingredients {
+		if st := inStock(stock, in.Food); st != nil {
+			out[i] = &haveItem{Line: in.Line, Food: in.Food, Stock: st.Name, Area: st.Area}
+		}
+	}
+	writeJSON(w, http.StatusOK, map[string]any{"have": out})
 }
 
 func (s *Server) handleUpdateShopping(w http.ResponseWriter, r *http.Request) {

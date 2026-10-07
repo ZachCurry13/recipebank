@@ -180,7 +180,7 @@ func (s *Server) handleEventShopping(w http.ResponseWriter, r *http.Request) {
 		if rc.Servings > 0 && headcount > 0 {
 			factor = headcount / rc.Servings
 		}
-		n, h, err := s.shopRecipe(rc, factor, auth.UserFrom(r).Username)
+		n, h, err := s.shopRecipe(rc, factor, auth.UserFrom(r).Username, nil)
 		if err != nil {
 			writeStoreErr(w, err)
 			return

@@ -138,6 +138,7 @@ func (s *Server) Router() http.Handler {
 			r.Get("/shopping", s.handleShopping)
 			r.Post("/shopping", s.handleAddShopping)
 			r.Post("/shopping/recipe", s.handleShopRecipe)
+			r.Get("/shopping/recipe/{id}", s.handleShopCheck)
 			r.Post("/shopping/clear", s.handleClearShopping)
 			r.Put("/shopping/{id}", s.handleUpdateShopping)
 			r.Delete("/shopping/{id}", s.handleDeleteShopping)
