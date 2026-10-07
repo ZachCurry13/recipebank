@@ -2,7 +2,9 @@ package store
 
 import (
 	"errors"
+	"fmt"
 	"strings"
+	"unicode"
 
 	"github.com/zachcurry13/recipebank/internal/safety"
 )
@@ -24,6 +26,10 @@ type Rule struct {
 	Kind     string `db:"kind" json:"kind"` // allergy, diet, dislike, sensitivity
 	Key      string `db:"key" json:"key"`
 	Severity string `db:"severity" json:"severity,omitempty"`
+	// Allow (allergies): foods made from the allergen this person can have,
+	// as their doctor says: "soybean oil" for someone allergic to soy.
+	Allow     []string `db:"-" json:"allow,omitempty"`
+	AllowText string   `db:"allow" json:"-"`
 }
 
 // ListPeople returns everyone with their rules, guests last.
@@ -34,7 +40,7 @@ func (s *Store) ListPeople() ([]Person, error) {
 		return nil, err
 	}
 	var rules []Rule
-	if err := s.DB.Select(&rules, `SELECT person_id, kind, key, severity FROM person_rules ORDER BY kind, key`); err != nil {
+	if err := s.DB.Select(&rules, `SELECT person_id, kind, key, severity, allow FROM person_rules ORDER BY kind, key`); err != nil {
 		return nil, err
 	}
 	byID := map[int64]*Person{}
@@ -44,6 +50,7 @@ func (s *Store) ListPeople() ([]Person, error) {
 	}
 	for _, r := range rules {
 		if p := byID[r.PersonID]; p != nil {
+			r.Allow = SplitList(r.AllowText)
 			p.Rules = append(p.Rules, r)
 		}
 	}
@@ -96,8 +103,8 @@ func (s *Store) SavePerson(p *Person) (int64, error) {
 		return 0, err
 	}
 	for _, r := range p.Rules {
-		if _, err := tx.Exec(`INSERT OR REPLACE INTO person_rules (person_id, kind, key, severity) VALUES (?, ?, ?, ?)`,
-			id, r.Kind, strings.TrimSpace(r.Key), r.Severity); err != nil {
+		if _, err := tx.Exec(`INSERT OR REPLACE INTO person_rules (person_id, kind, key, severity, allow) VALUES (?, ?, ?, ?, ?)`,
+			id, r.Kind, strings.TrimSpace(r.Key), r.Severity, strings.Join(r.Allow, ",")); err != nil {
 			return 0, err
 		}
 	}
@@ -113,6 +120,47 @@ func (s *Store) DeletePerson(id int64) error {
 		return ErrNotFound
 	}
 	return nil
+}
+
+// CleanAllow tidies an allergy's "can have anyway" list and says what's
+// wrong with it: at most 10 short food names, none that's the allergy itself.
+func CleanAllow(r *Rule) error {
+	if len(r.Allow) == 0 {
+		return nil
+	}
+	if r.Kind != "allergy" {
+		return errors.New("only allergies have foods they can have anyway")
+	}
+	var out []string
+	for _, a := range r.Allow {
+		a = strings.Join(strings.Fields(strings.ToLower(a)), " ")
+		if a == "" || slicesContains(out, a) {
+			continue
+		}
+		if len(a) < 2 || len(a) > 40 || strings.IndexFunc(a, func(c rune) bool {
+			return !unicode.IsLetter(c) && c != ' ' && c != '-' && c != '\''
+		}) >= 0 {
+			return fmt.Errorf("%q: a food name of 2 to 40 letters, please", a)
+		}
+		if safety.SameAsAllergen(r.Key, a) {
+			return fmt.Errorf("%q is the allergy itself; to allow everything, take the allergy off instead", a)
+		}
+		out = append(out, a)
+	}
+	if len(out) > 10 {
+		return errors.New("at most 10 foods they can have anyway, for each allergy")
+	}
+	r.Allow = out
+	return nil
+}
+
+func slicesContains(list []string, s string) bool {
+	for _, x := range list {
+		if x == s {
+			return true
+		}
+	}
+	return false
 }
 
 // ErrBadRule is returned for a rule the checker wouldn't understand.
@@ -149,6 +197,12 @@ func (p *Person) Checkable() safety.Person {
 		switch r.Kind {
 		case "allergy":
 			out.Allergies[r.Key] = r.Severity
+			if len(r.Allow) > 0 {
+				if out.Allowed == nil {
+					out.Allowed = map[string][]string{}
+				}
+				out.Allowed[r.Key] = r.Allow
+			}
 		case "diet":
 			out.Diets = append(out.Diets, r.Key)
 		case "dislike":

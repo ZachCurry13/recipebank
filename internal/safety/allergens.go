@@ -10,6 +10,8 @@ type Allergen struct {
 	terms phrases // contains it
 	not   phrases // look-alikes, masked before terms are matched
 	maybe phrases // may contain it: check the label
+
+	Exceptions []Exception `json:"exceptions,omitempty"` // what some people with this allergy can have (exceptions.go)
 }
 
 var milkNot = []string{"coconut milk", "almond milk", "oat milk", "soy milk", "soya milk", "rice milk", "cashew milk",

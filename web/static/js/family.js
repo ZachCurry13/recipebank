@@ -3,6 +3,7 @@
 import { get, post, put, del } from "./api.js";
 import { $, $$, esc, attempt, canManage, sheet, toast, HEAT } from "./ui.js";
 import { refreshInfo } from "./app.js";
+import { allowFields, wireAllowFields, allowFor } from "./allowfields.js";
 
 const SEVERITY = [
   ["", "No"],
@@ -29,7 +30,8 @@ export async function renderFamily(view, params, state) {
       Guests (like a grandparent who visits) can be added too.</div>`}
     <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">${people.map((p) => {
       const rules = p.rules.map((r) => r.kind === "allergy"
-        ? `<span class="${r.severity === "avoid" ? "chip-unsure" : "chip-no"}">${esc(allergenName(r.key))}: ${esc(SEVERITY.find((s) => s[0] === r.severity)?.[1] || r.severity)}</span>`
+        ? `<span class="${r.severity === "avoid" ? "chip-unsure" : "chip-no"}">${esc(allergenName(r.key))}: ${esc(SEVERITY.find((s) => s[0] === r.severity)?.[1] || r.severity)}${
+          r.allow?.length ? ` (can have ${esc(r.allow.join(", "))})` : ""}</span>`
         : r.kind === "diet" ? `<span class="chip-cat">${esc(dietName(r.key))}</span>`
         : r.kind === "dislike" ? `<span class="chip-info">No ${esc(r.key)}</span>`
         : `<span class="chip-info">Sensitive: ${esc(r.key)}</span>`).join(" ");
@@ -78,7 +80,8 @@ function editPerson(p, info, done) {
         <div class="space-y-2">${info.allergens.map((a) => `
           <label class="flex flex-wrap items-center gap-2"><span class="min-w-0 flex-1 basis-40 text-sm">${esc(a.label)}</span>
             <select name="allergy_${a.key}" class="input w-auto">${SEVERITY.map(([v, l]) =>
-              `<option value="${v}" ${(rule("allergy", a.key)?.severity || "") === v ? "selected" : ""}>${l}</option>`).join("")}</select></label>`).join("")}</div>
+              `<option value="${v}" ${(rule("allergy", a.key)?.severity || "") === v ? "selected" : ""}>${l}</option>`).join("")}</select></label>
+          ${allowFields(a, rule("allergy", a.key))}`).join("")}</div>
       </div>
       <div><span class="label">Diets</span><div class="flex flex-wrap gap-2">${info.diets.map((dt) =>
         `<label class="pick ${rule("diet", dt.key) ? "on" : ""}"><input type="checkbox" class="sr-only" name="diet" value="${dt.key}" ${rule("diet", dt.key) ? "checked" : ""}>${esc(dt.label)}</label>`).join("")}</div></div>
@@ -92,13 +95,14 @@ function editPerson(p, info, done) {
         ${p.id ? `<button type="button" id="rm" class="btn-ghost ml-auto text-rose-300">Remove ${esc(p.name)}</button>` : ""}</div>
     </form>`);
   $$('input[name="diet"]', d).forEach((i) => (i.onchange = () => i.parentElement.classList.toggle("on", i.checked)));
+  wireAllowFields(d);
   $("#pf", d).onsubmit = (e) => {
     e.preventDefault();
     const f = e.target;
     const rules = [];
     for (const a of info.allergens) {
       const sev = f["allergy_" + a.key].value;
-      if (sev) rules.push({ kind: "allergy", key: a.key, severity: sev });
+      if (sev) rules.push({ kind: "allergy", key: a.key, severity: sev, allow: allowFor(f, a.key) });
     }
     // Keep allergies from the other list (US/EU) that aren't shown here.
     for (const r of p.rules) if (r.kind === "allergy" && !info.allergens.some((a) => a.key === r.key)) rules.push(r);

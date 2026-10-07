@@ -49,8 +49,12 @@ func (s *Server) handleSavePerson(w http.ResponseWriter, r *http.Request) {
 		writeErr(w, http.StatusBadRequest, "a name (up to 60 letters) is needed")
 		return
 	}
-	for _, rule := range p.Rules {
-		if store.ValidRule(rule) != nil {
+	for i := range p.Rules {
+		if err := store.CleanAllow(&p.Rules[i]); err != nil {
+			writeErr(w, http.StatusBadRequest, err.Error())
+			return
+		}
+		if rule := p.Rules[i]; store.ValidRule(rule) != nil {
 			writeErr(w, http.StatusBadRequest, "unknown rule: "+rule.Kind+" "+rule.Key)
 			return
 		}

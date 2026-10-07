@@ -19,6 +19,7 @@ func migrate(d *sqlx.DB) error {
 		{"stock", "size", "TEXT NOT NULL DEFAULT ''"},
 		{"users", "plan_meals", "TEXT NOT NULL DEFAULT ''"},   // meals the person's plan shows; '' = all
 		{"users", "hidden_pages", "TEXT NOT NULL DEFAULT ''"}, // pages left out of the person's menu
+		{"person_rules", "allow", "TEXT NOT NULL DEFAULT ''"}, // allergy: what they can have anyway, comma-separated
 	} {
 		if err := addColumn(d, c.table, c.column, c.def); err != nil {
 			return err

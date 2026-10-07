@@ -184,7 +184,12 @@ everything below is built and checked.
 7. [x] **Features on and off** (asked for by the user's wife: the app felt overwhelming): Admin turns features off
    for the whole house (hidden, data kept); each person can simplify their own view on Me: which meals the plan
    shows (all by default; e.g. just dinner) and pages hidden from their menu.
+7b. [x] **Allergy exceptions** (the user's sister: no soy or soy lecithin, but soybean oil is fine): Family → each
+   allergy → "Can have anyway": offered ones (refined soybean oil, soy lecithin, refined peanut oil) or typed ones
+   ("almond"); only that exact food is masked, cold-pressed/roasted oils still count (`safety/exceptions.go`).
+7c. [x] **Photos on Android** (released as 0.5.1 on its own): in-page camera + "Choose a photo" (`camera.js`).
 8. [ ] Docs, CHANGELOG, phone checks (360×760, light and dark; desktop widths for the menu), then ASK to release.
+   The SW cache is v8 (0.5.1 used v7).
 
 ## 2. Rules
 

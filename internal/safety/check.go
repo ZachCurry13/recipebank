@@ -23,14 +23,15 @@ const (
 
 // Person is someone's rules, as the checker needs them.
 type Person struct {
-	ID            int64             `json:"id"`
-	Name          string            `json:"name"`
-	IsKid         bool              `json:"is_kid"`
-	HeatMax       int               `json:"heat_max"`  // -1 = no limit
-	Allergies     map[string]string `json:"allergies"` // allergen key → severity
-	Diets         []string          `json:"diets"`
-	Dislikes      []string          `json:"dislikes"`
-	Sensitivities []string          `json:"sensitivities"`
+	ID            int64               `json:"id"`
+	Name          string              `json:"name"`
+	IsKid         bool                `json:"is_kid"`
+	HeatMax       int                 `json:"heat_max"`          // -1 = no limit
+	Allergies     map[string]string   `json:"allergies"`         // allergen key → severity
+	Allowed       map[string][]string `json:"allowed,omitempty"` // allergen key → what they can have anyway (exceptions.go)
+	Diets         []string            `json:"diets"`
+	Dislikes      []string            `json:"dislikes"`
+	Sensitivities []string            `json:"sensitivities"`
 }
 
 // Reason is one thing standing between a person and a recipe.
@@ -90,7 +91,7 @@ func Check(r *recipe.Recipe, p Person) Verdict {
 			food = in.Line
 		}
 		for key, sev := range p.Allergies {
-			checkAllergen(&rs, t, food, key, sev, in.Checked, i)
+			checkAllergen(&rs, t, food, key, sev, p.Allowed[key], in.Checked, i)
 		}
 		for _, d := range p.Diets {
 			checkDiet(&rs, t, d, i)
@@ -135,7 +136,7 @@ func Check(r *recipe.Recipe, p Person) Verdict {
 		if sev == Avoid {
 			continue
 		}
-		if w := StepsMention(r, key); w != "" {
+		if w := stepsMention(r, key, p.Allowed[key]); w != "" {
 			a, _ := AllergenByKey(key)
 			rs.add(Unsure, a.Label+" allergy", "the steps mention "+w+", but no ingredient line has it", "", -1)
 		}
@@ -163,7 +164,7 @@ func Check(r *recipe.Recipe, p Person) Verdict {
 	return v
 }
 
-func checkAllergen(rs *reasons, t text, food, key, sev string, checked []string, line int) {
+func checkAllergen(rs *reasons, t text, food, key, sev string, allowed, checked []string, line int) {
 	a, ok := AllergenByKey(key)
 	if !ok {
 		return
@@ -171,6 +172,7 @@ func checkAllergen(rs *reasons, t text, food, key, sev string, checked []string,
 	rule := a.Label + " allergy"
 	m := t.clone()
 	m.mask(a.not)
+	maskAllowed(m, t, a, allowed)
 	if hit := m.first(a.terms); hit != "" {
 		rs.add(No, rule, "contains "+strings.ToLower(a.Label), key, line)
 		return
@@ -178,12 +180,16 @@ func checkAllergen(rs *reasons, t text, food, key, sev string, checked []string,
 	if sev == Avoid || slicesHas(checked, key) || slicesHas(checked, "*") {
 		return
 	}
+	// "May contain" is looked for without what the person may have ("soy
+	// lecithin" isn't a maybe for someone who can have it; "lecithin" still is).
+	mt := t.clone()
+	maskAllowed(mt, t, a, allowed)
 	switch {
-	case t.has(a.maybe):
+	case mt.has(a.maybe):
 		rs.add(Unsure, rule, "may contain "+strings.ToLower(a.Label)+": check the label", key, line)
 	case t.has(packaged):
 		rs.add(Unsure, rule, "packaged food: check the label", key, line)
-	case sev == Severe && !known(food):
+	case sev == Severe && !known(food) && !onlyAllowed(food, t, a, allowed):
 		rs.add(Unsure, rule, "strict mode: not sure what's in it, check it", key, line)
 	}
 }
