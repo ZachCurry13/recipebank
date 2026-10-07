@@ -1,6 +1,8 @@
 # Changelog
 
-## [Unreleased]
+## [0.8.0] - 2026-10-07
+
+Photo models on Ollama in a couple of taps, and plainer answers when an AI can't help.
 
 ### 📷 Photo models on Ollama, made easy
 - The **🦙 Ollama** card has two pickers: **📝 For text** and **📷 For photos**. Each lists the models already on that Ollama first, then ones to download (marked for your graphics card), then **Other model…** to type any name from ollama.com. **Download and use** downloads the model and sets it up in one go.
@@ -11,6 +13,8 @@
 - When an online AI is busy for a moment (Gemini's "high demand", Claude's "overloaded"), RecipeBank waits a few seconds and asks once more.
 - When neither AI can read a photo, it says what went wrong with **each** one: for example, the AI for photos was busy and the main AI's model wouldn't load.
 - Ollama's "Failed to load CLIP model" (a photo model's picture reader that wouldn't load) and an online AI's usage limit are explained in plain words, with what to do. The speed test explains them the same way.
+
+Updating: nothing to change in TrueNAS.
 
 ## [0.7.1] - 2026-10-07
 
