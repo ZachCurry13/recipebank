@@ -175,9 +175,9 @@ everything below is built and checked.
 2. [x] **A second AI for photos** (Admin → AI): photos go there first (cards, receipts, fridge, indexes), e.g. a big
    model on a PC or an online API; when it can't be reached it's skipped for 2 minutes and the main AI reads them.
    Text stays on the main AI unless the photo AI is the only one (`store/photoai.go`, `llm/chain.go`).
-3. [ ] **Ollama tools** ported from NovelCheck (`internal/ollama` copied; MIT, same author): find Ollama on the
+3. [x] **Ollama tools** ported from NovelCheck (`internal/ollama` copied; MIT, same author): find Ollama on the
    network, installed models (delete unused), download with progress, use a model for text or photos.
-4. [ ] **GPU picks:** measure the card, label text models and photo models (best / most powerful / fits / too big).
+4. [x] **GPU picks:** measure the card, label text models and photo models (best / most powerful / fits / too big).
 5. [ ] **Speed test:** time each AI on a made-up sample card photo and a text job.
 6. [ ] **Model updates, presets, health:** daily check for newer Ollama model versions (Update button), one-click
    presets (Gemini, OpenAI, Claude, Ollama, LM Studio), "is it answering", cost for online APIs.

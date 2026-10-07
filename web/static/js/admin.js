@@ -8,6 +8,7 @@ import { renderEmailAdmin } from "./email.js";
 import { renderBackup } from "./backup.js";
 import { photoAI, wirePhotoAI, photoSettings } from "./photoai.js";
 import { renderFeatures } from "./featuresadmin.js";
+import { renderOllama } from "./ollamaadmin.js";
 
 const ROLES = [["admin", "Admin (everything)"], ["editor", "Parent (recipes and people)"], ["kid", "Kid (reads and cooks)"]];
 
@@ -68,6 +69,7 @@ export async function renderAdmin(view, params, state) {
         ${folders(s.folders)}
       </form>
     </div>
+    <div id="ollama" class="mt-4"></div>
     <div id="features" class="mt-4"></div>
     <div id="hints" class="mt-4"></div>
     <div id="mail" class="mt-4"></div>
@@ -91,6 +93,7 @@ export async function renderAdmin(view, params, state) {
   renderEmailAdmin($("#mail", view), s);
   renderBackup($("#backup", view));
   renderFeatures($("#features", view), s);
+  const stopOllama = renderOllama($("#ollama", view), s, () => attempt(async () => { await refreshInfo(); renderAdmin(view, params, state); }));
   const ai = $("#ai", view);
   const showURL = () => $("[data-openai]", ai).classList.toggle("hidden", ai.llm_provider.value === "anthropic");
   ai.llm_provider.onchange = showURL;
@@ -160,6 +163,7 @@ export async function renderAdmin(view, params, state) {
       }, "Account added");
     };
   };
+  return stopOllama; // stop watching a download when leaving the page
 }
 
 // folders shows where the database, photos and previews are kept.
