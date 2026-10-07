@@ -4,6 +4,7 @@
 import { get, post, put, del } from "./api.js";
 import { $, $$, esc, attempt, busy, sheet, toast, canManage } from "./ui.js";
 import { fromPhoto, scanLive, liveBlocker } from "./barcode.js";
+import { photoPicker, wirePhotoPicker } from "./camera.js";
 import { shrinkPhoto } from "./photo.js";
 import { setPending } from "./booklink.js";
 import { go } from "./app.js";
@@ -84,7 +85,7 @@ function scanBook(done) {
     <div class="flex items-center"><h2 class="text-lg font-semibold">📷 Scan a cookbook</h2><button type="button" data-close class="btn-ghost ml-auto" aria-label="Close">✕</button></div>
     <p class="text-sm text-slate-400">The barcode on the back (it starts with 978 or 979).</p>
     <div class="flex flex-wrap gap-2">
-      <label class="btn-primary cursor-pointer">📷 Photo of the barcode<input id="ph" type="file" accept="image/*" capture="environment" class="sr-only"></label>
+      ${photoPicker("barcode", { take: "📷 Photo of the barcode", primary: true })}
       ${live ? `<button id="live" class="btn-secondary">🎥 Live camera</button>` : ""}</div>
     ${live ? "" : `<p class="text-xs text-slate-500">${esc(liveBlocker())}</p>`}
     <form id="typed" class="flex flex-wrap gap-2"><input name="code" class="input flex-1 basis-40" placeholder="Or type the ISBN">
@@ -110,12 +111,10 @@ function scanBook(done) {
     }
     editBook({ ...res.book, note: "Found in Open Library. Is this the right book?" }, done);
   };
-  $("#ph", d).onchange = (e) => attempt(async () => {
-    const f = e.target.files[0];
-    if (!f) return;
+  wirePhotoPicker(d, "barcode", ([f]) => attempt(async () => {
     say("Reading the photo…");
     await look(await fromPhoto(f));
-  });
+  }));
   const liveBtn = $("#live", d);
   if (liveBtn) liveBtn.onclick = () => attempt(async () => {
     const code = await scanLive(d);
