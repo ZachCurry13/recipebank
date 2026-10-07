@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.6.1] - 2026-10-07
+
+Fixes for Google Gemini and for recipes the AI organizes.
+
+### Fixes
+- **Gemini timed out** ("context deadline exceeded") reading photos: its newer models think before answering, and on a photo that could take more than two minutes. RecipeBank now asks Gemini to think briefly and leaves room for the answer.
+- **📋 List models** in Admin → AI (for the main AI and the AI for photos) asks the service which models it has, so you pick a current name instead of guessing (Google retires old Gemini names). Quick setup now suggests a current Gemini model.
+- **Ingredient lines are kept as you wrote them.** The AI sometimes shortened lines while organizing a pasted recipe, a web page or a card: "1 1/2 Cup chocolate chips (… half milk chocolate) 340g" came back without its note, and "340g" as a line of its own. Each line is now matched back to what you wrote, so notes, weights and allergy words like "milk chocolate" stay.
+- A weight after a food ("chocolate chips 340g") is read as a note, not part of its name.
+
+Updating: nothing to change in TrueNAS. Recipes already saved keep their lines; edit one to put a note back.
+
 ## [0.6.0] - 2026-10-07
 
 Show only what your family uses, allergies with exceptions, and better tools for your own AI.
