@@ -24,6 +24,7 @@ import { renderBooks } from "./books.js";
 import { renderBook } from "./book.js";
 import { firstRun } from "./firstrun.js";
 import { checkForUpdates, watchServerVersion } from "./updatebanner.js";
+import { wireFind } from "./find.js";
 
 export const state = { user: null, info: null };
 
@@ -79,6 +80,7 @@ async function showApp() {
   applyAppearance(state.user);
   await refreshInfo().catch(() => {});
   buildNav(state.user, state.info);
+  wireFind();
   const v = state.user.version || "dev";
   $("#version-label").textContent = `Version ${v}`;
   $("#header-version").textContent = v;

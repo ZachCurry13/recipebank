@@ -120,6 +120,7 @@ func (s *Server) Router() http.Handler {
 			r.Get("/recipes/{id}/cooks", s.handleListCooks)
 			r.With(s.feature("nutrition")).Get("/recipes/{id}/nutrition", s.handleNutrition)
 			r.Get("/cookbook", s.handleCookbook)
+			r.Get("/find", s.handleFind)
 			r.Get("/books", s.handleListBooks)
 			r.Get("/books/search", s.handleSearchBooks)
 			r.Get("/books/{id}", s.handleGetBook)
