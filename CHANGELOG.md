@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.5.1] - 2026-10-06
+
+A fix for taking photos on Android phones.
+
+### Fixes
+- Taking a photo of the fridge (or a recipe card, a receipt, a dish or a barcode) could fail with "Unable to complete previous operation due to low memory": the phone closed the browser to make room for its camera app, and the photo was lost. **Take a photo** now uses the camera inside RecipeBank where the browser allows it (over a secure https:// address), so the app never leaves the page.
+- Every photo button now has **Choose a photo** next to it, so a picture taken earlier with the phone's camera app always works, even on a plain http:// address.
+
+Updating: nothing to change in TrueNAS.
+
 ## [0.5.0] - 2026-10-06
 
 Plan the week in one tap, scan receipts and cookbooks, bring recipes over from other apps, and let the kids help.
