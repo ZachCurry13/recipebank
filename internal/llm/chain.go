@@ -82,7 +82,7 @@ func AskImages(ctx context.Context, st *store.Store, prompt string, images []Ima
 	}
 	model, err := askImagesWith(ctx, st, main, false, prompt, images, parse)
 	if err != nil && photoErr != nil && !TooLong(err) {
-		return "", fmt.Errorf("the photo AI couldn't (%v), and neither could the main AI (%w)", photoErr, err)
+		return "", &BothFailed{Photo: photoErr, Main: err}
 	}
 	return model, err
 }
@@ -107,6 +107,21 @@ func askImagesWith(ctx context.Context, st *store.Store, ai store.AIConfig, quic
 var quickDial = &http.Client{Transport: &http.Transport{Proxy: http.ProxyFromEnvironment,
 	DialContext: (&net.Dialer{Timeout: 5 * time.Second}).DialContext, TLSHandshakeTimeout: 10 * time.Second}}
 
+// busyWait is how long to wait before asking a busy online AI again.
+var busyWait = 4 * time.Second
+
+// pause waits d, unless ctx ends first.
+func pause(ctx context.Context, d time.Duration) bool {
+	t := time.NewTimer(d)
+	defer t.Stop()
+	select {
+	case <-t.C:
+		return true
+	case <-ctx.Done():
+		return false
+	}
+}
+
 // downFor is how long a photo AI that couldn't be reached is skipped.
 const downFor = 2 * time.Minute
 
@@ -129,14 +144,21 @@ func isDown(baseURL string) bool {
 
 func try(ctx context.Context, st *store.Store, ai store.AIConfig, models []string, parse func(string) error,
 	call func(context.Context, string) (string, Usage, error)) (string, error) {
-	var errs []string
-	for _, model := range models {
+	ask := func(model string) (string, error) {
 		cctx, cancel := context.WithTimeout(ctx, Timeout(ai.BaseURL, st.SettingInt(store.KeyLLMTimeoutSeconds)))
+		defer cancel()
 		start := time.Now()
 		out, usage, err := call(cctx, model)
-		cancel()
 		if usage.Total() > 0 {
 			_ = st.RecordUsage(model, usage.PromptTokens, usage.CompletionTokens, time.Since(start))
+		}
+		return out, err
+	}
+	var errs []string
+	for _, model := range models {
+		out, err := ask(model)
+		if Busy(err) && pause(ctx, busyWait) {
+			out, err = ask(model) // busy for a moment: once more
 		}
 		if err == nil {
 			if err = parse(out); err == nil {

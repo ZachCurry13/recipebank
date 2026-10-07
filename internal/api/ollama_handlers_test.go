@@ -2,6 +2,7 @@ package api
 
 import (
 	"fmt"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -11,6 +12,11 @@ import (
 
 	"github.com/zachcurry13/recipebank/internal/store"
 )
+
+func readAll(r *http.Request) string {
+	b, _ := io.ReadAll(r.Body)
+	return string(b)
+}
 
 // fakeOllama answers like an Ollama server with a few models; it records deletes.
 func fakeOllama(t *testing.T, models ...string) (*httptest.Server, *[]string) {
@@ -26,6 +32,18 @@ func fakeOllama(t *testing.T, models ...string) (*httptest.Server, *[]string) {
 				rows = append(rows, fmt.Sprintf(`{"name":%q,"size":%d,"details":{"parameter_size":"3B","quantization_level":"Q4_K_M"}}`, m, (i+1)*1_000_000_000))
 			}
 			fmt.Fprintf(w, `{"models":[%s]}`, strings.Join(rows, ","))
+		case "/api/show": // the "vl" models read photos
+			if strings.Contains(readAll(r), "vl") {
+				fmt.Fprint(w, `{"capabilities":["completion","vision"]}`)
+			} else {
+				fmt.Fprint(w, `{"capabilities":["completion"]}`)
+			}
+		case "/v1/models":
+			var rows []string
+			for _, m := range models {
+				rows = append(rows, fmt.Sprintf(`{"id":%q}`, m))
+			}
+			fmt.Fprintf(w, `{"data":[%s]}`, strings.Join(rows, ","))
 		case "/api/delete":
 			mu.Lock()
 			deleted = append(deleted, r.Method)
@@ -48,8 +66,15 @@ func TestOllamaTools(t *testing.T) {
 	nas, deleted := fakeOllama(t, "qwen2.5:3b", "qwen2.5vl:3b", "llama3.2:latest")
 	pc, _ := fakeOllama(t, "qwen2.5vl:32b")
 
-	var found struct{ Servers []struct{ URL string } }
-	if code := c.do("GET", "/api/admin/ollama/find?url="+nas.URL, nil, &found); code != 200 || len(found.Servers) == 0 {
+	var found struct {
+		Servers []struct {
+			URL   string
+			Photo []string `json:"photo_models"`
+		}
+		Catalog struct{ Photos []struct{ Name string } }
+	}
+	if code := c.do("GET", "/api/admin/ollama/find?url="+nas.URL, nil, &found); code != 200 || len(found.Servers) == 0 ||
+		strings.Join(found.Servers[0].Photo, ",") != "qwen2.5vl:3b" || len(found.Catalog.Photos) == 0 {
 		t.Fatalf("find: %d %+v", code, found)
 	}
 	var used map[string]string
@@ -59,6 +84,9 @@ func TestOllamaTools(t *testing.T) {
 	ai := srv.Store.AIConfig()
 	if ai.BaseURL != nas.URL+"/v1" || strings.Join(ai.Models, ",") != "qwen2.5:3b,llama3.2" {
 		t.Fatalf("main AI: %+v", ai)
+	}
+	if code := c.do("POST", "/api/admin/ollama/use", map[string]any{"url": nas.URL, "model": "qwen2.5:3b", "use": "photos"}, nil); code != 400 {
+		t.Fatalf("a text model for photos: %d", code)
 	}
 	if code := c.do("POST", "/api/admin/ollama/use", map[string]any{"url": nas.URL, "model": "qwen2.5vl:3b", "use": "photos"}, &used); code != 200 ||
 		used["where"] != "the main AI's photo model" || srv.Store.Setting(store.KeyLLMVisionModel) != "qwen2.5vl:3b" || srv.Store.PhotoAIConfig().Ready() {
@@ -76,14 +104,23 @@ func TestOllamaTools(t *testing.T) {
 
 	var list struct {
 		Models []struct {
-			Name  string
-			InUse bool `json:"in_use"`
+			Name   string
+			InUse  bool `json:"in_use"`
+			Photos bool
 		}
 	}
 	c.do("GET", "/api/admin/ollama/models?url="+nas.URL, nil, &list)
 	inUse := map[string]bool{}
 	for _, m := range list.Models {
 		inUse[m.Name] = m.InUse
+		if m.Photos != (m.Name == "qwen2.5vl:3b") {
+			t.Errorf("%s reads photos: %v", m.Name, m.Photos)
+		}
+	}
+	var listed struct{ Models, Photo []string }
+	c.do("POST", "/api/admin/ai/models", map[string]string{"which": "llm", "provider": "openai", "base_url": nas.URL + "/v1"}, &listed)
+	if len(listed.Models) != 3 || strings.Join(listed.Photo, ",") != "qwen2.5vl:3b" {
+		t.Fatalf("List models on Ollama: %+v", listed)
 	}
 	if !inUse["qwen2.5:3b"] || !inUse["llama3.2:latest"] || !inUse["qwen2.5vl:3b"] {
 		t.Fatalf("in use: %v", inUse)

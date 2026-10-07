@@ -4,6 +4,7 @@ import (
 	"math"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 	"time"
 
@@ -63,7 +64,9 @@ func TestListModels(t *testing.T) {
 	c, srv := setup(t)
 	var auth string
 	svc := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		auth = r.Header.Get("Authorization")
+		if strings.HasSuffix(r.URL.Path, "/models") { // not the "is it Ollama?" check
+			auth = r.Header.Get("Authorization")
+		}
 		w.Write([]byte(`{"data":[{"id":"models/gemini-3.8-flash"},{"id":"models/text-embedding-004"},{"id":"models/imagen-4"},{"id":"models/gemini-3.8-flash-lite"}]}`))
 	}))
 	defer svc.Close()

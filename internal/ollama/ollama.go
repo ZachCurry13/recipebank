@@ -24,6 +24,7 @@ type Server struct {
 	URL     string   `json:"url"` // e.g. http://192.168.1.50:11434
 	Version string   `json:"version"`
 	Models  []string `json:"models"`
+	Photo   []string `json:"photo_models"` // the ones that read photos (CanSee)
 }
 
 // Ports tried during discovery: Ollama's default and common TrueNAS app ports.

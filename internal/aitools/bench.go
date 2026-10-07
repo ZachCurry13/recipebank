@@ -109,6 +109,9 @@ func (s *Service) bench(m machine) {
 func (s *Service) save(b Bench, err error) {
 	if err != nil {
 		b.Error = err.Error()
+		if msg, ok := llm.Explain(err); ok {
+			b.Error = msg
+		}
 	}
 	s.mu.Lock()
 	defer s.mu.Unlock()

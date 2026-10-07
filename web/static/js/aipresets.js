@@ -29,25 +29,32 @@ export function presetPicker(which) {
 }
 
 // modelLister is "List models": it asks the service which models it has and
-// offers them in the model boxes, so names don't have to be guessed.
+// offers them in the model boxes, so names don't have to be guessed. On
+// Ollama, the photo model boxes offer only the models that read photos.
 export function modelLister(which) {
   return `<div class="flex flex-wrap items-center gap-2"><button type="button" data-list-models="${which}" class="btn-ghost min-h-0 px-2 py-1 text-sm">📋 List models</button>
     <span data-models-note="${which}" class="min-w-0 flex-1 text-xs text-slate-400"></span></div>
-    <datalist id="models-${which}"></datalist>`;
+    <datalist id="models-${which}"></datalist><datalist id="models-${which}-photo"></datalist>`;
 }
 
 export function wireModelLister(form, which) {
-  const boxes = which === "llm" ? ["llm_model", "llm_fallback_model", "llm_vision_model"] : ["photo_model"];
-  boxes.forEach((n) => form[n]?.setAttribute("list", `models-${which}`));
+  const [text, photos] = which === "llm" ? [["llm_model", "llm_fallback_model"], ["llm_vision_model"]] : [[], ["photo_model"]];
+  text.forEach((n) => form[n]?.setAttribute("list", `models-${which}`));
+  photos.forEach((n) => form[n]?.setAttribute("list", `models-${which}-photo`));
   const btn = $(`[data-list-models="${which}"]`, form);
   if (!btn) return;
   btn.onclick = () => attempt(() => busy(btn, "Asking…", async () => {
     const res = await post("/api/admin/ai/models", { which, provider: form[`${which}_provider`].value,
       base_url: form[`${which}_base_url`]?.value || "", api_key: form[`${which}_api_key`]?.value || "" });
-    $(`#models-${which}`, form).innerHTML = res.models.map((m) => `<option value="${esc(m)}">`).join("");
-    $(`[data-models-note="${which}"]`, form).textContent = res.models.length
-      ? `${res.models.length} models: tap a model box to pick one (${res.models.slice(0, 3).join(", ")}${res.models.length > 3 ? "…" : ""}).`
-      : "It answered, but didn't list its models. Type the name it shows.";
+    const sees = new Set(res.photo || []);
+    const opts = (ms) => ms.map((m) => `<option value="${esc(m)}"${sees.has(m) ? ` label="📷 reads photos"` : ""}>`).join("");
+    $(`#models-${which}`, form).innerHTML = opts(res.models);
+    $(`#models-${which}-photo`, form).innerHTML = opts(res.photo || res.models);
+    const some = (ms) => `${ms.slice(0, 3).join(", ")}${ms.length > 3 ? "…" : ""}`;
+    $(`[data-models-note="${which}"]`, form).textContent = !res.models.length ? "It answered, but didn't list its models. Type the name it shows."
+      : `${res.models.length} models: tap a model box to pick one (${some(res.models)}).${!res.photo ? ""
+        : res.photo.length ? ` 📷 ${res.photo.length} read photos (${some(res.photo)}).`
+        : " 📷 None of them read photos: download one in the Ollama card below (📷 For photos)."}`;
   }));
 }
 

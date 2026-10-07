@@ -48,7 +48,14 @@ func (s *Server) handleOllamaFind(w http.ResponseWriter, r *http.Request) {
 			extra = append(extra, b)
 		}
 	}
-	writeJSON(w, http.StatusOK, map[string]any{"servers": ollama.Discover(ctx, extra...)})
+	servers := ollama.Discover(ctx, extra...)
+	sctx, scancel := context.WithTimeout(r.Context(), 6*time.Second)
+	defer scancel()
+	for i := range servers {
+		servers[i].Photo = ollama.Photo(sctx, servers[i].URL, servers[i].Models)
+	}
+	// catalog: the download picks before the graphics card is checked
+	writeJSON(w, http.StatusOK, map[string]any{"servers": servers, "catalog": ollama.Recommend(ollama.GPU{})})
 }
 
 type ollamaModelReq struct {
@@ -118,6 +125,15 @@ func (s *Server) handleOllamaUse(w http.ResponseWriter, r *http.Request) {
 	if len(chosen) == 0 {
 		writeErr(w, http.StatusBadRequest, "pick at least one model")
 		return
+	}
+	if body.Use == "photos" {
+		see := ollama.CanSee(ctx, base, chosen)
+		for _, m := range chosen {
+			if can, known := see[m]; known && !can {
+				writeErr(w, http.StatusBadRequest, m+" can't read photos. Pick a model marked 📷, or download a photo model.")
+				return
+			}
+		}
 	}
 	v1 := base + "/v1"
 	mainBase, _ := ollama.Normalize(s.Store.Setting(store.KeyLLMBaseURL))
@@ -206,14 +222,20 @@ func (s *Server) handleOllamaModels(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	used := s.modelsInUse()
+	names := make([]string, len(models))
+	for i, m := range models {
+		names[i] = m.Name
+	}
+	see := ollama.CanSee(ctx, base, names)
 	type row struct {
 		ollama.Model
-		InUse bool `json:"in_use"`
+		InUse  bool `json:"in_use"`
+		Photos bool `json:"photos"` // it reads photos
 	}
 	out := make([]row, 0, len(models))
 	var total int64
 	for _, m := range models {
-		out = append(out, row{m, used[m.Name] || used[strings.TrimSuffix(m.Name, ":latest")]})
+		out = append(out, row{m, used[m.Name] || used[strings.TrimSuffix(m.Name, ":latest")], see[m.Name]})
 		total += m.Size
 	}
 	writeJSON(w, http.StatusOK, map[string]any{"models": out, "total": total})

@@ -8,6 +8,7 @@ import (
 
 	"github.com/zachcurry13/recipebank/internal/aitools"
 	"github.com/zachcurry13/recipebank/internal/llm"
+	"github.com/zachcurry13/recipebank/internal/ollama"
 	"github.com/zachcurry13/recipebank/internal/safe"
 	"github.com/zachcurry13/recipebank/internal/store"
 )
@@ -136,5 +137,10 @@ func (s *Server) handleAIModels(w http.ResponseWriter, r *http.Request) {
 		writeErr(w, http.StatusBadGateway, err.Error())
 		return
 	}
-	writeJSON(w, http.StatusOK, map[string]any{"models": models})
+	// On Ollama, say which models read photos, for the photo model boxes.
+	var photo []string
+	if base, err := ollama.Normalize(body.BaseURL); err == nil && body.Provider != "anthropic" && ollama.IsOllama(ctx, base) {
+		photo = ollama.Photo(ctx, base, models)
+	}
+	writeJSON(w, http.StatusOK, map[string]any{"models": models, "photo": photo})
 }
