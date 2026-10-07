@@ -23,7 +23,8 @@ var editableKeys = map[string]bool{
 	store.KeyUSDAKey: true, store.KeySMTPHost: true, store.KeySMTPPort: true, store.KeySMTPUser: true,
 	store.KeySMTPPassword: true, store.KeySMTPFrom: true, store.KeyCurrency: true, store.KeyBudgetWeekly: true, store.KeyEmailWho: true,
 	store.KeyPhotoProvider: true, store.KeyPhotoBaseURL: true, store.KeyPhotoAPIKey: true, store.KeyPhotoModel: true,
-	store.KeyPhotoJSONMode: true,
+	store.KeyPhotoJSONMode: true, store.KeyLLMPriceIn: true, store.KeyLLMPriceOut: true, store.KeyPhotoPriceIn: true,
+	store.KeyPhotoPriceOut: true,
 }
 
 func init() {

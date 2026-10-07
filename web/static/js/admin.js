@@ -9,6 +9,8 @@ import { renderBackup } from "./backup.js";
 import { photoAI, wirePhotoAI, photoSettings } from "./photoai.js";
 import { renderFeatures } from "./featuresadmin.js";
 import { renderOllama } from "./ollamaadmin.js";
+import { presetPicker, wirePresets, priceFields } from "./aipresets.js";
+import { renderAITools } from "./aitoolsadmin.js";
 
 const ROLES = [["admin", "Admin (everything)"], ["editor", "Parent (recipes and people)"], ["kid", "Kid (reads and cooks)"]];
 
@@ -22,6 +24,7 @@ export async function renderAdmin(view, params, state) {
         <h2 class="font-semibold">AI</h2>
         <p class="text-sm text-slate-400">The AI reads photos of recipe cards, pages without a standard recipe, and pasted text.
           Allergy checks never depend on it. It can be a cloud service or a model on your own network (Ollama).</p>
+        ${presetPicker("llm")}
         <label class="block"><span class="label">Kind</span><select name="llm_provider" class="input">
           ${opt("openai", s.llm_provider, "OpenAI-compatible (OpenAI, Gemini, Ollama, LM Studio…)")}${opt("anthropic", s.llm_provider, "Anthropic (Claude)")}</select></label>
         <label class="block" data-openai><span class="label">Address (base URL)</span>
@@ -36,7 +39,8 @@ export async function renderAdmin(view, params, state) {
         <details class="text-sm text-slate-400"><summary class="cursor-pointer">More</summary>
           <label class="toggle mt-2"><input type="checkbox" name="llm_json_mode" ${s.llm_json_mode === "true" ? "checked" : ""}> Ask for JSON answers (turn off if the server rejects it)</label>
           <label class="mt-2 block"><span class="label">Wait for an answer (seconds, 0 = automatic)</span>
-            <input name="llm_timeout_seconds" type="number" min="0" class="input" value="${esc(s.llm_timeout_seconds)}"></label></details>
+            <input name="llm_timeout_seconds" type="number" min="0" class="input" value="${esc(s.llm_timeout_seconds)}"></label>
+          <div class="mt-2">${priceFields("llm", s)}</div></details>
         ${photoAI(s, opt)}
         <p class="text-xs text-slate-500">Used this month: ${Number(s.tokens_this_month || 0).toLocaleString()} tokens.</p>
         <div class="flex flex-wrap gap-2"><button class="btn-primary">Save</button><button type="button" id="test" class="btn-secondary">Test the AI</button>
@@ -69,6 +73,7 @@ export async function renderAdmin(view, params, state) {
         ${folders(s.folders)}
       </form>
     </div>
+    <div id="aitools" class="mt-4"></div>
     <div id="ollama" class="mt-4"></div>
     <div id="features" class="mt-4"></div>
     <div id="hints" class="mt-4"></div>
@@ -93,16 +98,19 @@ export async function renderAdmin(view, params, state) {
   renderEmailAdmin($("#mail", view), s);
   renderBackup($("#backup", view));
   renderFeatures($("#features", view), s);
+  const stopTools = renderAITools($("#aitools", view));
   const stopOllama = renderOllama($("#ollama", view), s, () => attempt(async () => { await refreshInfo(); renderAdmin(view, params, state); }));
   const ai = $("#ai", view);
   const showURL = () => $("[data-openai]", ai).classList.toggle("hidden", ai.llm_provider.value === "anthropic");
   ai.llm_provider.onchange = showURL;
   showURL();
   wirePhotoAI(ai);
+  wirePresets(ai, "llm");
+  wirePresets(ai, "photo");
   ai.onsubmit = (e) => {
     e.preventDefault();
     const body = Object.fromEntries(["llm_provider", "llm_base_url", "llm_api_key", "llm_model", "llm_fallback_model",
-      "llm_vision_model", "llm_timeout_seconds"].map((k) => [k, ai[k].value]));
+      "llm_vision_model", "llm_timeout_seconds", "llm_price_in", "llm_price_out"].map((k) => [k, ai[k].value]));
     body.llm_json_mode = ai.llm_json_mode.checked ? "true" : "false";
     Object.assign(body, photoSettings(ai));
     attempt(async () => {
@@ -163,7 +171,7 @@ export async function renderAdmin(view, params, state) {
       }, "Account added");
     };
   };
-  return stopOllama; // stop watching a download when leaving the page
+  return () => { stopOllama(); stopTools(); }; // stop watching downloads and the speed test
 }
 
 // folders shows where the database, photos and previews are kept.

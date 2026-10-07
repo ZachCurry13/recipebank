@@ -237,6 +237,7 @@ func (s *Server) Router() http.Handler {
 				r.Put("/admin/users/{id}/password", s.handleResetPassword)
 				r.Delete("/admin/users/{id}", s.handleDeleteUser)
 				r.Get("/admin/aitools", s.handleAIToolsStatus)
+				r.Get("/admin/ai/health", s.handleAIHealth)
 				r.Post("/admin/aitools/check-updates", s.handleCheckModelUpdates)
 				r.Post("/admin/aitools/updated", s.handleModelUpdated)
 				r.Post("/admin/aitools/bench", s.handleStartBench)

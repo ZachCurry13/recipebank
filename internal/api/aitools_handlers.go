@@ -7,7 +7,9 @@ import (
 	"time"
 
 	"github.com/zachcurry13/recipebank/internal/aitools"
+	"github.com/zachcurry13/recipebank/internal/llm"
 	"github.com/zachcurry13/recipebank/internal/safe"
+	"github.com/zachcurry13/recipebank/internal/store"
 )
 
 // AI machines (Admin → AI tools): newer versions of the Ollama models in use,
@@ -57,4 +59,45 @@ func (s *Server) handleStartBench(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	w.WriteHeader(http.StatusAccepted)
+}
+
+// aiHealth is whether one AI is answering, checked without spending tokens.
+type aiHealth struct {
+	Which   string   `json:"which"` // "main" or "photo"
+	OK      bool     `json:"ok"`
+	Checked bool     `json:"checked"` // false: an online service that isn't asked (Claude)
+	Error   string   `json:"error,omitempty"`
+	Missing []string `json:"missing,omitempty"` // models it doesn't have
+}
+
+// handleAIHealth says whether each AI that's set up is answering.
+func (s *Server) handleAIHealth(w http.ResponseWriter, r *http.Request) {
+	out := []aiHealth{}
+	for _, m := range []struct {
+		which string
+		ai    store.AIConfig
+	}{{"main", s.Store.AIConfig()}, {"photo", s.Store.PhotoAIConfig()}} {
+		if !m.ai.Ready() {
+			continue
+		}
+		h := aiHealth{Which: m.which}
+		if m.ai.Provider == "anthropic" {
+			h.OK = true // Claude's API isn't asked: it would need a request that costs tokens
+			out = append(out, h)
+			continue
+		}
+		ctx, cancel := context.WithTimeout(r.Context(), 8*time.Second)
+		missing, err := llm.Reachable(ctx, m.ai.BaseURL, m.ai.APIKey, append(append([]string{}, m.ai.Models...), m.ai.Vision...))
+		cancel()
+		h.Checked, h.Missing = true, missing
+		if err != nil {
+			h.Error = err.Error()
+			if llm.HostDown(err) {
+				h.Error = "can't be reached: is that computer on?"
+			}
+		}
+		h.OK = err == nil && len(missing) == 0
+		out = append(out, h)
+	}
+	writeJSON(w, http.StatusOK, map[string]any{"ais": out, "cost": s.Store.CostThisMonth()})
 }

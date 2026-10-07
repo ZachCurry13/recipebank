@@ -178,8 +178,8 @@ everything below is built and checked.
 3. [x] **Ollama tools** ported from NovelCheck (`internal/ollama` copied; MIT, same author): find Ollama on the
    network, installed models (delete unused), download with progress, use a model for text or photos.
 4. [x] **GPU picks:** measure the card, label text models and photo models (best / most powerful / fits / too big).
-5. [ ] **Speed test:** time each AI on a made-up sample card photo and a text job.
-6. [ ] **Model updates, presets, health:** daily check for newer Ollama model versions (Update button), one-click
+5. [x] **Speed test:** time each AI on a made-up sample card photo and a text job.
+6. [x] **Model updates, presets, health:** daily check for newer Ollama model versions (Update button), one-click
    presets (Gemini, OpenAI, Claude, Ollama, LM Studio), "is it answering", cost for online APIs.
 7. [x] **Features on and off** (asked for by the user's wife: the app felt overwhelming): Admin turns features off
    for the whole house (hidden, data kept); each person can simplify their own view on Me: which meals the plan
