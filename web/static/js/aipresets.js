@@ -1,7 +1,8 @@
 // Admin → AI: "Quick setup" fills in sensible settings for a service (from
 // NovelCheck's presets). Every model listed can read photos too. Prices are
 // dollars per million tokens and change: check the service's own page.
-import { $, esc } from "./ui.js";
+import { post } from "./api.js";
+import { $, esc, attempt, busy } from "./ui.js";
 
 const PRESETS = {
   ollama: { label: "Ollama (your own computer, free)", provider: "openai", home: "http://your-server:11434/v1", text: "qwen2.5:3b",
@@ -11,8 +12,8 @@ const PRESETS = {
     json: false, pin: "0", pout: "0",
     hint: "In LM Studio, start the server (Developer → Start server) and let other devices on the network use it. Then type the model names it shows." },
   gemini: { label: "Google Gemini", provider: "openai", base: "https://generativelanguage.googleapis.com/v1beta/openai",
-    text: "gemini-2.5-flash-lite", photos: "gemini-2.5-flash", json: true, pin: "0.30", pout: "2.50",
-    hint: "Get a key at aistudio.google.com → Get API key. There's a free tier with daily limits; Google may use free-tier requests to improve its models. Check the current model names and prices there." },
+    text: "gemini-3.8-flash", photos: "gemini-3.8-flash", json: true, pin: "0.30", pout: "2.50",
+    hint: "Get a key at aistudio.google.com → Get API key, paste it, then press List models: Google retires old model names. There's a free tier with daily limits; Google may use free-tier requests to improve its models." },
   openai: { label: "OpenAI", provider: "openai", base: "https://api.openai.com/v1", text: "gpt-4o-mini", photos: "gpt-4o-mini",
     json: true, pin: "0.15", pout: "0.60", hint: "Get a key at platform.openai.com → API keys. Check current prices there." },
   claude: { label: "Anthropic Claude", provider: "anthropic", base: "", text: "claude-haiku-4-5", photos: "claude-haiku-4-5",
@@ -25,6 +26,29 @@ export function presetPicker(which) {
       <option value="">Pick a service to fill in its settings…</option>
       ${Object.entries(PRESETS).map(([k, p]) => `<option value="${k}">${esc(p.label)}</option>`).join("")}</select></label>
     <p data-preset-hint="${which}" class="hidden text-xs text-slate-400"></p>`;
+}
+
+// modelLister is "List models": it asks the service which models it has and
+// offers them in the model boxes, so names don't have to be guessed.
+export function modelLister(which) {
+  return `<div class="flex flex-wrap items-center gap-2"><button type="button" data-list-models="${which}" class="btn-ghost min-h-0 px-2 py-1 text-sm">📋 List models</button>
+    <span data-models-note="${which}" class="min-w-0 flex-1 text-xs text-slate-400"></span></div>
+    <datalist id="models-${which}"></datalist>`;
+}
+
+export function wireModelLister(form, which) {
+  const boxes = which === "llm" ? ["llm_model", "llm_fallback_model", "llm_vision_model"] : ["photo_model"];
+  boxes.forEach((n) => form[n]?.setAttribute("list", `models-${which}`));
+  const btn = $(`[data-list-models="${which}"]`, form);
+  if (!btn) return;
+  btn.onclick = () => attempt(() => busy(btn, "Asking…", async () => {
+    const res = await post("/api/admin/ai/models", { which, provider: form[`${which}_provider`].value,
+      base_url: form[`${which}_base_url`]?.value || "", api_key: form[`${which}_api_key`]?.value || "" });
+    $(`#models-${which}`, form).innerHTML = res.models.map((m) => `<option value="${esc(m)}">`).join("");
+    $(`[data-models-note="${which}"]`, form).textContent = res.models.length
+      ? `${res.models.length} models: tap a model box to pick one (${res.models.slice(0, 3).join(", ")}${res.models.length > 3 ? "…" : ""}).`
+      : "It answered, but didn't list its models. Type the name it shows.";
+  }));
 }
 
 // wirePresets fills the form's fields for the chosen service.

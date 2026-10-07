@@ -2,7 +2,7 @@
 // receipts, the fridge, cookbook indexes), such as a bigger model on a
 // computer with a stronger graphics card, or an online service.
 import { $, esc } from "./ui.js";
-import { presetPicker, priceFields } from "./aipresets.js";
+import { presetPicker, priceFields, modelLister } from "./aipresets.js";
 
 export function photoAI(s, opt) {
   return `<details class="rounded-lg border border-slate-800 p-3" ${s.photo_provider ? "open" : ""}>
@@ -22,7 +22,8 @@ export function photoAI(s, opt) {
         <label class="block"><span class="label">API key ${s.photo_api_key_set ? "(saved; leave blank to keep it)" : "(not needed for Ollama)"}</span>
           <input name="photo_api_key" type="password" autocomplete="off" class="input"></label>
         <label class="block"><span class="label">Model for photos (more to try after it: comma between them)</span>
-          <input name="photo_model" class="input" value="${esc(s.photo_model || "")}" placeholder="qwen2.5vl:32b, gemini-2.5-flash"></label>
+          <input name="photo_model" class="input" value="${esc(s.photo_model || "")}" placeholder="qwen2.5vl:32b, gemini-3.8-flash"></label>
+        ${modelLister("photo")}
         ${priceFields("photo", s)}
         <label class="toggle"><input type="checkbox" name="photo_json_mode" ${s.photo_json_mode === "false" ? "" : "checked"}> Ask for JSON answers (turn off if the server rejects it)</label>
       </div></div></details>`;

@@ -238,6 +238,7 @@ func (s *Server) Router() http.Handler {
 				r.Delete("/admin/users/{id}", s.handleDeleteUser)
 				r.Get("/admin/aitools", s.handleAIToolsStatus)
 				r.Get("/admin/ai/health", s.handleAIHealth)
+				r.Post("/admin/ai/models", s.handleAIModels)
 				r.Post("/admin/aitools/check-updates", s.handleCheckModelUpdates)
 				r.Post("/admin/aitools/updated", s.handleModelUpdated)
 				r.Post("/admin/aitools/bench", s.handleStartBench)

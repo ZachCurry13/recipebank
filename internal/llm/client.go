@@ -34,12 +34,24 @@ type message struct {
 }
 
 type chatRequest struct {
-	Model          string            `json:"model"`
-	Messages       []any             `json:"messages"` // message, or partsMessage for images
-	Temperature    float64           `json:"temperature"`
-	MaxTokens      int               `json:"max_tokens,omitempty"`
-	ResponseFormat map[string]string `json:"response_format,omitempty"`
+	Model           string            `json:"model"`
+	Messages        []any             `json:"messages"` // message, or partsMessage for images
+	Temperature     float64           `json:"temperature"`
+	MaxTokens       int               `json:"max_tokens,omitempty"`
+	ResponseFormat  map[string]string `json:"response_format,omitempty"`
+	ReasoningEffort string            `json:"reasoning_effort,omitempty"` // Gemini only (see send)
 }
+
+// isGemini: Google's OpenAI-compatible endpoint. Its newer models think
+// before answering (Gemini 3 always does), which can take minutes on a photo,
+// and the thinking counts against the answer's length. So requests ask for
+// little thinking and leave more room (as NovelCheck does).
+func isGemini(baseURL string) bool {
+	return strings.Contains(baseURL, "generativelanguage.googleapis.com")
+}
+
+// geminiMinTokens leaves room for Gemini's thinking plus the answer.
+const geminiMinTokens = 8192
 
 type chatResponse struct {
 	Choices []struct {
@@ -68,6 +80,10 @@ func (c *Client) Complete(ctx context.Context, model, system, user string) (stri
 func (c *Client) send(ctx context.Context, body chatRequest) (string, Usage, error) {
 	if c.JSONMode {
 		body.ResponseFormat = map[string]string{"type": "json_object"}
+	}
+	if isGemini(c.BaseURL) {
+		body.ReasoningEffort = "low" // accepted by every Gemini 2.5 and 3 model
+		body.MaxTokens = max(body.MaxTokens, geminiMinTokens)
 	}
 	buf, _ := json.Marshal(body)
 	req, err := http.NewRequestWithContext(ctx, http.MethodPost,

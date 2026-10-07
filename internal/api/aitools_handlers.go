@@ -101,3 +101,40 @@ func (s *Server) handleAIHealth(w http.ResponseWriter, r *http.Request) {
 	}
 	writeJSON(w, http.StatusOK, map[string]any{"ais": out, "cost": s.Store.CostThisMonth()})
 }
+
+// handleAIModels lists a service's models for Admin's model boxes, from the
+// form as it is now (a blank key means the saved one), so names don't have
+// to be guessed (Google retires old Gemini names, for example).
+func (s *Server) handleAIModels(w http.ResponseWriter, r *http.Request) {
+	var body struct {
+		Which    string `json:"which"` // "llm" (the main AI) or "photo"
+		Provider string `json:"provider"`
+		BaseURL  string `json:"base_url"`
+		APIKey   string `json:"api_key"`
+	}
+	if !readJSON(w, r, &body, 4<<10) {
+		return
+	}
+	if body.APIKey == "" {
+		key := store.KeyLLMAPIKey
+		if body.Which == "photo" {
+			key = store.KeyPhotoAPIKey
+		}
+		body.APIKey = s.Store.Setting(key)
+	}
+	if body.Provider != "anthropic" && body.BaseURL == "" {
+		writeErr(w, http.StatusBadRequest, "type the address first")
+		return
+	}
+	ctx, cancel := context.WithTimeout(r.Context(), 15*time.Second)
+	defer cancel()
+	models, err := llm.ListModels(ctx, body.Provider, body.BaseURL, body.APIKey)
+	if err != nil {
+		if llm.HostDown(err) {
+			err = errors.New("it can't be reached: check the address, and that the computer is on")
+		}
+		writeErr(w, http.StatusBadGateway, err.Error())
+		return
+	}
+	writeJSON(w, http.StatusOK, map[string]any{"models": models})
+}

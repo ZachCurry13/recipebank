@@ -9,7 +9,7 @@ import { renderBackup } from "./backup.js";
 import { photoAI, wirePhotoAI, photoSettings } from "./photoai.js";
 import { renderFeatures } from "./featuresadmin.js";
 import { renderOllama } from "./ollamaadmin.js";
-import { presetPicker, wirePresets, priceFields } from "./aipresets.js";
+import { presetPicker, wirePresets, priceFields, modelLister, wireModelLister } from "./aipresets.js";
 import { renderAITools } from "./aitoolsadmin.js";
 
 const ROLES = [["admin", "Admin (everything)"], ["editor", "Parent (recipes and people)"], ["kid", "Kid (reads and cooks)"]];
@@ -36,6 +36,7 @@ export async function renderAdmin(view, params, state) {
           <input name="llm_fallback_model" class="input" value="${esc(s.llm_fallback_model)}"></label>
         <label class="block"><span class="label">Model for photos (blank = the model above)</span>
           <input name="llm_vision_model" class="input" value="${esc(s.llm_vision_model)}" placeholder="qwen2.5vl:7b, llama3.2-vision"></label>
+        ${modelLister("llm")}
         <details class="text-sm text-slate-400"><summary class="cursor-pointer">More</summary>
           <label class="toggle mt-2"><input type="checkbox" name="llm_json_mode" ${s.llm_json_mode === "true" ? "checked" : ""}> Ask for JSON answers (turn off if the server rejects it)</label>
           <label class="mt-2 block"><span class="label">Wait for an answer (seconds, 0 = automatic)</span>
@@ -107,6 +108,8 @@ export async function renderAdmin(view, params, state) {
   wirePhotoAI(ai);
   wirePresets(ai, "llm");
   wirePresets(ai, "photo");
+  wireModelLister(ai, "llm");
+  wireModelLister(ai, "photo");
   ai.onsubmit = (e) => {
     e.preventDefault();
     const body = Object.fromEntries(["llm_provider", "llm_base_url", "llm_api_key", "llm_model", "llm_fallback_model",

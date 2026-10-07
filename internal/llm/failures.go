@@ -2,12 +2,8 @@ package llm
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
-	"fmt"
-	"io"
 	"net"
-	"net/http"
 	"strings"
 )
 
@@ -56,47 +52,4 @@ func MaxTokens(model string) int {
 		return 8000
 	}
 	return 4000
-}
-
-// Reachable asks an OpenAI-compatible server for its models (it costs no
-// tokens) and says which of want it doesn't have. Ollama, LM Studio, OpenAI
-// and Gemini all list their models this way.
-func Reachable(ctx context.Context, baseURL, apiKey string, want []string) (missing []string, err error) {
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, NormalizeBaseURL(baseURL)+"/models", nil)
-	if err != nil {
-		return nil, err
-	}
-	if apiKey != "" {
-		req.Header.Set("Authorization", "Bearer "+apiKey)
-	}
-	resp, err := quickDial.Do(req)
-	if err != nil {
-		return nil, err
-	}
-	defer resp.Body.Close()
-	switch {
-	case resp.StatusCode == http.StatusUnauthorized || resp.StatusCode == http.StatusForbidden:
-		return nil, errors.New("the API key was refused")
-	case resp.StatusCode != http.StatusOK:
-		return nil, fmt.Errorf("it answered %s", resp.Status)
-	}
-	var list struct {
-		Data []struct {
-			ID string `json:"id"`
-		} `json:"data"`
-	}
-	if json.NewDecoder(io.LimitReader(resp.Body, 4<<20)).Decode(&list) != nil || len(list.Data) == 0 {
-		return nil, nil // answered, but doesn't list its models: nothing more to check
-	}
-	have := map[string]bool{}
-	for _, m := range list.Data {
-		id := strings.TrimPrefix(m.ID, "models/") // Gemini says "models/gemini-…"
-		have[id], have[strings.TrimSuffix(id, ":latest")] = true, true
-	}
-	for _, m := range want {
-		if !have[m] && !have[strings.TrimSuffix(m, ":latest")] {
-			missing = append(missing, m)
-		}
-	}
-	return missing, nil
 }

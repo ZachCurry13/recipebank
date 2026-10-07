@@ -56,3 +56,26 @@ func TestAIHealthAndCost(t *testing.T) {
 		t.Fatalf("cost: %+v", res.Cost)
 	}
 }
+
+// "List models" asks the service (with the saved key when none is typed) and
+// leaves out models that can't answer questions.
+func TestListModels(t *testing.T) {
+	c, srv := setup(t)
+	var auth string
+	svc := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		auth = r.Header.Get("Authorization")
+		w.Write([]byte(`{"data":[{"id":"models/gemini-3.8-flash"},{"id":"models/text-embedding-004"},{"id":"models/imagen-4"},{"id":"models/gemini-3.8-flash-lite"}]}`))
+	}))
+	defer svc.Close()
+	srv.Store.SetSetting(store.KeyPhotoAPIKey, "saved-key")
+	var res struct{ Models []string }
+	if code := c.do("POST", "/api/admin/ai/models", map[string]string{"which": "photo", "provider": "openai", "base_url": svc.URL + "/v1"}, &res); code != 200 {
+		t.Fatalf("list: %d", code)
+	}
+	if auth != "Bearer saved-key" || len(res.Models) != 2 || res.Models[0] != "gemini-3.8-flash" {
+		t.Fatalf("models: %q %v", auth, res.Models)
+	}
+	if code := c.do("POST", "/api/admin/ai/models", map[string]string{"which": "llm", "provider": "openai"}, nil); code != 400 {
+		t.Fatalf("no address: %d", code)
+	}
+}
