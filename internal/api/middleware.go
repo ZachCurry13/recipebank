@@ -143,3 +143,8 @@ func (l *loginLimiter) allow(ip string) bool {
 	}
 	return true
 }
+
+// newRateLimiter allows max tries per address in windowSeconds.
+func newRateLimiter(max, windowSeconds int) *loginLimiter {
+	return &loginLimiter{attempts: map[string][]time.Time{}, max: max, window: time.Duration(windowSeconds) * time.Second}
+}

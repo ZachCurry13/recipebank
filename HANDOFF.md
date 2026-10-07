@@ -203,7 +203,7 @@ The user's notes after using 0.6, plan agreed ("Yes, build it"):
    (ticked: what isn't in the pantry); Home & Care recipes too.
 4. [x] **🔍 Search everything** from the top bar: recipes (both areas), pantry and supplies, the list, cookbooks'
    recipes, events, collections.
-5. [ ] **Event guest link:** a link guests open without an account to add their name, their allergies and what
+5. [x] **Event guest link:** a link guests open without an account to add their name, their allergies and what
    they're bringing; the menu is checked for them; the host can stop it; it ends after the event.
 6. [ ] Docs, CHANGELOG, phone checks, then ASK to release 0.7.0.
 

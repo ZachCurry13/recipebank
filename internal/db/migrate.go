@@ -17,10 +17,12 @@ func migrate(d *sqlx.DB) error {
 		{"meal_plan", "leftovers_of", "INTEGER REFERENCES meal_plan(id) ON DELETE CASCADE"},
 		{"stock", "price", "REAL NOT NULL DEFAULT 0"},
 		{"stock", "size", "TEXT NOT NULL DEFAULT ''"},
-		{"users", "plan_meals", "TEXT NOT NULL DEFAULT ''"},   // meals the person's plan shows; '' = all
-		{"users", "hidden_pages", "TEXT NOT NULL DEFAULT ''"}, // pages left out of the person's menu
-		{"person_rules", "allow", "TEXT NOT NULL DEFAULT ''"}, // allergy: what they can have anyway, comma-separated
-		{"users", "menu_order", "TEXT NOT NULL DEFAULT ''"},   // the person's order of menu pages; '' = the usual
+		{"users", "plan_meals", "TEXT NOT NULL DEFAULT ''"},      // meals the person's plan shows; '' = all
+		{"users", "hidden_pages", "TEXT NOT NULL DEFAULT ''"},    // pages left out of the person's menu
+		{"person_rules", "allow", "TEXT NOT NULL DEFAULT ''"},    // allergy: what they can have anyway, comma-separated
+		{"users", "menu_order", "TEXT NOT NULL DEFAULT ''"},      // the person's order of menu pages; '' = the usual
+		{"event_dishes", "contains", "TEXT NOT NULL DEFAULT ''"}, // allergens a dish without a recipe has, as its cook says
+		{"event_dishes", "guest_id", "INTEGER REFERENCES event_guests(id) ON DELETE CASCADE"},
 	} {
 		if err := addColumn(d, c.table, c.column, c.def); err != nil {
 			return err

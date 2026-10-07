@@ -24,37 +24,39 @@ import (
 )
 
 type Server struct {
-	Cfg       config.Config
-	Store     *store.Store
-	Auth      *auth.Manager
-	Web       fs.FS        // embedded static assets
-	PhotoDir  string       // recipe photos and card scans
-	OldPhotos string       // <data>/photos when photos moved to their own folder; still read from
-	CacheDir  string       // previews (re-creatable)
-	Fetch     *http.Client // outside pages and images; tests swap it
-	Products  productBases // Open Food Facts databases; tests point them at a fake
-	Tunnel    *tunnel.Manager
-	Push      *push.Service                         // phone notifications
-	Updates   *updates.Checker                      // newer releases on GitHub; tests point it at a fake
-	Nutrition string                                // USDA FoodData Central's address; tests point it at a fake
-	BookBase  string                                // Open Library's address; tests point it at a fake
-	Pulls     *ollama.Puller                        // Ollama model downloads, one at a time
-	AITools   *aitools.Service                      // model updates and the speed test
-	SendMail  func(mail.Config, mail.Message) error // tests catch emails here; nil = mail.Send
-	mails     mailLimiter
-	shareOnce sync.Once // the shared-recipe page's template, parsed once
-	shareTmpl *template.Template
-	timers    push.Timers // cook-mode timers that buzz the phone
-	logins    *loginLimiter
-	etags     sync.Map  // static file name → ETag
-	buildOnce sync.Once // buildID, computed once
-	build     string
-	indexOnce sync.Once // index.html with versioned addresses
-	index     []byte
+	Cfg         config.Config
+	Store       *store.Store
+	Auth        *auth.Manager
+	Web         fs.FS        // embedded static assets
+	PhotoDir    string       // recipe photos and card scans
+	OldPhotos   string       // <data>/photos when photos moved to their own folder; still read from
+	CacheDir    string       // previews (re-creatable)
+	Fetch       *http.Client // outside pages and images; tests swap it
+	Products    productBases // Open Food Facts databases; tests point them at a fake
+	Tunnel      *tunnel.Manager
+	Push        *push.Service                         // phone notifications
+	Updates     *updates.Checker                      // newer releases on GitHub; tests point it at a fake
+	Nutrition   string                                // USDA FoodData Central's address; tests point it at a fake
+	BookBase    string                                // Open Library's address; tests point it at a fake
+	Pulls       *ollama.Puller                        // Ollama model downloads, one at a time
+	AITools     *aitools.Service                      // model updates and the speed test
+	SendMail    func(mail.Config, mail.Message) error // tests catch emails here; nil = mail.Send
+	mails       mailLimiter
+	shareOnce   sync.Once // the shared-recipe page's template, parsed once
+	shareTmpl   *template.Template
+	timers      push.Timers // cook-mode timers that buzz the phone
+	logins      *loginLimiter
+	guestWrites *loginLimiter // changes through events' guest links, per address
+	etags       sync.Map      // static file name → ETag
+	buildOnce   sync.Once     // buildID, computed once
+	build       string
+	indexOnce   sync.Once // index.html with versioned addresses
+	index       []byte
 }
 
 func (s *Server) Router() http.Handler {
 	s.logins = newLoginLimiter()
+	s.guestWrites = newRateLimiter(40, 10*60)
 	if s.Fetch == nil {
 		s.Fetch = newFetchClient()
 	}
@@ -92,11 +94,19 @@ func (s *Server) Router() http.Handler {
 	r.Get("/share", s.handleShare)         // the phone's share menu; the app asks to sign in if needed
 	r.Get("/s/{token}", s.handleSharePage) // a shared recipe, no sign-in
 	r.Get("/s/{token}/photo", s.handleSharePhoto)
+	r.Get("/e/{token}", s.handleGuestPage) // an event's guest page, no sign-in
 
 	r.Route("/api", func(r chi.Router) {
 		r.Use(noStore)
 		r.Use(cors(s.Cfg.CORSOrigins))
 		r.Use(csrfGuard)
+
+		// An event's guest link (no sign-in): see guest_handlers.go.
+		r.Get("/guest/{token}", s.handleGuestView)
+		r.Put("/guest/{token}/me", s.handleGuestMe)
+		r.Delete("/guest/{token}/me", s.handleGuestLeave)
+		r.Post("/guest/{token}/dishes", s.handleGuestDish)
+		r.Delete("/guest/{token}/dishes/{id}", s.handleGuestDropDish)
 
 		r.Get("/setup", s.handleSetupStatus)
 		r.Post("/setup", s.handleSetup)
@@ -190,6 +200,10 @@ func (s *Server) Router() http.Handler {
 				r.Put("/pile/{id}", s.handleUpdatePile)
 				r.Delete("/pile/{id}", s.handleDeletePile)
 				r.Post("/events", s.handleSaveEvent)
+				r.Get("/events/{id}/link", s.handleGetEventLink)
+				r.Post("/events/{id}/link", s.handleMakeEventLink)
+				r.Delete("/events/{id}/link", s.handleStopEventLink)
+				r.Delete("/events/{id}/guests/{gid}", s.handleDropEventGuest)
 				r.Put("/events/{id}", s.handleSaveEvent)
 				r.Delete("/events/{id}", s.handleDeleteEvent)
 				r.Post("/events/{id}/dishes", s.handleAddDish)

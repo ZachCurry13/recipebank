@@ -2,9 +2,11 @@ package api
 
 import (
 	"net/http"
+	"sort"
 	"strings"
 
 	"github.com/zachcurry13/recipebank/internal/auth"
+	"github.com/zachcurry13/recipebank/internal/recipe"
 	"github.com/zachcurry13/recipebank/internal/safety"
 	"github.com/zachcurry13/recipebank/internal/store"
 )
@@ -18,9 +20,11 @@ type eventDish struct {
 
 // eventPerson is someone coming, and how many dishes they can eat.
 type eventPerson struct {
-	ID      int64  `json:"id"`
+	ID      int64  `json:"id"` // negative: a guest who came through the link (-their guest id)
 	Name    string `json:"name"`
 	IsGuest bool   `json:"is_guest"`
+	ByLink  bool   `json:"by_link,omitempty"`
+	Rules   string `json:"rules,omitempty"` // a link guest's allergies and diets, in words
 	OK      int    `json:"ok"`
 	Unsure  int    `json:"unsure"`
 }
@@ -55,22 +59,37 @@ func (s *Server) handleGetEvent(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 	}
+	// Guests who said they're coming through the event's link.
+	guests, err := s.Store.EventGuests(id)
+	if err != nil {
+		writeStoreErr(w, err)
+		return
+	}
+	for _, g := range guests {
+		coming = append(coming, eventPerson{ID: -g.ID, Name: g.Name, IsGuest: true, ByLink: true, Rules: guestRules(g.Allergies, g.Diets)})
+		rules = append(rules, safety.Person{ID: -g.ID, Name: g.Name, HeatMax: -1, Allergies: g.Allergies, Diets: g.Diets})
+	}
 	out := []eventDish{}
 	for _, d := range dishes {
 		ed := eventDish{Dish: d, Verdicts: []status{}}
+		var rc *recipe.Recipe
 		if d.RecipeID != nil {
-			if rc, err := s.Store.Recipe(*d.RecipeID); err == nil {
+			if got, err := s.Store.Recipe(*d.RecipeID); err == nil {
+				rc = got
 				ed.Recipe = &planRecipe{ID: rc.ID, Title: rc.Title, Photo: rc.Photo, TotalMin: rc.TotalMin, Servings: rc.Servings}
-				for i, p := range rules {
-					v := safety.Check(rc, p)
-					ed.Verdicts = append(ed.Verdicts, status{p.ID, p.Name, v.Status})
-					switch v.Status {
-					case safety.OK:
-						coming[i].OK++
-					case safety.Unsure:
-						coming[i].Unsure++
-					}
-				}
+			}
+		}
+		for i, p := range rules {
+			st := safety.DishStatus(d.Contains, p) // no recipe: only what its cook said is in it
+			if rc != nil {
+				st = safety.Check(rc, p).Status
+			}
+			ed.Verdicts = append(ed.Verdicts, status{p.ID, p.Name, st})
+			switch st {
+			case safety.OK:
+				coming[i].OK++
+			case safety.Unsure:
+				coming[i].Unsure++
 			}
 		}
 		out = append(out, ed)
@@ -194,4 +213,21 @@ func (s *Server) handleEventShopping(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 	writeJSON(w, http.StatusOK, map[string]any{"added": added, "have": have})
+}
+
+// guestRules says a link guest's allergies and diets in words, for the host.
+func guestRules(allergies map[string]string, diets []string) string {
+	var parts []string
+	for k, sev := range allergies {
+		if a, ok := safety.AllergenByKey(k); ok {
+			parts = append(parts, a.Label+" ("+sev+")")
+		}
+	}
+	sort.Strings(parts)
+	for _, d := range diets {
+		if dt, ok := safety.DietByKey(d); ok {
+			parts = append(parts, dt.Label)
+		}
+	}
+	return strings.Join(parts, ", ")
 }

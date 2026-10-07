@@ -24,6 +24,10 @@ type Dish struct {
 	RecipeID *int64 `db:"recipe_id" json:"recipe_id"`
 	Title    string `db:"title" json:"title"`
 	Brings   string `db:"brings" json:"brings"` // "" = the family
+	// For a dish without a recipe: the allergens whoever brings it says it has.
+	ContainsText string   `db:"contains" json:"-"`
+	Contains     []string `db:"-" json:"contains"`
+	GuestID      *int64   `db:"guest_id" json:"guest_id"` // added by a guest through the event's link
 }
 
 const eventCols = `id, name, date, who, extra, notes, created_by`
@@ -88,13 +92,17 @@ func (s *Store) DeleteEvent(id int64) error {
 // Dishes lists an event's menu in the order it was added.
 func (s *Store) Dishes(eventID int64) ([]Dish, error) {
 	out := []Dish{}
-	err := s.DB.Select(&out, `SELECT id, event_id, recipe_id, title, brings FROM event_dishes WHERE event_id = ? ORDER BY id`, eventID)
+	err := s.DB.Select(&out, `SELECT id, event_id, recipe_id, title, brings, contains, guest_id FROM event_dishes
+		WHERE event_id = ? ORDER BY id`, eventID)
+	for i := range out {
+		out[i].Contains = SplitList(out[i].ContainsText)
+	}
 	return out, err
 }
 
 func (s *Store) AddDish(d Dish) (int64, error) {
-	res, err := s.DB.Exec(`INSERT INTO event_dishes (event_id, recipe_id, title, brings) VALUES (?, ?, ?, ?)`,
-		d.EventID, d.RecipeID, strings.TrimSpace(d.Title), strings.TrimSpace(d.Brings))
+	res, err := s.DB.Exec(`INSERT INTO event_dishes (event_id, recipe_id, title, brings, contains, guest_id) VALUES (?, ?, ?, ?, ?, ?)`,
+		d.EventID, d.RecipeID, strings.TrimSpace(d.Title), strings.TrimSpace(d.Brings), strings.Join(d.Contains, ","), d.GuestID)
 	if err != nil {
 		return 0, err
 	}

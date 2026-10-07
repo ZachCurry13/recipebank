@@ -62,7 +62,9 @@ func TestEvents(t *testing.T) {
 	if ok["Kid"] != 1 || ok["Aunt"] != 1 {
 		t.Fatalf("who can eat what: %+v", page.Coming)
 	}
-	if len(page.Dishes[0].Verdicts) != 2 || page.Dishes[2].Brings != "Aunt" || len(page.Dishes[2].Verdicts) != 0 {
+	// The pie has no recipe: "not sure" for a real allergy or a diet (unknown is never OK).
+	if len(page.Dishes[0].Verdicts) != 2 || page.Dishes[2].Brings != "Aunt" || len(page.Dishes[2].Verdicts) != 2 ||
+		page.Dishes[2].Verdicts[0].Status != "unsure" || page.Dishes[2].Verdicts[1].Status != "unsure" {
 		t.Fatalf("dishes: %+v", page.Dishes)
 	}
 	c.do("PUT", fmt.Sprintf("%s/dishes/%d", base, page.Dishes[1].ID), map[string]string{"brings": "Grandma"}, &page)

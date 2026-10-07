@@ -7,6 +7,7 @@ import { verdictChips } from "./verdicts.js";
 import { dayLabel } from "./planpick.js";
 import { editEvent } from "./events.js";
 import { go } from "./app.js";
+import { eventLinkSheet } from "./eventlink.js";
 
 export async function renderEvent(view, params, state) {
   const manage = canManage(state.user);
@@ -32,7 +33,7 @@ export async function renderEvent(view, params, state) {
           <p class="text-sm text-slate-400">${e.date ? esc(dayLabel(e.date, true)) : "No date yet"} · ${data.headcount} coming</p>
           ${e.notes ? `<p class="mt-1 whitespace-pre-line text-sm text-slate-300">${esc(e.notes)}</p>` : ""}</div>
         <button id="print" class="btn-secondary">🖨 Print</button>
-        ${manage ? `<button id="edit" class="btn-secondary">✎ Edit</button><button id="rm" class="btn-ghost text-rose-300">🗑 Delete</button>` : ""}
+        ${manage ? `<button id="guest-link" class="btn-secondary">🔗 Guest link</button><button id="edit" class="btn-secondary">✎ Edit</button><button id="rm" class="btn-ghost text-rose-300">🗑 Delete</button>` : ""}
       </div>
       <div class="grid gap-4 lg:grid-cols-2">
         <div class="card min-w-0 space-y-3">
@@ -42,7 +43,9 @@ export async function renderEvent(view, params, state) {
           <label class="no-print flex flex-wrap items-center gap-2 text-sm text-slate-300">More guests without a profile
             <input id="extra" type="number" min="0" max="500" class="input w-24" value="${e.extra || 0}" ${manage ? "" : "disabled"}></label>
           ${data.coming.length ? `<ul class="space-y-1 text-sm">${data.coming.map((p) => `<li class="flex flex-wrap items-center gap-2">
-            <span class="min-w-0 break-words font-medium">${esc(p.name)}</span>
+            <span class="min-w-0 break-words font-medium">${esc(p.name)}${p.by_link
+              ? ` <span class="text-xs font-normal text-slate-400">(by link${p.rules ? `: ${esc(p.rules)}` : ""})</span>` : ""}</span>
+            ${manage && p.by_link ? `<button type="button" data-rmguest="${-p.id}" class="no-print btn-ghost min-h-0 px-2 py-0.5 text-slate-500" aria-label="Take ${esc(p.name)} off">✕</button>` : ""}
             ${p.ok ? `<span class="chip-ok">✓ ${p.ok} dish${p.ok === 1 ? "" : "es"}</span>` : `<span class="chip-no">Nothing they can eat yet</span>`}
             ${p.unsure ? `<span class="chip-unsure">⚠ ${p.unsure} not sure</span>` : ""}</li>`).join("")}</ul>` : ""}
           <p class="text-xs text-slate-500">Add guests with their allergies and diets under Me → Family first.</p>
@@ -55,8 +58,8 @@ export async function renderEvent(view, params, state) {
               <span class="ml-auto flex shrink-0 items-center gap-1"><span class="text-xs text-slate-400">${d.brings ? `Brought by ${esc(d.brings)}` : "We make it"}</span>
               ${manage ? `<button type="button" data-brings="${d.id}" class="no-print btn-ghost min-h-0 px-2 py-1 text-sm" aria-label="Who brings it">✎</button>
                 <button type="button" data-rmdish="${d.id}" class="no-print btn-ghost min-h-0 px-2 py-1 text-slate-500" aria-label="Take off the menu">✕</button>` : ""}</span></div>
-            ${d.recipe ? `<div class="flex flex-wrap gap-1">${verdictChips(d.verdicts)}</div>`
-              : `<p class="text-xs text-slate-500">No recipe: check with ${d.brings ? esc(d.brings) : "the store's label"} about allergies.</p>`}</li>`).join("")}</ul>`
+            ${d.verdicts.length ? `<div class="flex flex-wrap gap-1">${verdictChips(d.verdicts)}</div>` : ""}
+            ${d.recipe ? "" : `<p class="text-xs text-slate-500">No recipe${d.contains?.length ? `; has ${esc(d.contains.join(", "))}` : ""}: check with ${d.brings ? esc(d.brings) : "the store's label"} about allergies.</p>`}</li>`).join("")}</ul>`
             : `<p class="text-sm text-slate-400">Nothing on the menu yet.</p>`}
           <div class="no-print flex flex-wrap gap-2">
             ${manage ? `<button id="add-dish" class="btn-secondary">➕ Add a dish</button>` : ""}
@@ -70,6 +73,12 @@ export async function renderEvent(view, params, state) {
       toast(`Added ${res.added} to the shopping list${res.have.length ? ` (${res.have.length} already in the house)` : ""}`);
     }));
     if (!manage) return;
+    $("#guest-link", view).onclick = () => attempt(() => eventLinkSheet(data.event, reload));
+    $$("[data-rmguest]", view).forEach((b) => (b.onclick = () => attempt(async () => {
+      if (!confirm("Take this guest (and what they're bringing) off the event?")) return;
+      await del(`${base}/guests/${b.dataset.rmguest}`);
+      reload();
+    })));
     $$("[data-who]", view).forEach((b) => (b.onclick = () => {
       const id = Number(b.dataset.who);
       const who = data.event.who;

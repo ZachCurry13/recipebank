@@ -276,3 +276,26 @@ CREATE TABLE IF NOT EXISTS pile (
     done_at    TEXT NOT NULL DEFAULT '',
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
+
+-- An event's link for guests (no account): it runs out after the event.
+CREATE TABLE IF NOT EXISTS event_links (
+    token      TEXT PRIMARY KEY,
+    event_id   INTEGER NOT NULL REFERENCES events(id) ON DELETE CASCADE,
+    expires_at TEXT NOT NULL,
+    created_by TEXT NOT NULL DEFAULT '',
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+CREATE INDEX IF NOT EXISTS event_links_event ON event_links (event_id);
+-- Guests who said they're coming through the link: their allergies and diets
+-- (checked against the menu) and a key their browser keeps to change them.
+CREATE TABLE IF NOT EXISTS event_guests (
+    id         INTEGER PRIMARY KEY AUTOINCREMENT,
+    event_id   INTEGER NOT NULL REFERENCES events(id) ON DELETE CASCADE,
+    name       TEXT NOT NULL,
+    allergies  TEXT NOT NULL DEFAULT '{}',
+    diets      TEXT NOT NULL DEFAULT '',
+    note       TEXT NOT NULL DEFAULT '',
+    edit_key   TEXT NOT NULL,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+CREATE INDEX IF NOT EXISTS event_guests_event ON event_guests (event_id);
