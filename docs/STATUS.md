@@ -33,7 +33,7 @@ CHANGELOG 0.3.0 written; every page checked at 360×760 (light and dark).
   couldn't be saved (recipes table rebuilt once on upgrade). Checked at 360×760, light and dark.
 - 0.5.1 released 2026-10-06: photos on Android (in-page camera, "Choose a photo"); the phone closed the browser for
   the camera app ("low memory").
-- 0.6.0 built on feature/v0.6 (HANDOFF 1g), waiting for the user's OK to release: desktop menu with More, a second AI
+- 0.6.0 released 2026-10-07 (HANDOFF 1g): desktop menu with More, a second AI
   for photos, NovelCheck's Ollama tools (find, download, GPU picks, use for text/photos), AI check-up (health, cost,
   model updates, speed test), quick setup presets, features on/off (house + "Keep it simple"), allergy exceptions.
 - Next: the user tries 0.6 with their own Ollama/PC; the import formats still need real export files to confirm.
