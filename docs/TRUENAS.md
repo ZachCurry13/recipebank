@@ -108,13 +108,15 @@ services:
 
 ## Step 4: First-time setup (inside RecipeBank)
 
-1. **Family:** add each person who eats with you, with their allergies, diets, dislikes and how much heat they like. For a real allergy pick **Allergic** or **Severe (strict)**: the page explains the difference. Tick the **pets** you have, for the Home & Care warnings.
+1. **Family:** add each person who eats with you, with their allergies, diets, dislikes and how much heat they like. For a real allergy pick **Allergic** or **Severe (strict)**: the page explains the difference. If their doctor says they can have something made from the allergen (highly refined soybean oil for a soy allergy, for example), tick or type it under **Can have anyway**; only that exact food is let through. Tick the **pets** you have, for the Home & Care warnings.
 2. **Admin → AI (optional but recommended):** the AI reads photos of recipe cards and pages that don't use the standard recipe format. Allergy checks never depend on it.
-   - **Ollama on your network (free):** Kind *OpenAI-compatible*, Address `http://YOUR-SERVER:11434/v1` (or the port your Ollama app uses), Model for example `qwen2.5:7b`, and for photos a vision model such as `qwen2.5vl:7b` or `llama3.2-vision`.
-   - **A cloud AI:** Kind *OpenAI-compatible* with `https://api.openai.com/v1` and a model like `gpt-4o-mini`, or Kind *Anthropic* with a Claude model. Paste the API key.
-   - Click **Save**, then **Test the AI**.
+   - **Quick setup** fills in the settings for Ollama, LM Studio, Google Gemini, OpenAI or Claude. For an online service, paste its API key.
+   - **Ollama on your network (free):** install the Ollama app (TrueNAS **Apps → Discover Apps**; turn its GPU on there if you have one). Then use the **🦙 Ollama** card: **Find Ollama**, see which models suit your graphics card, **Download** one with a progress bar, and press **Use for text** or **Use for photos**. No terminal needed.
+   - **A second AI for photos (optional):** handwritten cards read much better with a bigger model. Put it on another computer with a stronger graphics card (find it with the Ollama card by typing its address) or use an online service. Photos go there first; when that computer is off, the main AI reads them.
+   - Click **Save**, then **Test the AI**. The **🩺 AI check-up** card shows whether each AI is answering, what online ones cost this month, newer versions of your Ollama models, and a **speed test** on a made-up recipe card.
 3. **Admin → Accounts:** add the other parent as **Parent** (adds and edits recipes and people) and kids as **Kid** (read and cook). Link each account to its person in the Family list.
 4. **Add a recipe:** paste a link, take photos of a card, paste text, or type it in. Each one is checked for everyone before you save it.
+5. **Show less (optional):** **Admin → Features** turns off what your family doesn't use (Events, the Bookshelf, prices…) for everyone, and each person can simplify their own view under **Me → Keep it simple** (for example, a meal plan with only dinner).
 
 ## Step 5: Put it on your phone's home screen
 

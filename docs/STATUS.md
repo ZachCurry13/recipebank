@@ -31,9 +31,12 @@ CHANGELOG 0.3.0 written; every page checked at 360×760 (light and dark).
   kids can help (word lists), Bookshelf (cookbooks by ISBN via Open Library, recipes by page, card pile), imports
   from Paprika/Mealie/Tandoor, share links, back up and move recipes, who may email; fixes incl. dish drafts that
   couldn't be saved (recipes table rebuilt once on upgrade). Checked at 360×760, light and dark.
-- Next: the user tries 0.5 with real exports, receipts and cookbooks (the import formats were built from the apps'
-  documented shapes, not real files); fixes go out as 0.5.x. On feature/v0.6: the desktop top bar
-  with a More menu (unreleased). Asked: a separate AI for photos (HANDOFF 1g).
+- 0.5.1 released 2026-10-06: photos on Android (in-page camera, "Choose a photo"); the phone closed the browser for
+  the camera app ("low memory").
+- 0.6.0 built on feature/v0.6 (HANDOFF 1g), waiting for the user's OK to release: desktop menu with More, a second AI
+  for photos, NovelCheck's Ollama tools (find, download, GPU picks, use for text/photos), AI check-up (health, cost,
+  model updates, speed test), quick setup presets, features on/off (house + "Keep it simple"), allergy exceptions.
+- Next: the user tries 0.6 with their own Ollama/PC; the import formats still need real export files to confirm.
 - The user tests 0.2.0 with a real AI; fixes go out as 0.2.x.
 - Later (from the user's list): "what can I make?" from a photo of the fridge, dish photo → ideas, kitchen tablet
   (only if wanted), cookbooks and the card pile, share from the phone and printing, other-app imports, Cast to TV.

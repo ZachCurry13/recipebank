@@ -1,5 +1,28 @@
 # Changelog
 
+## [0.6.0] - 2026-10-07
+
+Show only what your family uses, allergies with exceptions, and better tools for your own AI.
+
+### 🌿 Show only what you use
+- **Admin → Features:** turn off what the family doesn't use (the meal plan, shopping list, Home & Care, pantry, collections, bookshelf, events, prices, nutrition, email, share links, kids can help). It's hidden for everyone; nothing is deleted, and turning it back on brings it all back.
+- **Me → Keep it simple:** each person can choose which meals their plan shows (for example, only dinner) and leave pages out of their own menu, without changing anything for anyone else.
+
+### 🥜 Allergies with exceptions
+- Each allergy on the Family page has **Can have anyway**, for foods made from the allergen that the person's doctor says are fine: highly refined soybean oil or soy lecithin for a soy allergy, highly refined peanut oil for a peanut allergy, or one you type ("almond" for someone allergic only to some tree nuts).
+- Only that exact food is let through. Everything else made from the allergen on the line still counts ("soybean oil and soy sauce" is still soy), and cold-pressed, roasted or gourmet oils keep counting.
+
+### 🤖 Your AI, your way
+- **A second AI just for photos:** handwritten cards, receipts, the fridge and cookbook indexes go to it first, for example a bigger model on a computer with a stronger graphics card, or an online service. When it can't be reached, the main AI reads the photos. Text stays with the main AI.
+- **🦙 Ollama, without a terminal:** find Ollama on your network, see which text and photo models fit your graphics card, download with a progress bar, use a model for text or photos, and delete models you don't use. Brought over from NovelCheck.
+- **🩺 AI check-up:** whether each AI is answering (it asks for its models, which costs nothing), what online AI cost this month, newer versions of your Ollama models with an **Update** button, and a **speed test** that times each model on a made-up recipe card and says whether it read it right.
+- **Quick setup** fills in the settings for Ollama, LM Studio, Google Gemini, OpenAI or Claude, with prices for the monthly cost.
+
+### Fixes
+- On a computer, the top menu no longer scrolls sideways: the main pages are in the bar (more of them on wider screens) and the rest are under **☰ More**.
+
+Updating: nothing to change in TrueNAS. RecipeBank adds what it needs to its database by itself.
+
 ## [0.5.1] - 2026-10-06
 
 A fix for taking photos on Android phones.

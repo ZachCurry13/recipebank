@@ -29,6 +29,8 @@ Runs as one small Docker container (made for TrueNAS SCALE), works on phones, an
 - **Plan my week** in one tap (what everyone can eat, liked first, food near its date used up, within the budget), **scan a receipt** into the pantry, and **kids can help** (steps marked by what needs a grown-up).
 - **Bookshelf:** cookbooks by barcode with their recipes by page (searchable), and a list of the cards still to photograph. **Share a recipe with a link** (read-only, 7 days) and **back up** every recipe as one file.
 - **Cook mode voice**, **phone notifications** (timers, use soon, running low, tonight's dinner) and **remote access** through a built-in Cloudflare Tunnel ([docs/REMOTE_ACCESS.md](docs/REMOTE_ACCESS.md)).
+- **AI your way:** quick setup for Ollama, LM Studio, Gemini, OpenAI or Claude; find Ollama, download models and see which fit your graphics card, all from Admin; a **second AI just for photos** (a bigger model on another computer, or an online one) with the main AI as the fallback; an AI check-up with a speed test.
+- **Show only what you use:** turn features off for the house, and let each person keep it simple (a plan with only dinner, fewer pages). Allergies can list what someone **can have anyway** (highly refined soybean oil for a soy allergy).
 - **Accounts** for parents and kids; people without accounts (guests) still get checked. A short welcome for new people, a setup checklist for the admin, update notices and **What's new** in the app.
 
 RecipeBank helps, but it doesn't replace reading labels. When in doubt, ask a doctor, dentist or vet.

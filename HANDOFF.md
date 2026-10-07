@@ -188,7 +188,7 @@ everything below is built and checked.
    allergy → "Can have anyway": offered ones (refined soybean oil, soy lecithin, refined peanut oil) or typed ones
    ("almond"); only that exact food is masked, cold-pressed/roasted oils still count (`safety/exceptions.go`).
 7c. [x] **Photos on Android** (released as 0.5.1 on its own): in-page camera + "Choose a photo" (`camera.js`).
-8. [ ] Docs, CHANGELOG, phone checks (360×760, light and dark; desktop widths for the menu), then ASK to release.
+8. [x] Docs, CHANGELOG, phone checks (360×760, light and dark; desktop widths for the menu). [ ] ASK to release 0.6.0.
    The SW cache is v8 (0.5.1 used v7).
 
 ## 2. Rules
