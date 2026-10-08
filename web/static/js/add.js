@@ -8,6 +8,7 @@ import { renderDish } from "./dish.js";
 import { renderAppImport } from "./appimport.js";
 import { photoPicker, wirePhotoPicker, cameraTip } from "./camera.js";
 import { peekPending, clearPending, pendingNote } from "./booklink.js";
+import { laterList, offerLater } from "./later.js";
 
 const WAYS = [
   ["link", "🔗", "From a link", "Paste the address of a recipe page."],
@@ -32,6 +33,7 @@ export function renderAdd(view, params, state) {
       <h1 class="text-2xl font-bold">➕ Add a recipe</h1>
       <p class="mb-4 text-sm text-slate-400">It's checked for everyone before you save it.</p>
       ${pendingNote(peekPending())}
+      <div id="later"></div>
       ${homeOn ? `<div class="mb-4 flex flex-wrap gap-2" role="radiogroup" aria-label="Goes in">
         ${[["kitchen", "🍲 Kitchen"], ["home", "🧴 Home & Care"]].map(([a, l]) =>
           `<a href="#/add?area=${a}&way=${way}" class="pick ${area === a ? "on" : ""}">${l}</a>`).join("")}
@@ -42,6 +44,7 @@ export function renderAdd(view, params, state) {
           <div class="text-xs text-slate-400">${help}</div></button>`).join("")}</div>
       <div id="way" class="card space-y-3"></div>`;
     $$("[data-way]", view).forEach((b) => (b.onclick = () => { way = b.dataset.way; draw(); }));
+    laterList($("#later", view), view);
     const notFrom = $("#pending-clear", view);
     if (notFrom) notFrom.onclick = () => { clearPending(); draw(); };
     const box = $("#way", view);
@@ -91,8 +94,15 @@ export function renderAdd(view, params, state) {
     }
   };
   const run = (btn, label, path, body) => attempt(() => busy(btn, label, async () => {
-    const draft = await post(path, { ...body, area });
-    editRecipe(view, draft.recipe, draft);
+    try {
+      const draft = await post(path, { ...body, area });
+      editRecipe(view, draft.recipe, draft);
+    } catch (e) {
+      if (!e.data?.later) throw e;
+      // No AI can read it right now: offer to keep it and read it later.
+      const kind = body.text === undefined ? "photo" : "text";
+      offerLater($("#way", view), e, { kind, photos: e.data.photos, text: body.text, area }, () => { photos = []; draw(); });
+    }
   }));
   draw();
 }

@@ -48,7 +48,9 @@ type Server struct {
 	logins      *loginLimiter
 	guestWrites *loginLimiter // changes through events' guest links, per address
 	etags       sync.Map      // static file name → ETag
-	buildOnce   sync.Once     // buildID, computed once
+	laterOnce   sync.Once     // "Read it later": the signal to read now
+	laterCh     chan struct{}
+	buildOnce   sync.Once // buildID, computed once
 	build       string
 	indexOnce   sync.Once // index.html with versioned addresses
 	index       []byte
@@ -177,6 +179,11 @@ func (s *Server) Router() http.Handler {
 				r.Post("/import/dish/draft", s.handleDishDraft)
 				r.Post("/import/text", s.handleImportText)
 				r.Post("/import/app", s.handleImportApp)
+				r.Get("/later", s.handleLaters)
+				r.Post("/later", s.handleAddLater)
+				r.Get("/later/{id}", s.handleLaterDraft)
+				r.Post("/later/{id}/now", s.handleLaterNow)
+				r.Delete("/later/{id}", s.handleDeleteLater)
 				r.Post("/check", s.handleCheckDraft)
 				r.Post("/recipes", s.handleSaveRecipe)
 				r.Put("/recipes/{id}", s.handleSaveRecipe)

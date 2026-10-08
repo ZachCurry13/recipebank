@@ -207,9 +207,28 @@ The user's notes after using 0.6, plan agreed ("Yes, build it"):
    they're bringing; the menu is checked for them; the host can stop it; it ends after the event.
 6. [x] Docs, CHANGELOG, phone checks (360×760, light and dark). Released as 0.7.0 on 2026-10-07 (user OK); `:0.7.0` = `:latest`. Work continues on `feature/v0.8`.
 
-Undecided (the user: "Not sure yet"): sharing a recipe with "nobody / household / family / everyone on the server"
-needs several households on one server (a big split of people, pantry, plan and list by household) or one household
-plus relatives with accounts. Ask again after 0.7.
+Sharing levels: answered 2026-10-07, "No, just us" (one household per server): no household/family/server levels.
+
+0.7.1 (photo AI organizes text when the main AI fails) and 0.8.0 (Ollama 📝/📷 pickers, busy-AI retry, plain
+errors for each AI) released 2026-10-07.
+
+## 1i. 0.9 plan (2026-10-07; on `feature/v0.9`; one 0.9.0 at the end, ASK the user before releasing)
+
+Chosen by the user ("Yes, build it"):
+1. [x] **Read it later:** a card photo or pasted text that no AI can read right now (busy, off, won't load, out of
+   allowance) gets "📥 Read it later"; kept in a queue, retried by itself (minutes at first, then less often, up to
+   two days); when read: "Ready to check" on Add + a phone notification (new kind); opening it goes to the usual
+   check-and-save screen (nothing saved unchecked). Not a recipe → said there.
+2. [ ] **Kitchen screen / TV:** `/tv` on a TV or tablet browser shows a short code (no sign-in there); cook mode's 📺
+   pairs with the code; the screen shows the step, its ingredients and timers big, following the phone; the pairing
+   ends after 12 hours; the screen sees only what's sent.
+3. [ ] **Meal plan in your calendar:** Me → 📅 a private calendar link (ICS) for Google/Apple calendars; meals at chosen
+   times (dinner 6 pm default), recipe links, events too; "New link" turns the old one off. Google needs the outside
+   address.
+4. [ ] **Search by meaning:** Admin → AI → an embedding model (Ollama `nomic-embed-text`, or the online service's);
+   recipes indexed in the background; Recipes search, Search everything and "What should we eat?" rank by meaning too,
+   word matches first. Allergy checks unchanged.
+5. [ ] Docs, CHANGELOG, phone checks (360×760, light and dark).
 
 ## 2. Rules
 

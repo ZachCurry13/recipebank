@@ -71,6 +71,7 @@ func main() {
 	defer stop()
 	go housekeeping(ctx, st, srv)
 	go srv.Reminders(ctx)
+	go srv.ReadLater(ctx)    // "Read it later": cards and pasted recipes waiting for an AI
 	go srv.AITools.Loop(ctx) // newer versions of the Ollama models in use, once a day
 
 	go func() {

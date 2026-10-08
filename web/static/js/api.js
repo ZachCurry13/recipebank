@@ -2,9 +2,10 @@
 // Every state-changing request carries X-RecipeBank: 1 (CSRF guard).
 
 export class ApiError extends Error {
-  constructor(status, message) {
+  constructor(status, message, data = {}) {
     super(message);
     this.status = status;
+    this.data = data; // the whole answer (e.g. "later": an AI may manage later)
   }
 }
 
@@ -83,7 +84,7 @@ export async function api(path, { method = "GET", body, raw = false, retries = R
   }
   if (raw) return res;
   const data = await res.json().catch(() => ({}));
-  if (!res.ok) throw new ApiError(res.status, data.error || res.statusText);
+  if (!res.ok) throw new ApiError(res.status, data.error || res.statusText, data);
   return data;
 }
 

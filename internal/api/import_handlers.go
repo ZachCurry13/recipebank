@@ -113,7 +113,7 @@ func (s *Server) handleImportText(w http.ResponseWriter, r *http.Request) {
 		if err == nil {
 			rc, ok = ai, true
 		} else if !ok {
-			writeErr(w, http.StatusBadGateway, importErr(err))
+			importFailed(w, err, nil)
 			return
 		}
 	}
@@ -162,7 +162,7 @@ func (s *Server) importPhotos(w http.ResponseWriter, r *http.Request, keep bool)
 	}
 	rc, err := s.readPhotos(r.Context(), originals)
 	if err != nil {
-		writeErr(w, http.StatusBadGateway, importErr(err))
+		importFailed(w, err, names)
 		return
 	}
 	rc.SourceKind, rc.SourcePhotos = "photo", names
@@ -239,7 +239,6 @@ func (s *Server) finishDraft(w http.ResponseWriter, r *http.Request, rc *recipe.
 }
 
 // importErr puts the AI's failures in plain words.
-// shorten keeps an error short enough to show.
 func importErr(err error) string {
 	switch {
 	case errors.Is(err, llm.ErrNoAI):

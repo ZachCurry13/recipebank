@@ -107,8 +107,9 @@ func askImagesWith(ctx context.Context, st *store.Store, ai store.AIConfig, quic
 var quickDial = &http.Client{Transport: &http.Transport{Proxy: http.ProxyFromEnvironment,
 	DialContext: (&net.Dialer{Timeout: 5 * time.Second}).DialContext, TLSHandshakeTimeout: 10 * time.Second}}
 
-// busyWait is how long to wait before asking a busy online AI again.
-var busyWait = 4 * time.Second
+// BusyWait is how long to wait before asking a busy online AI again (tests
+// shorten it).
+var BusyWait = 4 * time.Second
 
 // pause waits d, unless ctx ends first.
 func pause(ctx context.Context, d time.Duration) bool {
@@ -157,7 +158,7 @@ func try(ctx context.Context, st *store.Store, ai store.AIConfig, models []strin
 	var errs []string
 	for _, model := range models {
 		out, err := ask(model)
-		if Busy(err) && pause(ctx, busyWait) {
+		if Busy(err) && pause(ctx, BusyWait) {
 			out, err = ask(model) // busy for a moment: once more
 		}
 		if err == nil {

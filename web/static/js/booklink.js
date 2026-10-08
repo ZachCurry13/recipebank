@@ -1,7 +1,7 @@
 // Where a recipe came from: a cookbook's page, or a card from the pile. The
 // Add page remembers it ("pending") while the recipe is read and checked;
 // saving the new recipe links it to the page or ticks the card off.
-import { get, put } from "./api.js";
+import { get, put, del } from "./api.js";
 import { $, esc, attempt, sheet, toast, canManage } from "./ui.js";
 
 const KEY = "rb:pending-source";
@@ -27,6 +27,7 @@ export async function afterSave(id) {
   clearPending();
   if (!p) return;
   try {
+    if (p.later) await del(`/api/later/${p.later}`); // read later: off the list now it's saved
     if (p.book) await put(`/api/recipes/${id}/book`, { book_id: p.book, page: p.page || "" });
     if (p.pile) await put(`/api/pile/${p.pile}`, { title: p.title, note: p.note || "", done: true, recipe_id: id });
   } catch (e) {
@@ -36,7 +37,7 @@ export async function afterSave(id) {
 
 // pendingNote is the line the Add page shows while a source is remembered.
 export function pendingNote(p) {
-  if (!p) return "";
+  if (!p || (!p.book && !p.pile)) return "";
   const what = p.book ? `${esc(p.book_title || "the cookbook")}${p.page ? `, page ${esc(p.page)}` : ""}` : `the card "${esc(p.title)}"`;
   return `<p class="box-info">Adding a recipe from ${what}. It's linked when you save it.
     <button type="button" id="pending-clear" class="underline">Not from there</button></p>`;

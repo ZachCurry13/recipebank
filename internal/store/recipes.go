@@ -135,7 +135,7 @@ func (s *Store) PhotosInUse() (map[string]bool, error) {
 	for _, c := range covers {
 		used[c] = true
 	}
-	return used, nil
+	return used, s.laterPhotos(used) // and the cards waiting to be read
 }
 
 // CountRecipes counts every saved recipe, Kitchen and Home & Care.

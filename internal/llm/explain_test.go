@@ -35,6 +35,23 @@ func TestExplain(t *testing.T) {
 	if _, ok := Explain(errors.New("LLM returned no choices")); ok {
 		t.Error("nothing plainer to say about an unknown problem")
 	}
+	down := errors.New(`the AI couldn't do it (qwen2.5:3b: Post "http://nas:11434/v1/chat/completions": dial tcp 10.0.0.2:11434: connect: connection refused)`)
+	if msg, _ := Explain(down); !strings.Contains(msg, "didn't answer") || !Temporary(down) {
+		t.Errorf("a computer that's off: %q", msg)
+	}
+	for _, e := range []string{geminiBusy, clipFailed, "Claude API error 529"} {
+		if !Temporary(errors.New(e)) {
+			t.Errorf("worth trying later: %s", e)
+		}
+	}
+	for _, e := range []error{ErrNoRecipe, errors.New("LLM returned no choices"), &BothFailed{Photo: ErrNoRecipe, Main: ErrNoRecipe}} {
+		if Temporary(e) {
+			t.Errorf("trying later won't help: %v", e)
+		}
+	}
+	if !Temporary(&BothFailed{Photo: errors.New(geminiBusy), Main: ErrNoRecipe}) {
+		t.Error("the photo AI was only busy: worth trying later")
+	}
 	both, ok := Explain(&BothFailed{Photo: errors.New(geminiBusy), Main: errors.New(clipFailed)})
 	if !ok || !strings.Contains(both, "The AI for photos is busy") || !strings.Contains(both, "The main AI couldn't load the photo model's picture reader") {
 		t.Errorf("both AIs: %q", both)
@@ -57,9 +74,9 @@ func testStore(t *testing.T) *store.Store {
 // An online AI that's busy for a moment is asked once more; other problems
 // aren't repeated.
 func TestBusyAskedAgain(t *testing.T) {
-	old := busyWait
-	busyWait = 0
-	t.Cleanup(func() { busyWait = old })
+	old := BusyWait
+	BusyWait = 0
+	t.Cleanup(func() { BusyWait = old })
 	var calls atomic.Int32
 	status := http.StatusServiceUnavailable
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {

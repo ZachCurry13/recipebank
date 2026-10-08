@@ -299,3 +299,25 @@ CREATE TABLE IF NOT EXISTS event_guests (
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 CREATE INDEX IF NOT EXISTS event_guests_event ON event_guests (event_id);
+
+-- Card photos and pasted recipes no AI could read when they were added
+-- ("Read it later"): read in the background, then kept as a draft until
+-- someone checks and saves it.
+CREATE TABLE IF NOT EXISTS later (
+    id         INTEGER PRIMARY KEY AUTOINCREMENT,
+    kind       TEXT NOT NULL CHECK (kind IN ('photo', 'text')),
+    area       TEXT NOT NULL DEFAULT 'kitchen',
+    photos     TEXT NOT NULL DEFAULT '[]',   -- file names in the photos folder (photo)
+    text       TEXT NOT NULL DEFAULT '',     -- the pasted text (text)
+    source     TEXT NOT NULL DEFAULT '',     -- where it came from (a cookbook page, a card from the pile), as JSON
+    status     TEXT NOT NULL DEFAULT 'waiting' CHECK (status IN ('waiting', 'ready', 'failed')),
+    draft      TEXT NOT NULL DEFAULT '',     -- the recipe read, as JSON, once ready
+    title      TEXT NOT NULL DEFAULT '',
+    error      TEXT NOT NULL DEFAULT '',
+    tries      INTEGER NOT NULL DEFAULT 0,
+    next_try   TEXT NOT NULL DEFAULT '',     -- RFC 3339, UTC
+    give_up    TEXT NOT NULL DEFAULT '',     -- RFC 3339, UTC: two days after it was added
+    user_id    INTEGER NOT NULL DEFAULT 0,
+    added_by   TEXT NOT NULL DEFAULT '',
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+);

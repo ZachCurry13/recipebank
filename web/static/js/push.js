@@ -5,6 +5,7 @@ import { esc, attempt, toast } from "./ui.js";
 
 const KINDS = [["timers", "⏱ Cook-mode timers, even with the screen off"], ["useby", "🥫 Food to use soon (each morning)"],
   ["low", "🧽 Something running low"], ["tonight", "🌙 Tonight's dinner (each afternoon)"],
+  ["ready", "📥 A recipe read later is ready to check"],
   ["updates", "🆕 A new version of RecipeBank (admins)"]];
 
 const isIOS = () => /iPhone|iPad|iPod/.test(navigator.userAgent);

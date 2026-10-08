@@ -51,6 +51,37 @@ func NoPictures(err error) bool {
 	return strings.Contains(msg, "clip model") || strings.Contains(msg, "mmproj")
 }
 
+// Unreachable reports whether the AI's computer didn't answer at all (off,
+// asleep, a wrong address) or took too long; it works on the "the AI
+// couldn't do it (…)" messages too, which keep only the words.
+func Unreachable(err error) bool {
+	if err == nil {
+		return false
+	}
+	if HostDown(err) {
+		return true
+	}
+	msg := strings.ToLower(err.Error())
+	for _, k := range []string{"connection refused", "actively refused", "no such host", "no route to host", "deadline exceeded",
+		"i/o timeout", "connection reset", "host is down", "network is unreachable"} {
+		if strings.Contains(msg, k) {
+			return true
+		}
+	}
+	return false
+}
+
+// Temporary reports whether the AI may well manage later: it was busy, off,
+// out of allowance, or couldn't load its model. "Read it later" is offered
+// for these.
+func Temporary(err error) bool {
+	var both *BothFailed
+	if errors.As(err, &both) {
+		return Temporary(both.Photo) || Temporary(both.Main)
+	}
+	return Unreachable(err) || Busy(err) || Limited(err) || WontLoad(err) || NoPictures(err)
+}
+
 // Explain says in plain words what went wrong with the AI and what to do,
 // ending with what it said. ok is false when there's nothing plainer to say.
 func Explain(err error) (msg string, ok bool) {
@@ -83,6 +114,9 @@ func explain(err error) (string, bool) {
 	case Limited(err):
 		return "says this key has used up its allowance for now (free plans limit requests per minute and per day). " +
 			"Wait a while, or check the plan on the service's website." + said, true
+	case Unreachable(err):
+		return "didn't answer in time: its computer may be off or asleep, its address may have changed (Admin → AI), " +
+			"or the model is very slow." + said, true
 	}
 	return "couldn't do it." + said, false
 }
