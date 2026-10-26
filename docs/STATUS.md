@@ -48,3 +48,7 @@ CHANGELOG 0.3.0 written; every page checked at 360×760 (light and dark).
 - The user tests 0.2.0 with a real AI; fixes go out as 0.2.x.
 - Later (from the user's list): "what can I make?" from a photo of the fridge, dish photo → ideas, kitchen tablet
   (only if wanted), cookbooks and the card pile, share from the phone and printing, other-app imports, Cast to TV.
+- Maintenance 2026-10-26 (branch maintenance/2026-10-26): govulncheck with Go 1.26.10 finds nothing; x/net 0.59 -> 0.61
+  (fixes HTTP/2 issues; x/crypto, x/sys moved with it), build and tests pass. Needs a decision: other newer
+  dependencies (anthropic-sdk-go 1.75 -> 1.84, chi 5.3 -> 5.5, sqlite 1.59 -> 1.61, x/image), cloudflared 2026.9.3 -> 2026.10.4.
+  x/crypto's openpgp is flagged unmaintained (no fix, not used).
