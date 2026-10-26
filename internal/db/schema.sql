@@ -331,3 +331,13 @@ CREATE TABLE IF NOT EXISTS cal_feeds (
     events     INTEGER NOT NULL DEFAULT 1, -- events too
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
+
+-- "Search by meaning": each recipe's embedding (a list of numbers that
+-- captures what the recipe is about), made by the model chosen in Admin.
+-- hash says which version of the recipe's text it was made from.
+CREATE TABLE IF NOT EXISTS embeddings (
+    recipe_id INTEGER PRIMARY KEY REFERENCES recipes(id) ON DELETE CASCADE,
+    model     TEXT NOT NULL,
+    hash      TEXT NOT NULL,
+    vec       BLOB NOT NULL
+);

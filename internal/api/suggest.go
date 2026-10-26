@@ -49,9 +49,14 @@ func (s *Server) suggest(ctx context.Context, r *http.Request, area, request str
 		score int
 	}
 	var cands []scored
+	sem := s.semanticScores(ctx, request) // recipes close in meaning count too
 	for i := range all {
 		if !skip[all[i].ID] {
-			cands = append(cands, scored{&all[i], words.Count(all[i].Text())})
+			n := words.Count(all[i].Text())
+			if sem[all[i].ID] > 0 {
+				n += 3
+			}
+			cands = append(cands, scored{&all[i], n})
 		}
 	}
 	sort.SliceStable(cands, func(i, j int) bool { return cands[i].score > cands[j].score })

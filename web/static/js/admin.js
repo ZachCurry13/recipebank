@@ -9,6 +9,7 @@ import { renderBackup } from "./backup.js";
 import { photoAI, wirePhotoAI, photoSettings } from "./photoai.js";
 import { renderFeatures } from "./featuresadmin.js";
 import { renderOllama } from "./ollamaadmin.js";
+import { renderEmbed } from "./embedadmin.js";
 import { presetPicker, wirePresets, priceFields, modelLister, wireModelLister } from "./aipresets.js";
 import { renderAITools } from "./aitoolsadmin.js";
 
@@ -76,6 +77,7 @@ export async function renderAdmin(view, params, state) {
     </div>
     <div id="aitools" class="mt-4"></div>
     <div id="ollama" class="mt-4"></div>
+    <div id="embed" class="mt-4"></div>
     <div id="features" class="mt-4"></div>
     <div id="hints" class="mt-4"></div>
     <div id="mail" class="mt-4"></div>
@@ -95,6 +97,7 @@ export async function renderAdmin(view, params, state) {
     </div>`;
 
   renderRemote($("#remote", view)).catch(() => {});
+  renderEmbed($("#embed", view)).catch(() => {});
   renderHints($("#hints", view)).catch(() => {});
   renderEmailAdmin($("#mail", view), s);
   renderBackup($("#backup", view));

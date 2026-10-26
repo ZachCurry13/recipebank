@@ -2,6 +2,7 @@ package api
 
 import (
 	"net/http"
+	"sort"
 	"strconv"
 	"strings"
 
@@ -53,11 +54,14 @@ func (s *Server) handleListRecipes(w http.ResponseWriter, r *http.Request) {
 	maxHeat, heatErr := strconv.Atoi(q.Get("heat"))
 	diet := q.Get("diet")
 	cards := []recipeCard{}
+	var byMeaning []recipeCard // found by meaning, not by the search's words: after the word matches
+	sem := s.semanticScores(r.Context(), search)
 	facets := map[string]map[string]int{"course": {}, "cuisine": {}, "protein": {}}
 	for i := range all {
 		rc := &all[i]
 		heat := heatOf(rc)
-		if search != "" && !strings.Contains(rc.Text(), search) ||
+		meaning := search != "" && !strings.Contains(rc.Text(), search) && sem[rc.ID] > 0
+		if search != "" && !strings.Contains(rc.Text(), search) && !meaning ||
 			maxMin > 0 && (rc.TotalMin == 0 || rc.TotalMin > maxMin) ||
 			heatErr == nil && heat > maxHeat ||
 			!matches(q.Get("course"), rc.Course) || !matches(q.Get("cuisine"), rc.Cuisine) || !matches(q.Get("protein"), rc.Protein) ||
@@ -71,14 +75,19 @@ func (s *Server) handleListRecipes(w http.ResponseWriter, r *http.Request) {
 		if ok := q.Get("ok"); ok == "1" && worst != safety.OK || ok == "unsure" && worst == safety.No {
 			continue
 		}
-		cards = append(cards, card)
+		if meaning {
+			byMeaning = append(byMeaning, card)
+		} else {
+			cards = append(cards, card)
+		}
 		for k, v := range map[string]string{"course": rc.Course, "cuisine": rc.Cuisine, "protein": rc.Protein} {
 			if v != "" {
 				facets[k][strings.ToLower(v)]++
 			}
 		}
 	}
-	writeJSON(w, http.StatusOK, map[string]any{"recipes": cards, "facets": facets})
+	sort.SliceStable(byMeaning, func(i, j int) bool { return sem[byMeaning[i].ID] > sem[byMeaning[j].ID] })
+	writeJSON(w, http.StatusOK, map[string]any{"recipes": append(cards, byMeaning...), "facets": facets})
 }
 
 // cardFor is a recipe's Library card, and the worst verdict among diners.

@@ -47,6 +47,11 @@ type Server struct {
 	timers      push.Timers // cook-mode timers that buzz the phone
 	logins      *loginLimiter
 	guestWrites *loginLimiter // changes through events' guest links, per address
+	semMu       sync.Mutex    // "Search by meaning": the last indexing error, and recent searches' vectors
+	semErr      string
+	semCache    map[string][]float32
+	semOnce     sync.Once
+	semCh       chan struct{}
 	tv          tvHub         // kitchen screens waiting for a phone
 	tvNew       *loginLimiter // new screens, per address
 	tvTries     *loginLimiter // codes tried from phones, per person
@@ -278,6 +283,8 @@ func (s *Server) Router() http.Handler {
 				r.Get("/admin/aitools", s.handleAIToolsStatus)
 				r.Get("/admin/ai/health", s.handleAIHealth)
 				r.Post("/admin/ai/models", s.handleAIModels)
+				r.Get("/admin/embed", s.handleEmbedStatus)
+				r.Put("/admin/embed", s.handleEmbedSet)
 				r.Post("/admin/aitools/check-updates", s.handleCheckModelUpdates)
 				r.Post("/admin/aitools/updated", s.handleModelUpdated)
 				r.Post("/admin/aitools/bench", s.handleStartBench)

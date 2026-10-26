@@ -31,6 +31,7 @@ Runs as one small Docker container (made for TrueNAS SCALE), works on phones, an
 - **Cook mode voice**, **phone notifications** (timers, use soon, running low, tonight's dinner) and **remote access** through a built-in Cloudflare Tunnel ([docs/REMOTE_ACCESS.md](docs/REMOTE_ACCESS.md)).
 - **AI your way:** quick setup for Ollama, LM Studio, Gemini, OpenAI or Claude; find Ollama, download models and see which fit your graphics card, all from Admin; a **second AI just for photos** (a bigger model on another computer, or an online one) with the main AI as the fallback; an AI check-up with a speed test.
 - **Your menu, your order**, with 🔍 **search everything** (recipes, the pantry, the list, cookbooks, events, people, settings), and an ingredient picker for the shopping list on every recipe.
+- **Read it later** for cards no AI can read right now, a **kitchen screen** (`/tv`) that follows cook mode on a TV or tablet, your **meal plan in your phone's calendar**, and **search by meaning**.
 - **Event guest links:** guests say they're coming with their allergies and what they bring; the menu is checked for them.
 - **Show only what you use:** turn features off for the house, and let each person keep it simple (a plan with only dinner, fewer pages). Allergies can list what someone **can have anyway** (highly refined soybean oil for a soy allergy).
 - **Accounts** for parents and kids; people without accounts (guests) still get checked. A short welcome for new people, a setup checklist for the admin, update notices and **What's new** in the app.

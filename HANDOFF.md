@@ -225,10 +225,10 @@ Chosen by the user ("Yes, build it"):
 3. [x] **Meal plan in your calendar:** Me → 📅 a private calendar link (ICS) for Google/Apple calendars; meals at chosen
    times (dinner 6 pm default), recipe links, events too; "New link" turns the old one off. Google needs the outside
    address.
-4. [ ] **Search by meaning:** Admin → AI → an embedding model (Ollama `nomic-embed-text`, or the online service's);
+4. [x] **Search by meaning:** Admin → AI → an embedding model (Ollama `nomic-embed-text`, or the online service's);
    recipes indexed in the background; Recipes search, Search everything and "What should we eat?" rank by meaning too,
    word matches first. Allergy checks unchanged.
-5. [ ] Docs, CHANGELOG, phone checks (360×760, light and dark).
+5. [x] Docs, CHANGELOG, phone checks (360×760, light and dark).
 
 ## 2. Rules
 

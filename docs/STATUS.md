@@ -52,3 +52,5 @@ CHANGELOG 0.3.0 written; every page checked at 360×760 (light and dark).
   (fixes HTTP/2 issues; x/crypto, x/sys moved with it), build and tests pass. Needs a decision: other newer
   dependencies (anthropic-sdk-go 1.75 -> 1.84, chi 5.3 -> 5.5, sqlite 1.59 -> 1.61, x/image), cloudflared 2026.9.3 -> 2026.10.4.
   x/crypto's openpgp is flagged unmaintained (no fix, not used).
+- 0.9.0 built on feature/v0.9 (not released): Read it later (cards wait for an AI), kitchen screen (/tv), meal plan calendar
+  link, search by meaning (embeddings), x/net security update, weekly audit workflow. Next: ask before releasing.

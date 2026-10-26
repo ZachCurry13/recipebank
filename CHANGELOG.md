@@ -1,5 +1,24 @@
 # Changelog
 
+## [Unreleased]
+
+Cards that wait for an AI, a kitchen screen, your meals in your calendar, and search by meaning.
+
+### 📥 Read it later
+- When no AI can read a card photo or pasted recipe right now (busy, switched off, a model that won't load, out of allowance), the Add page offers **Read it later**. RecipeBank keeps it, tries again by itself (minutes at first, then every two hours, for two days), and shows it under **📥 Read later** ready to check, with an optional phone notification. Nothing is saved until you check it.
+
+### 📺 Kitchen screen
+- Open **your RecipeBank address + /tv** on a TV or tablet: it shows a short code. In cook mode, tap **📺**, type the code, and the screen follows your steps in big text with the step's ingredients and timers. It only shows what your phone sends, and ends after 12 hours.
+
+### 📅 Meal plan in your calendar
+- **Me → 📅 Meal plan in your calendar** gives a private link for Google or Apple Calendar: planned meals at the times you choose (dinner 18:00 by default), with a link to the recipe, plus events. **New link** stops the old one. Google needs your outside (remote access) address.
+
+### 🧭 Search by meaning
+- **Admin → AI → Search by meaning:** pick an embedding model (Ollama's `nomic-embed-text` downloads in one tap; Gemini and OpenAI have their own). Recipes are indexed in the background; the Recipes search, 🔍 search everything and "What should we eat?" then also find recipes close in meaning. Word matches still come first, and allergy checks never use it.
+
+### Security and upkeep
+- Updated `golang.org/x/net` (HTTP/2 fixes). Added a weekly audit (GitHub Actions) and `docs/MAINTENANCE.md`.
+
 ## [0.8.0] - 2026-10-07
 
 Photo models on Ollama in a couple of taps, and plainer answers when an AI can't help.

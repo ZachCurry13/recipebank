@@ -52,14 +52,17 @@ func (s *Server) handleFind(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if all, err := s.Store.ListRecipes(""); err == nil {
+		sem := s.semanticScores(r.Context(), r.URL.Query().Get("q"))
 		type ranked struct {
 			hit   findHit
 			title bool
+			score float64 // by meaning only; word matches are 1 and rank above
 		}
 		var rs []ranked
 		for i := range all {
 			rc := &all[i]
-			if rc.Area == "home" && !on["home"] || !has(rc.Text()) {
+			word := has(rc.Text())
+			if rc.Area == "home" && !on["home"] || !word && sem[rc.ID] == 0 {
 				continue
 			}
 			sub := "Kitchen"
@@ -69,9 +72,18 @@ func (s *Server) handleFind(w http.ResponseWriter, r *http.Request) {
 			if rc.Course != "" {
 				sub += " · " + rc.Course
 			}
-			rs = append(rs, ranked{findHit{rc.Title, sub, "#/recipe/" + itoa(rc.ID)}, has(rc.Title)})
+			score := 1.0
+			if !word {
+				score = sem[rc.ID] / 2 // found by meaning: after the word matches
+			}
+			rs = append(rs, ranked{findHit{rc.Title, sub, "#/recipe/" + itoa(rc.ID)}, has(rc.Title), score})
 		}
-		sort.SliceStable(rs, func(a, b int) bool { return rs[a].title && !rs[b].title }) // title matches first
+		sort.SliceStable(rs, func(a, b int) bool { // title matches first, then word matches, then meaning
+			if rs[a].title != rs[b].title {
+				return rs[a].title
+			}
+			return rs[a].score > rs[b].score
+		})
 		var hits []findHit
 		for _, x := range rs {
 			hits = append(hits, x.hit)
