@@ -219,7 +219,7 @@ Chosen by the user ("Yes, build it"):
    allowance) gets "📥 Read it later"; kept in a queue, retried by itself (minutes at first, then less often, up to
    two days); when read: "Ready to check" on Add + a phone notification (new kind); opening it goes to the usual
    check-and-save screen (nothing saved unchecked). Not a recipe → said there.
-2. [ ] **Kitchen screen / TV:** `/tv` on a TV or tablet browser shows a short code (no sign-in there); cook mode's 📺
+2. [x] **Kitchen screen / TV:** `/tv` on a TV or tablet browser shows a short code (no sign-in there); cook mode's 📺
    pairs with the code; the screen shows the step, its ingredients and timers big, following the phone; the pairing
    ends after 12 hours; the screen sees only what's sent.
 3. [x] **Meal plan in your calendar:** Me → 📅 a private calendar link (ICS) for Google/Apple calendars; meals at chosen

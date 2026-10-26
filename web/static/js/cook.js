@@ -7,6 +7,7 @@ import { parts, stepText } from "./ingredients.js";
 import { canSpeak, canListen, voiceOn, setVoice, speak, stopSpeaking, listen } from "./cookvoice.js";
 import { cookedSheet } from "./cooked.js";
 import { kidsOn, setKids, stepHelp } from "./kids.js";
+import { tvButton, wireTV, tvSend, tvStop } from "./tvcast.js";
 
 let wake = null;
 const timers = []; // {label, ends, done}
@@ -55,6 +56,13 @@ export function startCooking(r, v) {
   let spoken = -1; // the step last read aloud
   let stopListening = null;
   const say = () => { spoken = at; speak(`Step ${at + 1}. ${temps(stepText(r.steps[at].text, v.system), v.system)}`); };
+  // What the kitchen screen (TV) is sent: this step, its ingredients, the timers.
+  const tvView = () => {
+    const step = r.steps[at];
+    return { title: r.title, at, total: r.steps.length, section: step.section || "", text: temps(stepText(step.text, v.system), v.system),
+      items: usedIn(step.text, r.ingredients).map((ing) => { const p = parts(ing, v.factor, v.system); return { amount: p.amount, name: p.name }; }),
+      timers: timers.map((t) => ({ label: t.label, left: Math.max(0, Math.round((t.ends - Date.now()) / 1000)), done: t.done })) };
+  };
   const startTimer = (t) => {
     const timer = { label: t.label, ends: Date.now() + t.secs * 1000, done: false, id: null };
     timers.push(timer);
@@ -78,6 +86,7 @@ export function startCooking(r, v) {
     wake?.release?.();
     wake = null;
     clearInterval(tick);
+    tvStop();
     stopSpeaking();
     stopListening?.();
     stopListening = null;
@@ -94,6 +103,7 @@ export function startCooking(r, v) {
     draw();
   };
   const drawTimers = () => {
+    tvSend(tvView());
     const el = $("#cook-timers", box);
     if (!el) return;
     el.innerHTML = timers.map((t, i) => {
@@ -117,6 +127,7 @@ export function startCooking(r, v) {
           <span class="text-sm text-slate-400">Step ${at + 1} of ${r.steps.length}${step.section ? ` · ${esc(step.section)}` : ""}</span>
           <span class="ml-auto flex flex-wrap justify-end gap-1">
             ${v.needs ? `<button id="cook-kids" class="btn-ghost px-2 ${kidsOn() ? "text-emerald-300" : ""}" aria-pressed="${kidsOn()}">🧒 Kid helper</button>` : ""}
+            ${tvButton()}
             ${canSpeak() ? `<button id="cook-voice" class="btn-ghost px-2 ${voiceOn() ? "text-emerald-300" : ""}" aria-pressed="${voiceOn()}">${voiceOn() ? "🔊" : "🔈"} Read aloud</button>` : ""}
             ${canListen() ? `<button id="cook-listen" class="btn-ghost px-2 ${stopListening ? "text-emerald-300" : ""}" aria-pressed="${Boolean(stopListening)}">🎙️ ${stopListening ? "Listening" : "Listen"}</button>` : ""}
             <button id="cook-close" class="btn-ghost px-2">✕ Close</button></span>
@@ -148,6 +159,7 @@ export function startCooking(r, v) {
       if (r.id && r.area !== "home") cookedSheet(r, () => window.dispatchEvent(new HashChangeEvent("hashchange"))).catch(() => {});
     };
     $$("[data-timer]", box).forEach((b) => (b.onclick = () => startTimer(found[Number(b.dataset.timer)])));
+    wireTV(box, draw);
     const kids = $("#cook-kids", box);
     if (kids) kids.onclick = () => { setKids(!kidsOn()); draw(); };
     const voice = $("#cook-voice", box);

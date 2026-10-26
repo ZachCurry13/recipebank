@@ -47,6 +47,9 @@ type Server struct {
 	timers      push.Timers // cook-mode timers that buzz the phone
 	logins      *loginLimiter
 	guestWrites *loginLimiter // changes through events' guest links, per address
+	tv          tvHub         // kitchen screens waiting for a phone
+	tvNew       *loginLimiter // new screens, per address
+	tvTries     *loginLimiter // codes tried from phones, per person
 	etags       sync.Map      // static file name → ETag
 	laterOnce   sync.Once     // "Read it later": the signal to read now
 	laterCh     chan struct{}
@@ -59,6 +62,8 @@ type Server struct {
 func (s *Server) Router() http.Handler {
 	s.logins = newLoginLimiter()
 	s.guestWrites = newRateLimiter(40, 10*60)
+	s.tvNew = newRateLimiter(20, 10*60)
+	s.tvTries = newRateLimiter(15, 10*60)
 	if s.Fetch == nil {
 		s.Fetch = newFetchClient()
 	}
@@ -96,6 +101,7 @@ func (s *Server) Router() http.Handler {
 	r.Get("/share", s.handleShare)         // the phone's share menu; the app asks to sign in if needed
 	r.Get("/s/{token}", s.handleSharePage) // a shared recipe, no sign-in
 	r.Get("/s/{token}/photo", s.handleSharePhoto)
+	r.Get("/tv", s.handleTVPage)                // the kitchen screen, no sign-in
 	r.Get("/e/{token}", s.handleGuestPage)      // an event's guest page, no sign-in
 	r.Get("/cal/{token}", s.handleCalendarFeed) // the meal plan for a calendar app, no sign-in
 
@@ -105,6 +111,8 @@ func (s *Server) Router() http.Handler {
 		r.Use(csrfGuard)
 
 		// An event's guest link (no sign-in): see guest_handlers.go.
+		r.Post("/tv/new", s.handleTVNew) // the kitchen screen starts here (see tv_handlers.go)
+		r.Get("/tv/screen", s.handleTVScreen)
 		r.Get("/guest/{token}", s.handleGuestView)
 		r.Put("/guest/{token}/me", s.handleGuestMe)
 		r.Delete("/guest/{token}/me", s.handleGuestLeave)
@@ -123,6 +131,9 @@ func (s *Server) Router() http.Handler {
 			r.Get("/updates", s.handleUpdates)
 			r.Put("/me/prefs", s.handlePrefs)
 			r.Put("/me/simpler", s.handleSimpler)
+			r.Post("/tv/pair", s.handleTVPair)
+			r.Post("/tv/show", s.handleTVShow)
+			r.Delete("/tv/{code}", s.handleTVStop)
 			r.Get("/me/calendar", s.handleGetCalendar)
 			r.Post("/me/calendar", s.handleNewCalendar)
 			r.Put("/me/calendar", s.handleSetCalendar)
