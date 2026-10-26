@@ -321,3 +321,13 @@ CREATE TABLE IF NOT EXISTS later (
     added_by   TEXT NOT NULL DEFAULT '',
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
+
+-- Each person's private calendar link for the meal plan (a feed their phone's
+-- calendar subscribes to), and the times their meals show at.
+CREATE TABLE IF NOT EXISTS cal_feeds (
+    user_id    INTEGER PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
+    token      TEXT NOT NULL UNIQUE,
+    times      TEXT NOT NULL DEFAULT '{}',  -- meal → "18:00"
+    events     INTEGER NOT NULL DEFAULT 1, -- events too
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+);

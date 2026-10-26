@@ -96,7 +96,8 @@ func (s *Server) Router() http.Handler {
 	r.Get("/share", s.handleShare)         // the phone's share menu; the app asks to sign in if needed
 	r.Get("/s/{token}", s.handleSharePage) // a shared recipe, no sign-in
 	r.Get("/s/{token}/photo", s.handleSharePhoto)
-	r.Get("/e/{token}", s.handleGuestPage) // an event's guest page, no sign-in
+	r.Get("/e/{token}", s.handleGuestPage)      // an event's guest page, no sign-in
+	r.Get("/cal/{token}", s.handleCalendarFeed) // the meal plan for a calendar app, no sign-in
 
 	r.Route("/api", func(r chi.Router) {
 		r.Use(noStore)
@@ -122,6 +123,10 @@ func (s *Server) Router() http.Handler {
 			r.Get("/updates", s.handleUpdates)
 			r.Put("/me/prefs", s.handlePrefs)
 			r.Put("/me/simpler", s.handleSimpler)
+			r.Get("/me/calendar", s.handleGetCalendar)
+			r.Post("/me/calendar", s.handleNewCalendar)
+			r.Put("/me/calendar", s.handleSetCalendar)
+			r.Delete("/me/calendar", s.handleDeleteCalendar)
 			r.Put("/me/password", s.handleChangePassword)
 			r.Get("/info", s.handleInfo)
 			r.Get("/people", s.handleListPeople)
