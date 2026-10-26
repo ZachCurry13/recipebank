@@ -222,7 +222,7 @@ Chosen by the user ("Yes, build it"):
 2. [ ] **Kitchen screen / TV:** `/tv` on a TV or tablet browser shows a short code (no sign-in there); cook mode's 📺
    pairs with the code; the screen shows the step, its ingredients and timers big, following the phone; the pairing
    ends after 12 hours; the screen sees only what's sent.
-3. [ ] **Meal plan in your calendar:** Me → 📅 a private calendar link (ICS) for Google/Apple calendars; meals at chosen
+3. [x] **Meal plan in your calendar:** Me → 📅 a private calendar link (ICS) for Google/Apple calendars; meals at chosen
    times (dinner 6 pm default), recipe links, events too; "New link" turns the old one off. Google needs the outside
    address.
 4. [ ] **Search by meaning:** Admin → AI → an embedding model (Ollama `nomic-embed-text`, or the online service's);

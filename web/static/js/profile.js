@@ -6,6 +6,7 @@ import { signOut } from "./app.js";
 import { renderPushCard } from "./push.js";
 import { welcome } from "./firstrun.js";
 import { renderSimpler } from "./simpler.js";
+import { renderCalendar } from "./calendarlink.js";
 
 export function renderProfile(view, params, state) {
   const u = state.user;
@@ -34,6 +35,7 @@ export function renderProfile(view, params, state) {
       </form>
     </div>
     <div id="simpler" class="mt-4"></div>
+    <div id="calendar" class="mt-4"></div>
     <div id="push-card" class="card mt-4 space-y-3"></div>
     <div class="card mt-4 space-y-3"><h2 class="text-lg font-semibold">❓ Help</h2>
       <div class="flex flex-wrap gap-2"><button type="button" id="welcome" class="btn-secondary">👋 The welcome tour</button>
@@ -41,6 +43,7 @@ export function renderProfile(view, params, state) {
         ${u.role === "admin" ? `<button type="button" id="setup-guide" class="btn-secondary">🧭 Getting started</button>` : ""}</div></div>
     <button id="out" class="btn-secondary mt-4">Sign out</button>`;
   renderSimpler($("#simpler", view), state);
+  renderCalendar($("#calendar", view), state).catch(() => {});
   renderPushCard($("#push-card", view), u).catch(() => {});
   $("#welcome", view).onclick = () => welcome(state);
   const guide = $("#setup-guide", view);
