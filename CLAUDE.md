@@ -33,3 +33,6 @@ dislikes and heat; Home & Care recipes (cleaners, toothpaste, mouthwash) get saf
 - Outside pages are fetched with the honest RecipeBank user agent; sites that block apps get "Paste text".
 - Phones first: check touched pages at 360×760 with long names (`scrollWidth` = 360).
 - Keep files under ~300 lines; new web files go in the service-worker cache name bump (`web/static/sw.js`).
+
+## Maintenance
+Checks, security audits and dependency updates follow `docs/MAINTENANCE.md` (patch/minor security fixes only, on a branch; never release by itself). A weekly GitHub Action (`.github/workflows/audit.yml`) reports into one "Weekly audit" issue.
