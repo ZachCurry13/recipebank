@@ -212,7 +212,7 @@ Sharing levels: answered 2026-10-07, "No, just us" (one household per server): n
 0.7.1 (photo AI organizes text when the main AI fails) and 0.8.0 (Ollama 📝/📷 pickers, busy-AI retry, plain
 errors for each AI) released 2026-10-07.
 
-## 1i. 0.9 plan (2026-10-07; on `feature/v0.9`; one 0.9.0 at the end, ASK the user before releasing)
+## 1i. 0.9 plan (2026-10-07; built on `feature/v0.9`; **0.9.0 released 2026-11-12** with the user's OK; `:0.9.0` = `:latest`)
 
 Chosen by the user ("Yes, build it"):
 1. [x] **Read it later:** a card photo or pasted text that no AI can read right now (busy, off, won't load, out of
@@ -228,7 +228,9 @@ Chosen by the user ("Yes, build it"):
 4. [x] **Search by meaning:** Admin → AI → an embedding model (Ollama `nomic-embed-text`, or the online service's);
    recipes indexed in the background; Recipes search, Search everything and "What should we eat?" rank by meaning too,
    word matches first. Allergy checks unchanged.
-5. [x] Docs, CHANGELOG, phone checks (360×760, light and dark).
+5. [x] Docs, CHANGELOG, phone checks (360×760, light and dark). Released as 0.9.0 on 2026-11-12. `main` was fast-forwarded
+   to `feature/v0.9` (it had been left at 0.8.0) and tagged `v0.9.0`; the maintenance branch of 2026-10-26 is merged in.
+   Next work goes on a new `feature/v0.10` (or `v1.0`) cut from `main`; ask the user what to build.
 
 ## 2. Rules
 
@@ -267,15 +269,18 @@ weekly estimate, cost per recipe), difficulty, planned leftovers ("Monday's roas
 free-text plan entries now), emailing a recipe or the list, events (holiday menus, potlucks, guests per meal),
 kid skills (declined for now). Also: "What can I make?" (photo of the fridge or ticked items), dish photo →
 recipe ideas, cookbooks and the to-digitize pile, share from phone and printing / family cookbook PDF, kitchen tablet with PINs (only if
-wanted), Mealie/Tandoor/Paprika imports (to review with the user), Google Cast, update banner, embedding-model
-search ranking.
+wanted), Mealie/Tandoor/Paprika imports (to review with the user), Google Cast, (update banner and embedding-model search ranking are built).
 
 ## 7. Next immediate steps
 
-1. The user updates TrueNAS to 0.4.0 and tests (also new: an email account under Admin → Email, prices in the
-   pantry, events). Not tried for real yet (no AI locally): the fridge photo, the dish photo,
-   AI substitutes and two-step card reading with a real model; nutrition beyond flour (DEMO_KEY's hourly limit);
-   live camera scanning, notifications, voice and the Android share target (need the https address on a phone).
-2. The user's AI was Ollama with qwen2.5:3b / qwen2.5vl:3b (too small for handwriting); Gemini's free tier was
-   suggested (OpenAI-compatible, https://generativelanguage.googleapis.com/v1beta/openai, a Flash model).
-3. Fix what the user finds as 0.3.x, then plan 0.4 with the user (the five extras chosen 2026-10-06, section 1c).
+1. The user updates TrueNAS to 0.9.0 and tries it: Read it later, the `/tv` kitchen screen (pairing from cook mode),
+   the calendar link (Google needs the outside address), and search by meaning (needs an embedding model:
+   Admin -> AI). Fixes go out as 0.9.x from a `feature/v0.9.x` or `fix/...` branch off `main`.
+2. Not tried for real yet (need a real AI or an https address on a phone): the fridge photo, the dish photo, AI
+   substitutes, two-step card reading with a big model, nutrition beyond flour (DEMO_KEY's hourly limit), live camera
+   scanning, notifications, voice, the Android share target, and the import formats (need real export files).
+3. Maintenance decisions still open (docs/STATUS.md, 2026-10-26): newer dependencies (anthropic-sdk-go, chi,
+   sqlite, x/image) and cloudflared 2026.10.4. Follow `docs/MAINTENANCE.md`; weekly audit issue on GitHub.
+4. The user's AI was Ollama with qwen2.5:3b / qwen2.5vl:3b (too small for handwriting); Gemini's free tier
+   (OpenAI-compatible, a Flash model) or a bigger Ollama model reads cards better.
+5. Ask the user what comes next (0.10 ideas: none chosen yet).

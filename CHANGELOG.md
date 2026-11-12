@@ -1,6 +1,6 @@
 # Changelog
 
-## [Unreleased]
+## [0.9.0] - 2026-11-12
 
 Cards that wait for an AI, a kitchen screen, your meals in your calendar, and search by meaning.
 
