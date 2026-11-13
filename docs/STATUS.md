@@ -54,3 +54,8 @@ CHANGELOG 0.3.0 written; every page checked at 360×760 (light and dark).
   x/crypto's openpgp is flagged unmaintained (no fix, not used).
 - 0.9.0 released 2026-11-12: Read it later (cards wait for an AI), kitchen screen (/tv), meal plan calendar
   link, search by meaning (embeddings), x/net security update, weekly audit workflow. `:0.9.0` = `:latest`. Next: the user updates and tries it; fixes go out as 0.9.x.
+- Maintenance sweep 2026-11-12 (branch `chore/sweep-2026-11`, written up as 0.9.1, not released): x/net 0.62.0 fixes
+  GO-2026-6860, which the page reader could reach; x/crypto 0.59.0; the page reader only connects to internet
+  addresses; cloudflared 2026.9.3 -> 2026.10.7; sqlite 1.59 -> 1.62; CI on the newest Go 1.26 patch and the Node 24
+  action versions. govulncheck finds nothing; build and tests pass. Still held: anthropic-sdk-go, chi, x/image.
+  Needs the owner: release 0.9.1, then confirm Admin -> Remote access still connects.
