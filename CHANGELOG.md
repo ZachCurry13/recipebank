@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.9.1] - unreleased
+
+A security update, and a safer **From a link**.
+
+### 🔒 Security
+- **Reading a recipe page can no longer tie the server up.** A web page built for the purpose could keep RecipeBank busy for a very long time while it read the page. The part that reads pages is updated, and that no longer works.
+- **From a link only opens internet addresses.** A link, and the photo a recipe page points to, can no longer lead to this server or to something on your home network, so a recipe link can't be used to look at your router or another app at home. If you keep a recipe page on your own network, open it, copy the recipe and use **Paste text**.
+- **Remote access** uses a newer Cloudflare connector (2026.10.7). After updating, look at **Admin → Remote access** once to see it still says connected.
+
+### 🧰 Under the hood
+- A newer database library, and two leftover pieces of code removed. Nothing changes on screen.
+
 ## [0.9.0] - 2026-11-12
 
 Cards that wait for an AI, a kitchen screen, your meals in your calendar, and search by meaning.
