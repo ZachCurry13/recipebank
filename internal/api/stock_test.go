@@ -31,6 +31,7 @@ func TestStockAndPantryHints(t *testing.T) {
 	}))
 	defer off.Close()
 	srv.Products = productBases{FoodBases: []string{off.URL}, HomeBases: []string{off.URL}}
+	srv.Fetch = off.Client() // the real client only connects to internet addresses
 
 	// A barcode the databases know fills in the label.
 	var found struct {

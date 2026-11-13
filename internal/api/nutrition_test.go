@@ -28,6 +28,7 @@ func TestNutritionEstimate(t *testing.T) {
 	}))
 	defer fdc.Close()
 	srv.Nutrition = fdc.URL
+	srv.Fetch = fdc.Client() // the real client only connects to internet addresses
 	var rc struct{ ID int64 }
 	c.do("POST", "/api/recipes", map[string]any{"title": "Flatbread", "servings": 2,
 		"ingredients": []map[string]string{{"line": "2 cups flour"}, {"line": "1 cup unicorn dust"}}}, &rc)

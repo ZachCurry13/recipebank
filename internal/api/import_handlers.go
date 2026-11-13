@@ -8,7 +8,6 @@ import (
 	"net/http"
 	"net/url"
 	"strings"
-	"time"
 
 	"github.com/zachcurry13/recipebank/internal/llm"
 	"github.com/zachcurry13/recipebank/internal/recipe"
@@ -19,21 +18,6 @@ import (
 // purpose (403, or 402 "pay per crawl"); RecipeBank respects that and
 // suggests pasting the text instead.
 const userAgent = "RecipeBank/0.1 (+https://github.com/ZachCurry13/recipebank)"
-
-func newFetchClient() *http.Client {
-	return &http.Client{
-		Timeout: 30 * time.Second,
-		CheckRedirect: func(req *http.Request, via []*http.Request) error {
-			if len(via) >= 5 {
-				return errors.New("too many redirects")
-			}
-			if req.URL.Scheme != "http" && req.URL.Scheme != "https" {
-				return errors.New("only web addresses can be read")
-			}
-			return nil
-		},
-	}
-}
 
 // fetch downloads an outside page or image (at most limit bytes).
 func (s *Server) fetch(ctx context.Context, raw string, limit int64) ([]byte, string, error) {
@@ -49,6 +33,9 @@ func (s *Server) fetch(ctx context.Context, raw string, limit int64) ([]byte, st
 	req.Header.Set("Accept", "text/html,application/xhtml+xml,image/*;q=0.9,*/*;q=0.8")
 	req.Header.Set("Accept-Language", "en-US,en;q=0.9")
 	resp, err := s.Fetch.Do(req)
+	if errors.Is(err, errHomeAddress) {
+		return nil, "", errors.New("that address is on your own network, and RecipeBank only reads pages from the internet. Open the page yourself, copy the recipe, then use Paste text")
+	}
 	if err != nil {
 		return nil, "", fmt.Errorf("couldn't open that page: %w", err)
 	}
