@@ -24,6 +24,11 @@ few hours' gap, and `git fetch` first.** The plans for 0.2 to 0.9, as they were 
   unescaped. No guard test was added: it would need a JavaScript parser inside the Go tests. One small thing left
   alone: a recipe's source link is escaped but its scheme is not checked in the page (the content policy stops a
   `javascript:` link from running).
+- **Ready to merge (2026-11-13):** every item on the branch was approved by the owner, and its test job passed on
+  GitHub. Release it soon: 0.9.0 has the x/net hole. Steps: item 0 of "Next immediate steps" below.
+  If `git merge --ff-only` refuses, `main` moved after the branch was cut (2026-11-12): merge `main` into the branch,
+  run the checks again, then fast-forward. Nothing on the branch is secret or machine-specific; it was scanned for
+  personal details before each push.
 - **Not checked:** the image. This repository builds it only on `main`, so cloudflared 2026.10.7 is first built
   there (the build runs `cloudflared --version`), and Remote access with the new connector can only be confirmed on
   the server. The image and release jobs have not yet run with the new action versions.
