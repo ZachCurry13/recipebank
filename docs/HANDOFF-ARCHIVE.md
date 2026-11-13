@@ -180,7 +180,7 @@ everything below is built and checked.
 5. [x] **Speed test:** time each AI on a made-up sample card photo and a text job.
 6. [x] **Model updates, presets, health:** daily check for newer Ollama model versions (Update button), one-click
    presets (Gemini, OpenAI, Claude, Ollama, LM Studio), "is it answering", cost for online APIs.
-7. [x] **Features on and off** (asked for by the user's wife: the app felt overwhelming): Admin turns features off
+7. [x] **Features on and off** (asked for in the household: the app felt overwhelming): Admin turns features off
    for the whole house (hidden, data kept); each person can simplify their own view on Me: which meals the plan
    shows (all by default; e.g. just dinner) and pages hidden from their menu.
 7b. [x] **Allergy exceptions** (the user's sister: no soy or soy lecithin, but soybean oil is fine): Family → each
