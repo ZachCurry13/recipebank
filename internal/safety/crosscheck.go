@@ -101,12 +101,10 @@ func stepFoodsMissing(r *recipe.Recipe) []string {
 	return missing
 }
 
-// StepsMention returns a word for allergen key that the steps use ("stir in
-// the butter") when no ingredient line has that allergen, or "".
-func StepsMention(r *recipe.Recipe, key string) string { return stepsMention(r, key, nil) }
-
-// stepsMention is StepsMention for a person who may have some foods made
-// from the allergen (allowed: see exceptions.go).
+// stepsMention returns a word for allergen key that the steps use ("stir in
+// the butter") when no ingredient line has that allergen, or "". allowed
+// names foods made from the allergen that this person may have (see
+// exceptions.go).
 func stepsMention(r *recipe.Recipe, key string, allowed []string) string {
 	a, ok := AllergenByKey(key)
 	if !ok || len(r.Steps) == 0 || isAllergen(ingredientText(r), key) {

@@ -89,10 +89,3 @@ func (s *Store) RemoveFromCollection(id, recipeID int64) error {
 	_, err := s.DB.Exec(`DELETE FROM collection_recipes WHERE collection_id = ? AND recipe_id = ?`, id, recipeID)
 	return err
 }
-
-// CollectionsOf lists the collections a recipe is on.
-func (s *Store) CollectionsOf(recipeID int64) ([]int64, error) {
-	ids := []int64{}
-	err := s.DB.Select(&ids, `SELECT collection_id FROM collection_recipes WHERE recipe_id = ?`, recipeID)
-	return ids, err
-}
