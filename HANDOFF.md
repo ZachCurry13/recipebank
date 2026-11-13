@@ -18,6 +18,12 @@ few hours' gap, and `git fetch` first.** The plans for 0.2 to 0.9, as they were 
 - **Checked:** `go build`, `go vet`, `go test` (20 packages), `gofmt`, the JS check (77 files), a CSS rebuild
   (identical), the vulnerability scan (clean), and a dump of all 175 routes with their middleware counts, identical
   before and after the split.
+- **Also looked at (2026-11-12): escaping in the page code.** Every value the scripts write into HTML was listed
+  (about 1,460 places) and sorted: wrapped in `esc()`, a number or an id, a constant, or HTML built from escaped
+  parts. The plain values were traced by hand and the guest page (no sign-in) was read in full. None was found
+  unescaped. No guard test was added: it would need a JavaScript parser inside the Go tests. One small thing left
+  alone: a recipe's source link is escaped but its scheme is not checked in the page (the content policy stops a
+  `javascript:` link from running).
 - **Not checked:** the image. This repository builds it only on `main`, so cloudflared 2026.10.7 is first built
   there (the build runs `cloudflared --version`), and Remote access with the new connector can only be confirmed on
   the server. The image and release jobs have not yet run with the new action versions.
